@@ -7,7 +7,8 @@
 | Tipo | Enterprise Architecture — Vision |
 | Clasificación | Estratégico |
 | Audiencia | Comité Directivo, TI, Negocio, Cumplimiento |
-| Estado | Borrador para alineación |
+| Estado | Alineado — decisiones de sponsor cerradas (ver EA-DEC-001) |
+| Piloto | Municipal · Multi-Tenant (capacidad) · Tenant dedicado (runtime inicial) |
 | Referentes | SAP S/4HANA + IS-PS, Oracle Fusion Cloud ERP / Public Sector, Microsoft Dynamics 365 Finance & SCM + Gov |
 
 ---
@@ -314,124 +315,146 @@ El diferenciador de negocio es la **integración controlada**:
 
 ## 10. Roadmap de implementación
 
-Horizonte orientado a **olas de valor** (no a estimaciones de calendario en semanas/meses absolutas). El tamaño real depende de capacidad del equipo, complejidad del primer tenant y legado.
+Horizonte orientado a **olas de valor**. Decisiones de alcance: **EA-DEC-001**.
 
 ```text
-[ MVP ] → [ Fase 1 ] → [ Fase 2 ] → [ Fase 3 ]
- Core    Finanzas &     Operación      Experiencia
- plataforma presupuesto  ERP ampliada  ciudadana &
-                         + compras     escala
+[ MVP Municipal ] → [ Post-MVP / Fase 1 ] → [ Fase 2 ] → [ Fase 3 ]
+ Core + Docs +        Profundizar           Operación           Ciudadanía,
+ Presupuesto +        P2P + Presupuesto     ampliada            recaudación,
+ Compras                                                          escala
 ```
 
 ---
 
-### MVP — “Plataforma operable y gobernada”
+### MVP — “Municipio operable: gobierno del gasto”
 
-**Objetivo:** demostrar que el núcleo es seguro, auditable, configurable y listo para enchufar dominios de negocio.
+**Objetivo:** poner en marcha un **tenant dedicado municipal** sobre arquitectura multi-tenant, con control de identidad, evidencia, documentos y el ciclo básico **compra ↔ presupuesto**.
 
-| Capacidad | Incluye |
-|-----------|---------|
-| IAM | Usuarios, roles, permisos, autenticación (OAuth2/OIDC/JWT), MFA básico, tenancy |
-| Auditoría | Ingesta de hechos, consulta de trail, integridad |
-| Catálogos | Maestros versionados multiidioma |
-| Workflow | Aprobaciones simples (solicitud→aprobar/rechazar) |
-| Notificaciones | Email/in-app sobre eventos de plataforma |
-| Ops mínimos | Health, logs, métricas básicas, despliegue containerizado |
+| Capacidad | Incluye en MVP |
+|-----------|----------------|
+| IAM | Usuarios, roles, permisos, OAuth2/OIDC/JWT, MFA básico, contexto de tenant |
+| Catálogos | Maestros municipales versionados |
+| Auditoría | Hechos inmutables + consulta de trail |
+| Workflow | Aprobaciones de requisición/OC y/o movimientos presupuestales |
+| Documentos | Alta, versión básica, vínculo a transacciones |
+| Presupuesto | Ciclo, partidas, disponibilidad, compromiso básico |
+| Compras | Requisición y OC básica ligada a partida |
+| Ops mínimos | Health, logs, métricas, contenedores; runtime de tenant dedicado |
 
-**Fuera de MVP:** finanzas completas, presupuesto completo, portal ciudadano, nómina, inventarios.
+**Estrategia de entrega interna del MVP (recomendación EA)**
+
+| Drop | Contenido | Para qué |
+|------|-----------|----------|
+| MVP-A | IAM + Catálogos + Auditoría + Workflow | Base de gobierno y seguridad |
+| MVP-B | Documentos + Presupuesto + Compras | Valor municipal observable |
+
+Ambos drops cumplen el mismo Definition of Done de plataforma (tenant, auditoría, APIs).
 
 **Criterio de éxito MVP**
 
-- Alta de tenant + usuarios + rol + menú condicionado por módulo.  
-- Toda mutación genera hecho auditable.  
-- Un flujo de aprobación extremo a extremo con notificación.  
-- APIs documentadas (OpenAPI) y observabilidad básica.
+- Tenant dedicado municipal provisionado.  
+- Roles operativos municipales funcionando.  
+- Requisición/OC aprobada con documento anexado y compromiso presupuestal básico.  
+- Trail de auditoría completo en el flujo.  
+- Diseño multi-tenant verificado (claims/aislamento), aunque el runtime sea dedicado.
 
 ---
 
-### Fase 1 — “Control financiero-presupuestal”
+### Post-MVP / Fase 1 — “P2P + Presupuesto (profundización)”
 
-**Objetivo:** primer valor de negocio ERP+GRP integrado.
+**Objetivo prioritario tras el MVP (decisión D-05):** madurar Procure-to-Pay integrado al presupuesto.
 
-| Dominio | Alcance sugerido |
-|---------|------------------|
-| Finanzas / Contabilidad (base) | Plan de cuentas, asientos, periodos |
-| Tesorería (base) | Órdenes de pago simples / conciliación inicial |
-| Presupuesto público (base) | Ciclo, partidas, compromiso/devengado/pagado |
-| Compras (ligero) | Requisición/OC básica ligada a presupuesto |
-| Reporting inicial | Balanza / disponibilidad presupuestal |
+| Dominio | Alcance Fase 1 |
+|---------|----------------|
+| Compras / P2P | Recepción, matching básico, estados hasta pago (según necesidad municipal) |
+| Presupuesto | Compromiso / devengado / ejercido, modificaciones, controles de sobregiro |
+| Documentos | Plantillas y expediente mínimo de la compra |
+| Contabilidad / Tesorería | Solo en la medida indispensable para cerrar el pago (no suite financiera completa) |
+
+**Explícitamente fuera de Fase 1 (D-06):**
+
+- Nómina  
+- Ciudadanía  
+- Recaudación  
+- Programas Sociales  
+- BI  
+- IA  
 
 **Criterio de éxito Fase 1**
 
-- P2P ligero con afectación presupuestal y asiento.  
-- Disponibilidad presupuestal consultable en tiempo real.  
-- Cierre de periodo piloto en un tenant.
+- Ciclo P2P municipal con afectación presupuestal confiable extremo a extremo.  
+- Disponibilidad presupuestal en tiempo real con bloqueo de sobregiro.  
+- Evidencia documental + auditoría suficientes para control interno del municipio.
 
 ---
 
-### Fase 2 — “Operación ampliada”
-
-**Objetivo:** cobertura operativa típica de Dynamics/Oracle mid-market + contrataciones.
+### Fase 2 — “Operación ampliada (post control del gasto)”
 
 | Dominio | Alcance sugerido |
 |---------|------------------|
-| Inventarios / logística básica | Existencias y movimientos |
-| Proveedores / 3-way match | Madurez P2P |
-| RRHH / Nómina (base) | Alta empleado + corrida piloto |
-| Contrataciones públicas | Procedimiento → adjudicación → contrato → ERP |
-| Transparencia (base) | Publicación de obligaciones ligadas a contratos/presupuesto |
-| BI | Tableros ejecutivos |
+| Inventarios / almacén municipal básico | Existencias de bienes |
+| Proveedores / 3-way match maduro | Calidad P2P |
+| Contrataciones públicas | Procedimiento → contrato → compras |
+| Transparencia (base) | Obligaciones ligadas a contratos/presupuesto |
+| Contabilidad ampliada | Si el municipio lo exige como SoR contable |
+
+> Nómina, BI e IA siguen **fuera** hasta que el steering las readmita formalmente.
 
 ---
 
-### Fase 3 — “Experiencia ciudadana, escala y ecosistema”
-
-**Objetivo:** diferenciación GRP + escala enterprise.
+### Fase 3 — “Servicio al ciudadano y escala”
 
 | Dominio | Alcance sugerido |
 |---------|------------------|
-| Gestión ciudadana + expediente + documental | C2S completo |
+| Gestión ciudadana + expediente | C2S |
 | Recaudación / programas sociales | Padrones, liquidaciones, beneficios |
-| Fiscalización / control gubernamental | Hallazgos y seguimiento |
-| Portal ciudadano / proveedor | Self-service |
-| HA multi-AZ, DR, performance a escala | NFR enterprise |
-| Marketplace de extensiones / conectores | Bancos, CFDI, TESOFE, etc. |
+| Portal ciudadano | Self-service |
+| Fiscalización / control | Hallazgos y seguimiento |
+| Multi-tenant compartido (opcional) | Onboarding de más municipios en modelo SaaS |
+| HA / DR / performance enterprise | NFR de escala |
 
 ---
 
 ### Dependencias entre olas
 
 ```text
-MVP (Core)
-  └── Fase 1 (Finance + Budget + Purchasing light)
-        └── Fase 2 (Inventory, Payroll, Public Procurement, Transparency)
-              └── Fase 3 (Citizen, Tax, Social, Oversight, Scale)
+MVP-A (IAM, Catálogos, Auditoría, Workflow)
+  └── MVP-B (Documentos, Presupuesto, Compras)   ← MVP aprobado
+        └── Fase 1 (P2P + Presupuesto profundidad)
+              └── Fase 2 (Inventarios, Contrataciones, Transparencia…)
+                    └── Fase 3 (Ciudadanía, Recaudación, Programas, Escala)
 ```
 
-**Regla de oro:** no adelantar Fase 2/3 si el MVP no cumple aislamiento multi-tenant, auditoría y IAM.
+**Regla de oro:** no abrir Fase 2/3 si el MVP municipal no demuestra aislamiento, auditoría y afectación compra–presupuesto.
 
 ---
 
 ## Anexos
 
-### A. Decisiones de visión a validar con el sponsor
+### A. Decisiones de sponsor — CERRADAS
 
-1. ¿Primer tenant piloto será **privado**, **municipal** o **estatal**?  
-2. ¿Modelo de despliegue inicial: SaaS compartido o dedicado?  
-3. ¿Paridad normativa mínima indispensable para el piloto?  
-4. ¿Se prioriza P2P+Presupuesto o Ciudadanía+Recaudación como primer valor de negocio tras el MVP?  
-5. ¿Límite explícito de lo que **no** se construirá en Fase 1?
+Registro maestro: **[EA-DEC-001](02-DECISIONES-SPONSOR.md)**
+
+| ID | Decisión |
+|----|----------|
+| D-01 | Piloto **municipal** |
+| D-02 | Arquitectura **multi-tenant** |
+| D-03 | Implementación inicial en **tenant dedicado** |
+| D-04 | MVP = IAM + Catálogos + Auditoría + Workflow + Documentos + Presupuesto + Compras |
+| D-05 | Prioridad post-MVP = **P2P + Presupuesto** |
+| D-06 | Fuera de Fase 1 = Nómina, Ciudadanía, Recaudación, Programas Sociales, BI, IA |
 
 ### B. Artefactos siguientes (sin código)
 
-- Architecture Vision formal (TOGAF ADM Phase A) — detalle de principios NFR.  
-- Business Capability Map nivel 2/3.  
-- Matriz stakeholder–requisito.  
-- Business Case (costo/beneficio) del MVP + Fase 1.
+- Business Capability Map del MVP municipal.  
+- Matriz de proceso P2P–B2R (piloto).  
+- NFR: tenant dedicado vs capacidad multi-tenant.  
+- Definition of Ready del municipio piloto (organigrama, partidas, catálogos).  
+- Architecture Vision técnica (TOGAF Phase A/B) acotada al MVP.
 
-### C. Relación con el arquetipo técnico ya documentado
+### C. Relación con el arquetipo técnico
 
-Este documento **congela la visión de negocio**. El arquetipo técnico existente (Java/Spring, DDD, Kafka, K8s) se mantiene como hipótesis tecnológica alineada, sujeta a ADRs, y **no se implementa** hasta cerrar esta alineación de alcance.
+La visión de negocio queda **alineada**. El arquetipo técnico se usará como hipótesis de implementación **solo después** de cerrar Capability Map + NFR del MVP. Sin adelantar dominios excluidos (D-06).
 
 ---
 
@@ -439,4 +462,5 @@ Este documento **congela la visión de negocio**. El arquetipo técnico existent
 
 | Versión | Fecha | Autor rol | Cambio |
 |---------|-------|-----------|--------|
-| 0.1 | 2026-11-04 | Enterprise Architect | Visión inicial para alineación (Fase 1) |
+| 0.1 | 2026-11-04 | Enterprise Architect | Visión inicial para alineación |
+| 0.2 | 2026-11-04 | Enterprise Architect | Roadmap y alcance alineados a EA-DEC-001 (piloto municipal) |
