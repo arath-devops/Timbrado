@@ -296,8 +296,9 @@ El diferenciador de negocio es la **integración controlada**:
 
 | ID | Riesgo | Prob. | Impacto | Mitigación |
 |----|--------|-------|---------|------------|
-| R-01 | Alcance inflado (“ERP+GRP completo” desde día 1) | Alta | Muy alto | MVP estricto; módulos on/off; governance de cambio |
-| R-02 | Complejidad normativa heterogénea (3 órdenes de gobierno) | Alta | Alto | Motor de configuración/jurisdicción; partners legales |
+| R-01 | Alcance inflado (“ERP+GRP completo” desde día 1) | Media | Muy alto | Exclusiones D-06; MVP en drops A/B; governance de cambio semanal |
+| R-02 | Complejidad normativa heterogénea (3 órdenes de gobierno) | Media | Alto | Piloto municipal acota marco; parametrizar jurisdicción |
+| R-11 | MVP amplio (7 módulos) | Alta | Alto | Entregar MVP-A (core) → MVP-B (presupuesto+compras+docs) |
 | R-03 | Resistencia al cambio / baja adopción | Alta | Alto | Change management; champions; UX priorizada |
 | R-04 | Integraciones bancarias/fiscales inestables | Media | Alto | Adaptadores aislados; circuit breakers; sandbox |
 | R-05 | Calidad de datos maestros legados | Alta | Alto | Programa de cleansing; catálogos gobernados |
