@@ -1,0 +1,29 @@
+openapi: 3.1.0
+info:
+  title: Budget Service API
+  version: 1.0.0
+paths:
+  /api/v1/movements/commit:
+    post:
+      summary: Commit budget availability
+      operationId: commitBudget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommitBudgetCommand'
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    CommitBudgetCommand:
+      type: object
+      required: [allocationId, amount, currency, referenceType, referenceId]
+      properties:
+        allocationId: { type: string, format: uuid }
+        amount: { type: number }
+        currency: { type: string }
+        referenceType: { type: string }
+        referenceId: { type: string, format: uuid }

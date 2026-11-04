@@ -1,0 +1,16 @@
+# Generic multi-stage Dockerfile template for Spring Boot services
+# Usage: docker build -f infrastructure/docker/Dockerfile.service --build-arg SERVICE=iam-service -t erpgrp/iam-service .
+ARG SERVICE
+FROM eclipse-temurin:21-jdk-alpine AS build
+ARG SERVICE
+WORKDIR /workspace
+COPY backend /workspace
+RUN apk add --no-cache maven \
+ && mvn -f /workspace/pom.xml -pl services/${SERVICE} -am -DskipTests package
+
+FROM eclipse-temurin:21-jre-alpine
+ARG SERVICE
+WORKDIR /app
+COPY --from=build /workspace/services/${SERVICE}/target/${SERVICE}-*.jar app.jar
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75"
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
