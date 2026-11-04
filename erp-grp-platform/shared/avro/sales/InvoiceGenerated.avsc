@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "InvoiceGenerated",
+  "namespace": "mx.gov.erpgrp.events.sales",
+  "fields": [
+    {"name": "invoiceId", "type": "string"},
+    {"name": "customerId", "type": "string"},
+    {"name": "total", "type": {"type":"bytes","logicalType":"decimal","precision":19,"scale":4}},
+    {"name": "taxTotal", "type": {"type":"bytes","logicalType":"decimal","precision":19,"scale":4}},
+    {"name": "currency", "type": "string"}
+  ]
+}

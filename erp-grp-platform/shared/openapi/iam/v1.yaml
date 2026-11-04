@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: IAM Service API
+  version: 1.0.0
+paths:
+  /api/v1/users:
+    post:
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserCommand'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+components:
+  schemas:
+    CreateUserCommand:
+      type: object
+      required: [username, email]
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+        roleCode: { type: string }
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        email: { type: string }
+        status: { type: string }
+        roles:
+          type: array
+          items: { type: string }
