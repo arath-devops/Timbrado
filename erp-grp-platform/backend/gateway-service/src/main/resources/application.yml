@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: gateway-service
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  cloud:
+    gateway:
+      default-filters:
+        - name: RequestRateLimiter
+          args:
+            redis-rate-limiter.replenishRate: 100
+            redis-rate-limiter.burstCapacity: 200
+            key-resolver: "#{@tenantKeyResolver}"
+      routes:
+        - id: iam
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/users/**,/api/v1/roles/**,/oauth2/**
+        - id: budget
+          uri: ${BUDGET_URI:http://localhost:8091}
+          predicates:
+            - Path=/api/v1/movements/**,/api/v1/allocations/**,/api/v1/cycles/**
+        - id: purchasing
+          uri: ${PURCHASING_URI:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/requisitions/**,/api/v1/purchase-orders/**,/api/v1/goods-receipts/**
+        - id: accounting
+          uri: ${ACCOUNTING_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/journals/**,/api/v1/trial-balance/**
+        - id: audit
+          uri: ${AUDIT_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/facts/**,/api/v1/trails/**
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWKS_URI:http://localhost:8081/oauth2/jwks}
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true

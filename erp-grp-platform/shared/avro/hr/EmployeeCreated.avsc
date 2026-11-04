@@ -1,0 +1,12 @@
+{
+  "type": "record",
+  "name": "EmployeeCreated",
+  "namespace": "mx.gov.erpgrp.events.hr",
+  "fields": [
+    {"name": "employeeId", "type": "string"},
+    {"name": "personId", "type": "string"},
+    {"name": "positionId", "type": "string"},
+    {"name": "hireDate", "type": "string"},
+    {"name": "status", "type": "string"}
+  ]
+}

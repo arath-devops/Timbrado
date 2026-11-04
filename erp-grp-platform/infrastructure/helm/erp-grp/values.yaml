@@ -1,0 +1,38 @@
+global:
+  imageRegistry: ghcr.io/org/erpgrp
+  imagePullPolicy: IfNotPresent
+  env: dev
+
+iam:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: iam-service
+    tag: 1.0.0
+  service:
+    port: 80
+    targetPort: 8081
+
+budget:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: budget-service
+    tag: 1.0.0
+
+gateway:
+  enabled: true
+  replicaCount: 3
+  host: api.erpgrp.local
+
+modules:
+  erp:
+    finance: true
+    accounting: true
+    purchasing: true
+    payroll: true
+  grp:
+    budget: true
+    procurement: true
+    citizen: true
+    transparency: true
