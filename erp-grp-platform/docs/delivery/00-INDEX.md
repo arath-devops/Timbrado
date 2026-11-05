@@ -4,9 +4,9 @@
 | Campo | Valor |
 |-------|--------|
 | Documento | DEL-S1-001 |
-| Roles | CTO · Product Owner · Enterprise Architect · Delivery Manager |
+| Roles | CTO · Product Owner · Enterprise Architect · Delivery Manager · Engineering Manager · Tech Lead |
 | Entradas | EA-DEC-001, EA-VIS-001, SA-MS-001, SEC-ARCH-001, BPM-001, EDM-001, DDD-001, ORG-001 |
-| Estado | **Baseline Sprint 1** (sin código) |
+| Estado | **Baseline Sprint 1 + DoD servicios MVP** (sin código) |
 | Piloto | Gobierno Municipal — tenant dedicado |
 | Fecha de congelamiento | 2026-11-05 |
 
@@ -15,6 +15,7 @@
 1. [Scope Freeze Document](01-SCOPE-FREEZE.md) — qué entra, qué no, riesgos, supuestos, restricciones  
 2. [Definition of Ready](02-DEFINITION-OF-READY.md) — cuándo un módulo está listo para desarrollo  
 3. [Sprint 1 Scope Baseline](03-SPRINT-1-SCOPE-BASELINE.md) — alcance operativo del primer sprint de construcción  
+4. [Definition of Done](04-DEFINITION-OF-DONE.md) — cuándo un servicio MVP está terminado (código → deploy)
 
 ## Relación con documentos previos
 
