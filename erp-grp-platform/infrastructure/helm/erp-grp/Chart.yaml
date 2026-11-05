@@ -1,0 +1,6 @@
+apiVersion: v2
+name: erp-grp
+description: Umbrella Helm chart for ERP+GRP Platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

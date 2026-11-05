@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: {{ .Release.Namespace }}
+data:
+  KAFKA_BOOTSTRAP: "kafka.erpgrp-data.svc.cluster.local:9092"
+  REDIS_HOST: "redis.erpgrp-data.svc.cluster.local"
+  JWKS_URI: "http://iam-service.erpgrp-core.svc.cluster.local/oauth2/jwks"
+  ENV: {{ .Values.global.env | quote }}

@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://erp-grp.local/schemas/events/mvp/AuditRecordCreated.json",
+  "title": "AuditRecordCreated",
+  "description": "Kafka event AuditRecordCreated. Topic=core.audit.events. Producer=audit-service. Version=1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "eventTimestamp",
+    "tenantId",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "AuditRecordCreated"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "producer": {
+      "type": "string",
+      "const": "audit-service"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "auditRecordId",
+        "entityType",
+        "entityId",
+        "action",
+        "actor"
+      ],
+      "properties": {
+        "auditRecordId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "entityType": {
+          "type": "string"
+        },
+        "entityId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actorType": {
+          "type": "string",
+          "enum": [
+            "USER",
+            "SYSTEM",
+            "M2M"
+          ]
+        },
+        "sourceService": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "before": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "after": {
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      }
+    }
+  },
+  "x-topic": "core.audit.events",
+  "x-producer": "audit-service",
+  "x-event-version": 1
+}

@@ -1,0 +1,382 @@
+openapi: 3.1.0
+info:
+  title: Document Service API
+  version: 1.0.0
+  summary: EDM mínimo — case files, upload y vínculos
+  description: |
+    Contrato OpenAPI 3.1 de `document-service` (MVP Sprint 1).
+    OCR, QR, firma avanzada y retención legal completa están fuera de scope.
+    Binarios en object storage; metadatos en `document_db`.
+  x-service: document-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://document.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: CaseFiles
+  - name: Documents
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/case-files:
+    post:
+      tags: [CaseFiles]
+      operationId: createCaseFile
+      summary: Crear expediente
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCaseFileRequest'
+      responses:
+        '201':
+          description: Expediente creado
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFileResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+
+  /api/v1/case-files/{id}:
+    get:
+      tags: [CaseFiles]
+      operationId: getCaseFile
+      summary: Obtener expediente
+      parameters:
+        - $ref: '#/components/parameters/CaseFileId'
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Expediente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CaseFileResponse'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/case-files/{id}/documents:
+    post:
+      tags: [CaseFiles, Documents]
+      operationId: uploadDocumentToCaseFile
+      summary: Subir documento al expediente (multipart)
+      parameters:
+        - $ref: '#/components/parameters/CaseFileId'
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UploadDocumentMultipart'
+      responses:
+        '201':
+          description: Documento creado y asociado al case file
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+        '413':
+          description: Archivo demasiado grande
+          content:
+            application/json:
+              schema:
+                $ref: '../common/v1.yaml#/components/schemas/ApiError'
+        '415':
+          description: Media type no permitido
+          content:
+            application/json:
+              schema:
+                $ref: '../common/v1.yaml#/components/schemas/ApiError'
+
+  /api/v1/documents/{id}:
+    get:
+      tags: [Documents]
+      operationId: getDocument
+      summary: Metadatos del documento (incluye URL firmada de descarga si autorizado)
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - name: includeDownloadUrl
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Documento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentResponse'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/documents/{id}/links:
+    post:
+      tags: [Documents]
+      operationId: linkDocument
+      summary: Vincular documento a agregado de negocio
+      parameters:
+        - $ref: '#/components/parameters/DocumentId'
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkDocumentRequest'
+      responses:
+        '201':
+          description: Vínculo creado (emite DocumentLinked)
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentLinkResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../common/v1.yaml#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  parameters:
+    CaseFileId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DocumentId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    CreateCaseFileRequest:
+      type: object
+      required: [title, owningBoundedContext]
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          maxLength: 200
+        owningBoundedContext:
+          type: string
+          examples: [procurement]
+        aggregateType:
+          type: string
+          examples: [PurchaseOrder]
+        aggregateId:
+          type: string
+          format: uuid
+        orgUnitId:
+          type: string
+          format: uuid
+    CaseFileResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, title, status]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            title:
+              type: string
+            status:
+              type: string
+              enum: [OPEN, CLOSED]
+            owningBoundedContext:
+              type: string
+            aggregateType:
+              type: string
+            aggregateId:
+              type: string
+              format: uuid
+            orgUnitId:
+              type: string
+              format: uuid
+            documentIds:
+              type: array
+              items:
+                type: string
+                format: uuid
+        - $ref: '../common/v1.yaml#/components/schemas/AuditFields'
+    UploadDocumentMultipart:
+      type: object
+      required: [file, docType]
+      properties:
+        file:
+          type: string
+          format: binary
+        docType:
+          type: string
+          description: Código de catálogo DOC_TYPE
+          examples: [OFICIO, COTIZACION, OTRO]
+        title:
+          type: string
+          maxLength: 200
+        checksumSha256:
+          type: string
+          description: Opcional; si se envía se verifica
+          pattern: '^[a-fA-F0-9]{64}$'
+    DocumentResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, caseFileId, docType, status, contentType, sizeBytes]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            caseFileId:
+              type: string
+              format: uuid
+            docType:
+              type: string
+            title:
+              type: string
+            status:
+              type: string
+              enum: [AVAILABLE, QUARANTINED, DELETED]
+            contentType:
+              type: string
+            sizeBytes:
+              type: integer
+              minimum: 0
+            checksumSha256:
+              type: string
+            downloadUrl:
+              type: string
+              format: uri
+              description: URL firmada de corta duración
+            downloadUrlExpiresAt:
+              type: string
+              format: date-time
+        - $ref: '../common/v1.yaml#/components/schemas/AuditFields'
+    LinkDocumentRequest:
+      type: object
+      required: [boundedContext, aggregateType, aggregateId]
+      additionalProperties: false
+      properties:
+        boundedContext:
+          type: string
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        relation:
+          type: string
+          enum: [SUPPORTING, PRIMARY, ANNEX]
+          default: SUPPORTING
+    DocumentLinkResponse:
+      type: object
+      required: [id, tenantId, documentId, boundedContext, aggregateType, aggregateId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        documentId:
+          type: string
+          format: uuid
+        boundedContext:
+          type: string
+        aggregateType:
+          type: string
+        aggregateId:
+          type: string
+          format: uuid
+        relation:
+          type: string
+          enum: [SUPPORTING, PRIMARY, ANNEX]
+        linkedAt:
+          type: string
+          format: date-time

@@ -1,0 +1,16 @@
+**/target/
+**/node_modules/
+**/dist/
+**/.angular/
+**/.idea/
+**/.vscode/
+**/*.iml
+**/.env
+**/.env.*
+!.env.example
+**/.DS_Store
+**/coverage/
+**/test-results/
+*.log
+.terraform/
+*.tfstate*

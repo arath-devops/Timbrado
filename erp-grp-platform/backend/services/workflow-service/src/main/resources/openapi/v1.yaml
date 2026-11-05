@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: Workflow Service API
+  version: 1.0.0
+  summary: Motor BPM — start process, inbox y complete task
+  description: |
+    Contrato OpenAPI 3.1 de `workflow-service` (MVP Sprint 1).
+    Proceso productivo congelado: `PO_APPROVAL`.
+    SLA automático / diseñador BPMN fuera de scope.
+  x-service: workflow-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://workflow.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: Processes
+  - name: Tasks
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/processes/{processKey}/start:
+    post:
+      tags: [Processes]
+      operationId: startProcess
+      summary: Iniciar instancia de proceso
+      parameters:
+        - name: processKey
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [PO_APPROVAL]
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartProcessRequest'
+      responses:
+        '201':
+          description: Proceso iniciado
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessInstanceResponse'
+        '200':
+          description: Replay idempotente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessInstanceResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          description: processKey desconocido
+          content:
+            application/json:
+              schema:
+                $ref: './common/v1.yaml#/components/schemas/ApiError'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+        '422':
+          $ref: './common/v1.yaml#/components/responses/Unprocessable'
+
+  /api/v1/processes/{id}:
+    get:
+      tags: [Processes]
+      operationId: getProcessInstance
+      summary: Estado de instancia
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Instancia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessInstanceResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/tasks:
+    get:
+      tags: [Tasks]
+      operationId: listTasks
+      summary: Listar tareas (inbox del usuario o filtro)
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+          description: Default OPEN para inbox
+        - name: processKey
+          in: query
+          schema:
+            type: string
+        - name: assigneeMe
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Página de tareas
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskPage'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+
+  /api/v1/tasks/{id}/complete:
+    post:
+      tags: [Tasks]
+      operationId: completeTask
+      summary: Completar tarea (approve / reject)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteTaskRequest'
+      responses:
+        '200':
+          description: Tarea completada
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          description: Tarea ya completada o estado inválido
+          content:
+            application/json:
+              schema:
+                $ref: './common/v1.yaml#/components/schemas/ApiError'
+        '422':
+          $ref: './common/v1.yaml#/components/responses/Unprocessable'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  schemas:
+    BusinessRef:
+      type: object
+      required: [boundedContext, aggregateType, aggregateId]
+      additionalProperties: false
+      properties:
+        boundedContext:
+          type: string
+          examples: [procurement]
+        aggregateType:
+          type: string
+          examples: [PurchaseOrder]
+        aggregateId:
+          type: string
+          format: uuid
+    StartProcessRequest:
+      type: object
+      required: [businessRef]
+      additionalProperties: false
+      properties:
+        businessRef:
+          $ref: '#/components/schemas/BusinessRef'
+        variables:
+          type: object
+          additionalProperties: true
+          properties:
+            amount:
+              type: string
+              pattern: '^\d+(\.\d{1,4})?$'
+            currency:
+              type: string
+              enum: [MXN]
+            orgUnitId:
+              type: string
+              format: uuid
+            departmentId:
+              type: string
+              format: uuid
+            caseFileId:
+              type: string
+              format: uuid
+            allocationId:
+              type: string
+              format: uuid
+        candidateRoles:
+          type: array
+          items:
+            type: string
+          description: Override opcional; default según definición PO_APPROVAL
+    ProcessStatus:
+      type: string
+      enum: [RUNNING, COMPLETED, REJECTED, CANCELLED]
+    ProcessInstanceResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, processKey, status, businessRef]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            processKey:
+              type: string
+            status:
+              $ref: '#/components/schemas/ProcessStatus'
+            businessRef:
+              $ref: '#/components/schemas/BusinessRef'
+            variables:
+              type: object
+              additionalProperties: true
+            startedAt:
+              type: string
+              format: date-time
+            completedAt:
+              type: string
+              format: date-time
+            correlationId:
+              type: string
+              format: uuid
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    TaskStatus:
+      type: string
+      enum: [OPEN, COMPLETED, CANCELLED]
+    TaskOutcome:
+      type: string
+      enum: [APPROVE, REJECT]
+    CompleteTaskRequest:
+      type: object
+      required: [outcome]
+      additionalProperties: false
+      properties:
+        outcome:
+          $ref: '#/components/schemas/TaskOutcome'
+        comment:
+          type: string
+          maxLength: 1000
+        variables:
+          type: object
+          additionalProperties: true
+    TaskResponse:
+      type: object
+      required: [id, tenantId, processInstanceId, processKey, name, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        processInstanceId:
+          type: string
+          format: uuid
+        processKey:
+          type: string
+        name:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        outcome:
+          $ref: '#/components/schemas/TaskOutcome'
+        candidateRoles:
+          type: array
+          items:
+            type: string
+        assigneeId:
+          type: string
+          format: uuid
+        businessRef:
+          $ref: '#/components/schemas/BusinessRef'
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        comment:
+          type: string
+    TaskPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'

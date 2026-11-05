@@ -1,0 +1,125 @@
+{
+  "type": "record",
+  "name": "BudgetCommitFailed",
+  "namespace": "mx.gov.erpgrp.events.mvp",
+  "doc": "Kafka event BudgetCommitFailed on topic grp.budget.events produced by budget-service. eventVersion=1",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "BudgetCommitFailedPayload",
+        "namespace": "mx.gov.erpgrp.events.mvp",
+        "fields": [
+          {
+            "name": "allocationId",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "string"
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "default": "MXN"
+          },
+          {
+            "name": "referenceType",
+            "type": "string"
+          },
+          {
+            "name": "referenceId",
+            "type": "string"
+          },
+          {
+            "name": "failureCode",
+            "type": "string",
+            "doc": "e.g. INSUFFICIENT_FUNDS"
+          },
+          {
+            "name": "failureMessage",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "availableAmount",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "idempotencyKey",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
+        ]
+      }
+    }
+  ]
+}
