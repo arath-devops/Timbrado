@@ -1,31 +1,21 @@
 # `gateway-service`
 
+> **Fuente de verdad:** [SA-GW-001](../architecture/gateway/00-INDEX.md)
+
 | Campo | Valor |
 |-------|-------|
 | Capa | edge |
-| Responsabilidad | API Gateway: routing, authn relay, rate limit, BFF hooks |
-| Base de datos | PostgreSQL schema/database `n/a (stateless)` |
-| Dependencias | `Redis`, `IAM JWKS` |
-| Escalabilidad | HPA agresivo 6-40 pods; blue/green |
+| Responsabilidad | API Gateway MVP: routing `/api/v1/{service}/**`, JWT validation, tenant/correlation propagation, rate limit, error normalization |
+| Base de datos | N/A (stateless); Redis para rate-limit |
+| Dependencias | `iam-service` (JWKS), Redis, todos los upstream MVP |
+| Escalabilidad | HPA; blue/green |
 
-## APIs
-- `/* proxied routes`
+## Rutas públicas
+- `POST /api/v1/iam/oauth2/token`
+- `GET /api/v1/iam/oauth2/jwks`
 
-## Eventos publicados
--_(ninguno)_
+## Rutas protegidas
+`/api/v1/{iam|catalog|audit|workflow|document|procurement|budget}/**`
 
-## Eventos consumidos
--_(ninguno)_
-
-## Métricas
-- `gateway_requests`
-- `p99_latency`
-- `rate_limited_total`
-
-## Estrategia de datos
-- Migraciones Flyway en `resources/db/migration`
-- Campos auditoría: `created_at`, `created_by`, `modified_at`, `modified_by`, `version`, `tenant_id`
-- Soft delete opcional `deleted_at` (excepto audit append-only)
-
-## Justificación
-Servicio acotado a un Bounded Context para despliegue, escalado y ownership de equipo independientes (alineado a SAP/Oracle modularidad y a Dynamics apps).
+## Eventos
+Ninguno (edge síncrono).
