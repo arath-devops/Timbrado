@@ -2,28 +2,601 @@ openapi: 3.1.0
 info:
   title: Budget Service API
   version: 1.0.0
+  summary: Ciclo, partidas, disponibilidad, commit y release
+  description: |
+    Contrato OpenAPI 3.1 de `budget-service` (MVP Sprint 1).
+    Contrato crítico: CommitBudget sync con `Idempotency-Key`.
+    Invariante: authorized ≥ committed. Accrue/pay/modify/freeze fuera de scope.
+  x-service: budget-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://budget.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: Cycles
+  - name: Allocations
+  - name: Availability
+  - name: Movements
+
+security:
+  - bearerAuth: []
+
 paths:
-  /api/v1/movements/commit:
+  /api/v1/cycles:
     post:
-      summary: Commit budget availability
-      operationId: commitBudget
+      tags: [Cycles]
+      operationId: createBudgetCycle
+      summary: Crear ciclo presupuestal
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceparentHeader'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CommitBudgetCommand'
+              $ref: '#/components/schemas/CreateBudgetCycleRequest'
+      responses:
+        '201':
+          description: Ciclo creado
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetCycleResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: '../common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/cycles/{id}:
+    get:
+      tags: [Cycles]
+      operationId: getBudgetCycle
+      summary: Obtener ciclo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
       responses:
         '200':
-          description: OK
+          description: Ciclo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetCycleResponse'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/allocations:
+    post:
+      tags: [Allocations]
+      operationId: createAllocation
+      summary: Crear / activar partida
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAllocationRequest'
+      responses:
+        '201':
+          description: Partida creada
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetAllocationResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../common/v1.yaml#/components/responses/Conflict'
+    get:
+      tags: [Allocations]
+      operationId: listAllocations
+      summary: Listar partidas
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/PageParam'
+        - $ref: '../common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - name: cycleId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/AllocationStatus'
+      responses:
+        '200':
+          description: Página de partidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetAllocationPage'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+
+  /api/v1/allocations/{id}:
+    get:
+      tags: [Allocations]
+      operationId: getAllocation
+      summary: Detalle de partida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Partida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BudgetAllocationResponse'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/availability:
+    get:
+      tags: [Availability]
+      operationId: getAvailability
+      summary: Consultar disponibilidad (read model; no fuente de verdad para mutar desde procurement)
+      parameters:
+        - name: allocationId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+      responses:
+        '200':
+          description: Disponibilidad
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailabilityResponse'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/movements/commit:
+    post:
+      tags: [Movements]
+      operationId: commitBudget
+      summary: Comprometer presupuesto (sync, idempotente)
+      description: |
+        Headers obligatorios: Authorization, Idempotency-Key.
+        Recomendados: X-Correlation-Id, X-Request-Id, X-Trace-Id / traceparent.
+        200 COMMITTED → procurement puede aprobar.
+        422 INSUFFICIENT_FUNDS → no aprobar OC.
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommitBudgetRequest'
+      responses:
+        '200':
+          description: Compromiso registrado o replay idempotente
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Trace-Id'
+            Idempotency-Replayed:
+              $ref: '../common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitBudgetResponse'
+              examples:
+                committed:
+                  value:
+                    status: COMMITTED
+                    movementId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    allocationId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                    amount: "125000.00"
+                    currency: MXN
+                    availableAfter: "375000.00"
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+        '409':
+          description: Conflicto de idempotencia o estado
+          content:
+            application/json:
+              schema:
+                $ref: '../common/v1.yaml#/components/schemas/ApiError'
+        '422':
+          description: Fondos insuficientes u otra regla de negocio
+          content:
+            application/json:
+              schema:
+                $ref: '../common/v1.yaml#/components/schemas/ApiError'
+              examples:
+                insufficientFunds:
+                  value:
+                    code: INSUFFICIENT_FUNDS
+                    message: Available balance is less than requested commit amount
+                    traceId: 4bf92f3577b34da6a3ce929d0e0e4736
+                    correlationId: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                    requestId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+
+  /api/v1/movements/release:
+    post:
+      tags: [Movements]
+      operationId: releaseBudgetCommitment
+      summary: Liberar compromiso (cancelación OC)
+      parameters:
+        - $ref: '../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: '../common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseBudgetRequest'
+      responses:
+        '200':
+          description: Compromiso liberado o replay
+          headers:
+            X-Correlation-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: '../common/v1.yaml#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: '../common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseBudgetResponse'
+        '400':
+          $ref: '../common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: '../common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: '../common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: '../common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: '../common/v1.yaml#/components/responses/Conflict'
+        '422':
+          $ref: '../common/v1.yaml#/components/responses/Unprocessable'
+
 components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../common/v1.yaml#/components/securitySchemes/bearerAuth'
+
   schemas:
-    CommitBudgetCommand:
+    BudgetCycleStatus:
+      type: string
+      enum: [DRAFT, ACTIVE, CLOSED]
+    CreateBudgetCycleRequest:
+      type: object
+      required: [code, fiscalYear, name]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 32
+          examples: ["2026"]
+        fiscalYear:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+        name:
+          type: string
+          maxLength: 120
+        activate:
+          type: boolean
+          default: true
+    BudgetCycleResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, code, fiscalYear, name, status]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            code:
+              type: string
+            fiscalYear:
+              type: integer
+            name:
+              type: string
+            status:
+              $ref: '#/components/schemas/BudgetCycleStatus'
+        - $ref: '../common/v1.yaml#/components/schemas/AuditFields'
+    AllocationStatus:
+      type: string
+      enum: [ACTIVE, FROZEN, CLOSED]
+    CreateAllocationRequest:
+      type: object
+      required: [cycleId, code, name, authorizedAmount, currency]
+      additionalProperties: false
+      properties:
+        cycleId:
+          type: string
+          format: uuid
+        code:
+          type: string
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 200
+        categoryCode:
+          type: string
+          description: Código catálogo BUDGET_CATEGORY
+        orgUnitId:
+          type: string
+          format: uuid
+        authorizedAmount:
+          type: string
+          pattern: '^\d+(\.\d{1,4})?$'
+        currency:
+          type: string
+          enum: [MXN]
+    BudgetAllocationResponse:
+      allOf:
+        - type: object
+          required:
+            - id
+            - tenantId
+            - cycleId
+            - code
+            - name
+            - status
+            - authorizedAmount
+            - committedAmount
+            - currency
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            cycleId:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            categoryCode:
+              type: string
+            orgUnitId:
+              type: string
+              format: uuid
+            status:
+              $ref: '#/components/schemas/AllocationStatus'
+            authorizedAmount:
+              type: string
+            committedAmount:
+              type: string
+            availableAmount:
+              type: string
+              description: authorized - committed (Sprint 1)
+            currency:
+              type: string
+              enum: [MXN]
+        - $ref: '../common/v1.yaml#/components/schemas/AuditFields'
+    BudgetAllocationPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/BudgetAllocationResponse'
+        page:
+          $ref: '../common/v1.yaml#/components/schemas/PageMeta'
+    AvailabilityResponse:
+      type: object
+      required: [allocationId, currency, authorizedAmount, committedAmount, availableAmount, asOf]
+      additionalProperties: false
+      properties:
+        allocationId:
+          type: string
+          format: uuid
+        currency:
+          type: string
+          enum: [MXN]
+        authorizedAmount:
+          type: string
+        committedAmount:
+          type: string
+        availableAmount:
+          type: string
+        asOf:
+          type: string
+          format: date-time
+    BudgetReferenceType:
+      type: string
+      enum: [PURCHASE_ORDER, PURCHASE_REQUISITION]
+    CommitBudgetRequest:
       type: object
       required: [allocationId, amount, currency, referenceType, referenceId]
+      additionalProperties: false
       properties:
-        allocationId: { type: string, format: uuid }
-        amount: { type: number }
-        currency: { type: string }
-        referenceType: { type: string }
-        referenceId: { type: string, format: uuid }
+        allocationId:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          pattern: '^\d+(\.\d{1,4})?$'
+          examples: ["125000.00"]
+        currency:
+          type: string
+          enum: [MXN]
+        referenceType:
+          $ref: '#/components/schemas/BudgetReferenceType'
+        referenceId:
+          type: string
+          format: uuid
+    CommitBudgetResponse:
+      type: object
+      required: [status, movementId, allocationId, amount, currency]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [COMMITTED]
+        movementId:
+          type: string
+          format: uuid
+        allocationId:
+          type: string
+          format: uuid
+        amount:
+          type: string
+        currency:
+          type: string
+          enum: [MXN]
+        availableAfter:
+          type: string
+        correlationId:
+          type: string
+          format: uuid
+    ReleaseBudgetRequest:
+      type: object
+      required: [referenceType, referenceId]
+      additionalProperties: false
+      properties:
+        movementId:
+          type: string
+          format: uuid
+          description: Opcional si se libera por reference
+        allocationId:
+          type: string
+          format: uuid
+        amount:
+          type: string
+          pattern: '^\d+(\.\d{1,4})?$'
+          description: Si se omite, libera el compromiso total de la reference
+        currency:
+          type: string
+          enum: [MXN]
+        referenceType:
+          $ref: '#/components/schemas/BudgetReferenceType'
+        referenceId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+          maxLength: 255
+    ReleaseBudgetResponse:
+      type: object
+      required: [status, movementId, allocationId, amount, currency]
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          enum: [RELEASED]
+        movementId:
+          type: string
+          format: uuid
+        allocationId:
+          type: string
+          format: uuid
+        amount:
+          type: string
+        currency:
+          type: string
+          enum: [MXN]
+        availableAfter:
+          type: string
+        correlationId:
+          type: string
+          format: uuid

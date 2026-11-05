@@ -15,7 +15,8 @@
 1. [Scope Freeze Document](01-SCOPE-FREEZE.md) — qué entra, qué no, riesgos, supuestos, restricciones  
 2. [Definition of Ready](02-DEFINITION-OF-READY.md) — cuándo un módulo está listo para desarrollo  
 3. [Sprint 1 Scope Baseline](03-SPRINT-1-SCOPE-BASELINE.md) — alcance operativo del primer sprint de construcción  
-4. [Definition of Done](04-DEFINITION-OF-DONE.md) — cuándo un servicio MVP está terminado (código → deploy)
+4. [Definition of Done](04-DEFINITION-OF-DONE.md) — cuándo un servicio MVP está terminado (código → deploy)  
+5. Contratos OpenAPI 3.1 → [`shared/openapi/`](../../shared/openapi/README.md) · [API-001](../api/00-INDEX.md)
 
 ## Relación con documentos previos
 
