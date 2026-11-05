@@ -18,7 +18,8 @@
 4. [Definition of Done](04-DEFINITION-OF-DONE.md) — cuándo un servicio MVP está terminado (código → deploy)  
 5. Contratos OpenAPI 3.1 → [`shared/openapi/`](../../shared/openapi/README.md) · [API-001](../api/00-INDEX.md)  
 6. Contratos eventos Kafka → [EDA-MVP-001](../events/mvp/00-INDEX.md) · Avro/JSON Schema en `shared/avro/mvp` y `shared/json-schema/mvp`  
-7. Modelo de datos físico → [DA-MVP-001](../data/mvp/00-INDEX.md) · Flyway `database/flyway/*/V1__init_mvp.sql`
+7. Modelo de datos físico → [DA-MVP-001](../data/mvp/00-INDEX.md) · Flyway `database/flyway/*/V1__init_mvp.sql`  
+8. Saga principal compra → [SAGA-MVP-001](../architecture/sagas/00-INDEX.md)
 
 ## Relación con documentos previos
 
