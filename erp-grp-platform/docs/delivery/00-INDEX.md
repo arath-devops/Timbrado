@@ -16,7 +16,8 @@
 2. [Definition of Ready](02-DEFINITION-OF-READY.md) — cuándo un módulo está listo para desarrollo  
 3. [Sprint 1 Scope Baseline](03-SPRINT-1-SCOPE-BASELINE.md) — alcance operativo del primer sprint de construcción  
 4. [Definition of Done](04-DEFINITION-OF-DONE.md) — cuándo un servicio MVP está terminado (código → deploy)  
-5. Contratos OpenAPI 3.1 → [`shared/openapi/`](../../shared/openapi/README.md) · [API-001](../api/00-INDEX.md)
+5. Contratos OpenAPI 3.1 → [`shared/openapi/`](../../shared/openapi/README.md) · [API-001](../api/00-INDEX.md)  
+6. Contratos eventos Kafka → [EDA-MVP-001](../events/mvp/00-INDEX.md) · Avro/JSON Schema en `shared/avro/mvp` y `shared/json-schema/mvp`
 
 ## Relación con documentos previos
 

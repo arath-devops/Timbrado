@@ -2,15 +2,69 @@
   "type": "record",
   "name": "EventEnvelope",
   "namespace": "mx.gov.erpgrp.events",
+  "doc": "Common envelope metadata for MVP Kafka events. Typed events embed these fields + payload.",
   "fields": [
-    {"name": "eventId", "type": "string"},
-    {"name": "eventType", "type": "string"},
-    {"name": "eventVersion", "type": "int"},
-    {"name": "occurredAt", "type": "string"},
-    {"name": "tenantId", "type": "string"},
-    {"name": "correlationId", "type": ["null", "string"], "default": null},
-    {"name": "causationId", "type": ["null", "string"], "default": null},
-    {"name": "producer", "type": "string"},
-    {"name": "payloadJson", "type": "string"}
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payloadJson",
+      "type": "string",
+      "doc": "Fallback opaque payload when using generic envelope"
+    }
   ]
 }

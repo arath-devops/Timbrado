@@ -1,0 +1,124 @@
+{
+  "type": "record",
+  "name": "BudgetCommitted",
+  "namespace": "mx.gov.erpgrp.events.mvp",
+  "doc": "Kafka event BudgetCommitted on topic grp.budget.events produced by budget-service. eventVersion=1",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "BudgetCommittedPayload",
+        "namespace": "mx.gov.erpgrp.events.mvp",
+        "fields": [
+          {
+            "name": "movementId",
+            "type": "string"
+          },
+          {
+            "name": "allocationId",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "string"
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "default": "MXN"
+          },
+          {
+            "name": "referenceType",
+            "type": {
+              "type": "enum",
+              "name": "BudgetReferenceType",
+              "symbols": [
+                "PURCHASE_ORDER",
+                "PURCHASE_REQUISITION",
+                "PURCHASE_REQUEST"
+              ]
+            }
+          },
+          {
+            "name": "referenceId",
+            "type": "string"
+          },
+          {
+            "name": "availableAfter",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "idempotencyKey",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
+        ]
+      }
+    }
+  ]
+}
