@@ -20,7 +20,8 @@
 6. Contratos eventos Kafka → [EDA-MVP-001](../events/mvp/00-INDEX.md) · Avro/JSON Schema en `shared/avro/mvp` y `shared/json-schema/mvp`  
 7. Modelo de datos físico → [DA-MVP-001](../data/mvp/00-INDEX.md) · Flyway `database/flyway/*/V1__init_mvp.sql`  
 8. Saga principal compra → [SAGA-MVP-001](../architecture/sagas/00-INDEX.md)  
-9. Multi-tenant definitivo → [CA-TEN-001](../architecture/tenancy/00-INDEX.md) · Shared DB + tenant_id + RLS (+ Dedicated Plane piloto)
+9. Multi-tenant definitivo → [CA-TEN-001](../architecture/tenancy/00-INDEX.md) · Shared DB + tenant_id + RLS (+ Dedicated Plane piloto)  
+10. **Sprint 1 Core Freeze + Backlog** → [BL-S1-CORE-001](sprint1-core/00-INDEX.md) · IAM · Workflow · Document
 
 ## Relación con documentos previos
 
