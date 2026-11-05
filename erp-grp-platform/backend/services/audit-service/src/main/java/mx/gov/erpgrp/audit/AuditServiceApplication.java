@@ -2,8 +2,13 @@ package mx.gov.erpgrp.audit;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication(scanBasePackages = "mx.gov.erpgrp")
+@SpringBootApplication
+@ComponentScan(basePackages = {
+        "mx.gov.erpgrp.audit",
+        "mx.gov.erpgrp.common"
+})
 public class AuditServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuditServiceApplication.class, args);

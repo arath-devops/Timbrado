@@ -22,7 +22,8 @@
 8. Saga principal compra → [SAGA-MVP-001](../architecture/sagas/00-INDEX.md)  
 9. Multi-tenant definitivo → [CA-TEN-001](../architecture/tenancy/00-INDEX.md) · Shared DB + tenant_id + RLS (+ Dedicated Plane piloto)  
 10. **Sprint 1 Core Freeze + Backlog** → [BL-S1-CORE-001](sprint1-core/00-INDEX.md) · IAM · Workflow · Document  
-11. **API Gateway MVP** → [SA-GW-001](../architecture/gateway/00-INDEX.md)
+11. **API Gateway MVP** → [SA-GW-001](../architecture/gateway/00-INDEX.md)  
+12. **Arquetipo técnico** → [ARCH-MVP-001](../architecture/ARCHETYPE.md) · `backend/` Maven multi-module
 
 ## Relación con documentos previos
 

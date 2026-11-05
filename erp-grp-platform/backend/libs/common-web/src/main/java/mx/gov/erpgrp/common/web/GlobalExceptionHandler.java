@@ -7,30 +7,54 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
-        var details = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+    public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        List<ApiError.ApiErrorDetail> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> new ApiError.ApiErrorDetail(fe.getField(), fe.getDefaultMessage(), fe.getRejectedValue()))
                 .toList();
         return ResponseEntity.badRequest().body(new ApiError(
-                Instant.now(), 400, "Bad Request", "Validation failed", request.getRequestURI(), details));
+                "VALIDATION_ERROR",
+                "Request validation failed",
+                headerOrNew(request, "X-Trace-Id"),
+                headerOrNew(request, "X-Correlation-Id"),
+                headerOrNew(request, "X-Request-Id"),
+                details
+        ));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
-        return ResponseEntity.badRequest().body(new ApiError(
-                Instant.now(), 400, "Bad Request", ex.getMessage(), request.getRequestURI(), List.of()));
+    public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
+        return ResponseEntity.badRequest().body(ApiError.of(
+                "VALIDATION_ERROR",
+                ex.getMessage(),
+                headerOrNew(request, "X-Trace-Id"),
+                headerOrNew(request, "X-Correlation-Id"),
+                headerOrNew(request, "X-Request-Id")
+        ));
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    ResponseEntity<ApiError> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(
-                Instant.now(), 409, "Conflict", ex.getMessage(), request.getRequestURI(), List.of()));
+    public ResponseEntity<ApiError> handleIllegalState(IllegalStateException ex, HttpServletRequest request) {
+        HttpStatus status = ex.getMessage() != null && ex.getMessage().contains("TenantContext")
+                ? HttpStatus.UNAUTHORIZED
+                : HttpStatus.CONFLICT;
+        return ResponseEntity.status(status).body(ApiError.of(
+                status == HttpStatus.UNAUTHORIZED ? "UNAUTHORIZED" : "CONFLICT",
+                ex.getMessage(),
+                headerOrNew(request, "X-Trace-Id"),
+                headerOrNew(request, "X-Correlation-Id"),
+                headerOrNew(request, "X-Request-Id")
+        ));
+    }
+
+    private static String headerOrNew(HttpServletRequest request, String name) {
+        String value = request.getHeader(name);
+        return value == null || value.isBlank() ? UUID.randomUUID().toString().replace("-", "") : value;
     }
 }

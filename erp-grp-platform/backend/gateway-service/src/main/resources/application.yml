@@ -1,3 +1,6 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: gateway-service
@@ -5,49 +8,84 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-  cloud:
-    gateway:
-      default-filters:
-        - name: RequestRateLimiter
-          args:
-            redis-rate-limiter.replenishRate: 100
-            redis-rate-limiter.burstCapacity: 200
-            key-resolver: "#{@tenantKeyResolver}"
-      routes:
-        - id: iam
-          uri: ${IAM_URI:http://localhost:8081}
-          predicates:
-            - Path=/api/v1/users/**,/api/v1/roles/**,/oauth2/**
-        - id: budget
-          uri: ${BUDGET_URI:http://localhost:8091}
-          predicates:
-            - Path=/api/v1/movements/**,/api/v1/allocations/**,/api/v1/cycles/**
-        - id: purchasing
-          uri: ${PURCHASING_URI:http://localhost:8084}
-          predicates:
-            - Path=/api/v1/requisitions/**,/api/v1/purchase-orders/**,/api/v1/goods-receipts/**
-        - id: accounting
-          uri: ${ACCOUNTING_URI:http://localhost:8083}
-          predicates:
-            - Path=/api/v1/journals/**,/api/v1/trial-balance/**
-        - id: audit
-          uri: ${AUDIT_URI:http://localhost:8082}
-          predicates:
-            - Path=/api/v1/facts/**,/api/v1/trails/**
   security:
     oauth2:
       resourceserver:
         jwt:
           jwk-set-uri: ${JWKS_URI:http://localhost:8081/oauth2/jwks}
-
-server:
-  port: ${PORT:8080}
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns: ["*"]
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        - id: iam-token
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/iam/oauth2/token
+            - Method=POST
+          filters:
+            - RewritePath=/api/v1/iam/oauth2/token, /oauth2/token
+        - id: iam-jwks
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/iam/oauth2/jwks
+          filters:
+            - RewritePath=/api/v1/iam/oauth2/jwks, /oauth2/jwks
+        - id: iam-api
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/iam/**
+          filters:
+            - RewritePath=/api/v1/iam/(?<seg>.*), /api/v1/$\{seg}
+        - id: catalog-api
+          uri: ${CATALOG_URI:http://localhost:8082}
+          predicates:
+            - Path=/api/v1/catalog/**
+          filters:
+            - RewritePath=/api/v1/catalog/(?<seg>.*), /api/v1/$\{seg}
+        - id: audit-api
+          uri: ${AUDIT_URI:http://localhost:8083}
+          predicates:
+            - Path=/api/v1/audit/**
+          filters:
+            - RewritePath=/api/v1/audit/(?<seg>.*), /api/v1/$\{seg}
+        - id: workflow-api
+          uri: ${WORKFLOW_URI:http://localhost:8084}
+          predicates:
+            - Path=/api/v1/workflow/**
+          filters:
+            - RewritePath=/api/v1/workflow/(?<seg>.*), /api/v1/$\{seg}
+        - id: document-api
+          uri: ${DOCUMENT_URI:http://localhost:8085}
+          predicates:
+            - Path=/api/v1/document/**
+          filters:
+            - RewritePath=/api/v1/document/(?<seg>.*), /api/v1/$\{seg}
+        - id: procurement-api
+          uri: ${PROCUREMENT_URI:http://localhost:8086}
+          predicates:
+            - Path=/api/v1/procurement/**
+          filters:
+            - RewritePath=/api/v1/procurement/(?<seg>.*), /api/v1/$\{seg}
+        - id: budget-api
+          uri: ${BUDGET_URI:http://localhost:8087}
+          predicates:
+            - Path=/api/v1/budget/**
+          filters:
+            - RewritePath=/api/v1/budget/(?<seg>.*), /api/v1/$\{seg}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,gateway
+        include: health,info,prometheus,metrics
   endpoint:
     health:
       probes:

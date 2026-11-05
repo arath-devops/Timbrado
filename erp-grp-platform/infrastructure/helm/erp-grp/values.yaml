@@ -1,38 +1,65 @@
 global:
-  imageRegistry: ghcr.io/org/erpgrp
+  imageRegistry: ghcr.io/example/erpgrp
   imagePullPolicy: IfNotPresent
-  env: dev
-
-iam:
-  enabled: true
-  replicaCount: 2
-  image:
-    repository: iam-service
-    tag: 1.0.0
-  service:
-    port: 80
-    targetPort: 8081
-
-budget:
-  enabled: true
-  replicaCount: 2
-  image:
-    repository: budget-service
-    tag: 1.0.0
+  env: int
+  jwksUri: http://iam-service:8081/oauth2/jwks
+  kafkaBootstrap: kafka:9092
+  redisHost: redis
+  dbHost: postgres
+  dbUser: erpgrp
+  dbPassword: erpgrp
+  otelEndpoint: http://otel-collector:4318/v1/traces
 
 gateway:
   enabled: true
-  replicaCount: 3
+  replicaCount: 2
+  image:
+    repository: gateway-service
+    tag: 1.0.0-SNAPSHOT
+  service:
+    port: 80
+    targetPort: 8080
   host: api.erpgrp.local
 
+services:
+  iam:
+    enabled: true
+    port: 8081
+    db: iam_db
+  catalog:
+    enabled: true
+    port: 8082
+    db: catalog_db
+  audit:
+    enabled: true
+    port: 8083
+    db: audit_db
+  workflow:
+    enabled: true
+    port: 8084
+    db: workflow_db
+  document:
+    enabled: true
+    port: 8085
+    db: document_db
+  procurement:
+    enabled: true
+    port: 8086
+    db: procurement_db
+  budget:
+    enabled: true
+    port: 8087
+    db: budget_db
+
+# Feature modules (CA-TEN / IAM modules claim) — informational for ops
 modules:
+  core:
+    iam: true
+    catalog: true
+    audit: true
+    workflow: true
+    document: true
   erp:
-    finance: true
-    accounting: true
-    purchasing: true
-    payroll: true
+    procurement: true
   grp:
     budget: true
-    procurement: true
-    citizen: true
-    transparency: true

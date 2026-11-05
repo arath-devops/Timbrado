@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, develop]
+    branches: [main, develop, 'core-services-base-d5ce', 'cursor/**']
 
 jobs:
   backend:
@@ -18,7 +18,7 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Build and test
+      - name: Build and test MVP modules
         run: mvn -B -DskipTests=false verify
       - name: Upload surefire reports
         if: failure()
@@ -27,38 +27,51 @@ jobs:
           name: surefire-reports
           path: '**/target/surefire-reports/**'
 
-  frontend:
+  openapi-contracts:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: erp-grp-platform/frontend/apps/shell
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: erp-grp-platform/frontend/apps/shell/package.json
-      - name: Install and build
+      - name: Ensure approved OpenAPI specs present
         run: |
-          if [ -f package.json ]; then
-            npm ci || npm install
-            npm run build --if-present
-          else
-            echo "Frontend package not ready"
-          fi
+          set -e
+          for s in iam catalog audit workflow document procurement budget; do
+            test -f erp-grp-platform/shared/openapi/$s/v1.yaml
+            test -f erp-grp-platform/backend/services/${s}-service/src/main/resources/openapi/v1.yaml
+          done
+          test -f erp-grp-platform/shared/openapi/common/v1.yaml
+
+  flyway-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Ensure Flyway V1 from DA-MVP present in services
+        run: |
+          set -e
+          for s in iam catalog audit workflow document procurement budget; do
+            test -f erp-grp-platform/database/flyway/$s/V1__init_mvp.sql
+            test -f erp-grp-platform/backend/services/${s}-service/src/main/resources/db/migration/V1__init_mvp.sql
+          done
 
   docker:
     needs: [backend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        service:
+          - iam-service
+          - catalog-service
+          - audit-service
+          - workflow-service
+          - document-service
+          - procurement-service
+          - budget-service
     steps:
       - uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Build iam-service image
+      - name: Build ${{ matrix.service }} image
         run: |
           docker build -f erp-grp-platform/infrastructure/docker/Dockerfile.service \
-            --build-arg SERVICE=iam-service \
-            -t erpgrp/iam-service:${{ github.sha }} \
+            --build-arg SERVICE=${{ matrix.service }} \
+            -t erpgrp/${{ matrix.service }}:${{ github.sha }} \
             erp-grp-platform

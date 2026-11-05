@@ -1,0 +1,589 @@
+openapi: 3.1.0
+info:
+  title: Procurement Service API
+  version: 1.0.0
+  summary: P2P operativo — requisiciones y órdenes de compra (MVP)
+  description: |
+    Contrato OpenAPI 3.1 de `procurement-service` (MVP Sprint 1).
+    Estados OC: DRAFT | SUBMITTED | APPROVED | REJECTED | CANCELLED.
+    Regla: sin CommitBudget COMMITTED no hay APPROVED.
+    Recepción/factura/3-way match fuera de scope.
+  x-service: procurement-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://procurement.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: Requisitions
+  - name: PurchaseOrders
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/requisitions:
+    get:
+      tags: [Requisitions]
+      operationId: listRequisitions
+      summary: Listar requisiciones
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/RequisitionStatus'
+      responses:
+        '200':
+          description: Página
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionPage'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+    post:
+      tags: [Requisitions]
+      operationId: createRequisition
+      summary: Crear requisición en DRAFT
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequisitionRequest'
+      responses:
+        '201':
+          description: Requisición creada
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+            Location:
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+
+  /api/v1/requisitions/{id}:
+    get:
+      tags: [Requisitions]
+      operationId: getRequisition
+      summary: Detalle de requisición
+      parameters:
+        - $ref: '#/components/parameters/RequisitionId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Requisición
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/requisitions/{id}/submit:
+    post:
+      tags: [Requisitions]
+      operationId: submitRequisition
+      summary: Enviar requisición (puede iniciar WF según política)
+      parameters:
+        - $ref: '#/components/parameters/RequisitionId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+      responses:
+        '200':
+          description: Requisición enviada
+          headers:
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+        '422':
+          $ref: './common/v1.yaml#/components/responses/Unprocessable'
+
+  /api/v1/purchase-orders:
+    get:
+      tags: [PurchaseOrders]
+      operationId: listPurchaseOrders
+      summary: Listar órdenes de compra
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/PurchaseOrderStatus'
+      responses:
+        '200':
+          description: Página
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderPage'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+    post:
+      tags: [PurchaseOrders]
+      operationId: createPurchaseOrder
+      summary: Crear OC en DRAFT
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseOrderRequest'
+      responses:
+        '201':
+          description: OC creada
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+            Location:
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '422':
+          $ref: './common/v1.yaml#/components/responses/Unprocessable'
+
+  /api/v1/purchase-orders/{id}:
+    get:
+      tags: [PurchaseOrders]
+      operationId: getPurchaseOrder
+      summary: Detalle de OC
+      parameters:
+        - $ref: '#/components/parameters/PurchaseOrderId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: OC
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/purchase-orders/{id}/submit:
+    post:
+      tags: [PurchaseOrders]
+      operationId: submitPurchaseOrder
+      summary: Enviar OC a aprobación (inicia PO_APPROVAL)
+      description: |
+        Transiciona DRAFT → SUBMITTED e inicia workflow `PO_APPROVAL`.
+        El CommitBudget sync ocurre en el camino de aprobación (antes de APPROVED).
+      parameters:
+        - $ref: '#/components/parameters/PurchaseOrderId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      responses:
+        '200':
+          description: OC enviada
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+        '422':
+          description: Falta allocation/caseFile u otra regla
+          content:
+            application/json:
+              schema:
+                $ref: './common/v1.yaml#/components/schemas/ApiError'
+
+  /api/v1/purchase-orders/{id}/cancel:
+    post:
+      tags: [PurchaseOrders]
+      operationId: cancelPurchaseOrder
+      summary: Cancelar OC y liberar compromiso si aplica
+      parameters:
+        - $ref: '#/components/parameters/PurchaseOrderId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelPurchaseOrderRequest'
+      responses:
+        '200':
+          description: OC cancelada
+          headers:
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrderResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+        '422':
+          $ref: './common/v1.yaml#/components/responses/Unprocessable'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  parameters:
+    RequisitionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    PurchaseOrderId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    RequisitionStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, APPROVED, REJECTED, CANCELLED]
+    PurchaseOrderStatus:
+      type: string
+      enum: [DRAFT, SUBMITTED, APPROVED, REJECTED, CANCELLED]
+    LineItemRequest:
+      type: object
+      required: [description, quantity, unitPrice]
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+          maxLength: 500
+        quantity:
+          type: string
+          pattern: '^\d+(\.\d{1,4})?$'
+        unitPrice:
+          type: string
+          pattern: '^\d+(\.\d{1,4})?$'
+        unitCode:
+          type: string
+          maxLength: 32
+    LineItemResponse:
+      type: object
+      required: [id, description, quantity, unitPrice, lineTotal]
+      properties:
+        id:
+          type: string
+          format: uuid
+        description:
+          type: string
+        quantity:
+          type: string
+        unitPrice:
+          type: string
+        unitCode:
+          type: string
+        lineTotal:
+          type: string
+    CreateRequisitionRequest:
+      type: object
+      required: [orgUnitId, allocationId, lines]
+      additionalProperties: false
+      properties:
+        orgUnitId:
+          type: string
+          format: uuid
+        allocationId:
+          type: string
+          format: uuid
+        justification:
+          type: string
+          maxLength: 1000
+        caseFileId:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineItemRequest'
+    RequisitionResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, status, orgUnitId, allocationId, currency, totalAmount, lines]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            status:
+              $ref: '#/components/schemas/RequisitionStatus'
+            orgUnitId:
+              type: string
+              format: uuid
+            allocationId:
+              type: string
+              format: uuid
+            justification:
+              type: string
+            caseFileId:
+              type: string
+              format: uuid
+            currency:
+              type: string
+              enum: [MXN]
+            totalAmount:
+              type: string
+            processInstanceId:
+              type: string
+              format: uuid
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/LineItemResponse'
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    RequisitionPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequisitionResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'
+    CreatePurchaseOrderRequest:
+      type: object
+      required: [orgUnitId, allocationId, supplierCode, lines]
+      additionalProperties: false
+      properties:
+        requisitionId:
+          type: string
+          format: uuid
+        orgUnitId:
+          type: string
+          format: uuid
+        allocationId:
+          type: string
+          format: uuid
+        supplierCode:
+          type: string
+          description: Código catálogo SUPPLIER_BASIC
+        caseFileId:
+          type: string
+          format: uuid
+          description: Requerido antes de submit para demo documental
+        currency:
+          type: string
+          enum: [MXN]
+          default: MXN
+        notes:
+          type: string
+          maxLength: 1000
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/LineItemRequest'
+    CancelPurchaseOrderRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+    PurchaseOrderResponse:
+      allOf:
+        - type: object
+          required:
+            - id
+            - tenantId
+            - status
+            - orgUnitId
+            - allocationId
+            - supplierCode
+            - currency
+            - totalAmount
+            - lines
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            status:
+              $ref: '#/components/schemas/PurchaseOrderStatus'
+            requisitionId:
+              type: string
+              format: uuid
+            orgUnitId:
+              type: string
+              format: uuid
+            allocationId:
+              type: string
+              format: uuid
+            supplierCode:
+              type: string
+            caseFileId:
+              type: string
+              format: uuid
+            currency:
+              type: string
+              enum: [MXN]
+            totalAmount:
+              type: string
+            processInstanceId:
+              type: string
+              format: uuid
+            budgetMovementId:
+              type: string
+              format: uuid
+              description: Presente cuando hay COMMITTED
+            notes:
+              type: string
+            lines:
+              type: array
+              items:
+                $ref: '#/components/schemas/LineItemResponse'
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    PurchaseOrderPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/PurchaseOrderResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'

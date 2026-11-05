@@ -9,6 +9,9 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * DA-MVP-001 audit fields template.
+ */
 @MappedSuperclass
 public abstract class AuditableEntity {
 
@@ -18,14 +21,14 @@ public abstract class AuditableEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "created_by", nullable = false, updatable = false, length = 128)
-    private String createdBy;
+    @Column(name = "created_by", nullable = false, updatable = false)
+    private UUID createdBy;
 
-    @Column(name = "modified_at", nullable = false)
-    private Instant modifiedAt;
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
-    @Column(name = "modified_by", nullable = false, length = 128)
-    private String modifiedBy;
+    @Column(name = "updated_by", nullable = false)
+    private UUID updatedBy;
 
     @Version
     @Column(name = "version", nullable = false)
@@ -33,29 +36,29 @@ public abstract class AuditableEntity {
 
     @PrePersist
     void prePersist() {
-        var now = Instant.now();
+        Instant now = Instant.now();
         createdAt = now;
-        modifiedAt = now;
+        updatedAt = now;
         if (createdBy == null) {
-            createdBy = "system";
+            createdBy = UUID.fromString("00000000-0000-0000-0000-000000000000");
         }
-        if (modifiedBy == null) {
-            modifiedBy = createdBy;
+        if (updatedBy == null) {
+            updatedBy = createdBy;
         }
     }
 
     @PreUpdate
     void preUpdate() {
-        modifiedAt = Instant.now();
+        updatedAt = Instant.now();
     }
 
     public UUID getTenantId() { return tenantId; }
     public void setTenantId(UUID tenantId) { this.tenantId = tenantId; }
     public Instant getCreatedAt() { return createdAt; }
-    public String getCreatedBy() { return createdBy; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
-    public Instant getModifiedAt() { return modifiedAt; }
-    public String getModifiedBy() { return modifiedBy; }
-    public void setModifiedBy(String modifiedBy) { this.modifiedBy = modifiedBy; }
+    public UUID getCreatedBy() { return createdBy; }
+    public void setCreatedBy(UUID createdBy) { this.createdBy = createdBy; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public UUID getUpdatedBy() { return updatedBy; }
+    public void setUpdatedBy(UUID updatedBy) { this.updatedBy = updatedBy; }
     public long getVersion() { return version; }
 }
