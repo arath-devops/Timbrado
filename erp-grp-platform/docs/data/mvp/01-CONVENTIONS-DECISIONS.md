@@ -18,7 +18,7 @@
 | D-DA-11 | Tabla **`idempotency_record`** donde hay comandos críticos | Commit/release, audit ingest, start/complete WF, submit/cancel |
 | D-DA-12 | Naming: `snake_case`, singular de agregado en tablas principales | Convención SQL del arquetipo; alineado a entidades Baseline |
 | D-DA-13 | JSONB solo para atributos extensibles / variables WF / before-after audit | Flexibilidad sin proliferar columnas en Sprint 1 |
-| D-DA-14 | RLS **preparado, no obligatorio** en tenant dedicado | Piloto = dedicated runtime; RLS listo si se pasa a shared schema |
+| D-DA-14 | RLS **obligatorio** (CA-TEN-001): Shared DB + `tenant_id` + RLS; piloto en Dedicated Plane | Defensa en profundidad; mismo código SaaS; ver `docs/architecture/tenancy/` |
 | D-DA-15 | Flyway versionado `V1__init_mvp.sql` por servicio | Un baseline reproducible; cambios posteriores `V2__...` |
 
 ## 1.2 Audit fields (plantilla)
