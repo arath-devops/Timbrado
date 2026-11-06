@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0f766e"/>
+<title>ERP+GRP · Demo visual Municipio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{
+  --font:'Manrope',system-ui,sans-serif;
+  --bg:#eef2f6;--surface:#fff;--surface2:#f3f6fa;--hover:#e8eef5;
+  --ink:#0f1b2d;--ink2:#3a4a5f;--ink3:#6b7c90;--border:#d5dee8;
+  --brand:#0f766e;--brandSoft:#ccfbf1;--brandInk:#115e59;
+  --accent:#1e3a5f;--ok:#15803d;--okSoft:#dcfce7;--warn:#b45309;--warnSoft:#ffedd5;
+  --danger:#b91c1c;--dangerSoft:#fee2e2;--info:#0369a1;--infoSoft:#e0f2fe;
+  --shadow:0 8px 24px rgba(15,27,45,.08);--r:14px;--header:56px;--ease:cubic-bezier(.2,.8,.2,1);
+}
+[data-theme=dark]{
+  --bg:#0b1220;--surface:#151d2e;--surface2:#1a2436;--hover:#222d42;
+  --ink:#e8eef7;--ink2:#b7c4d6;--ink3:#8494ab;--border:#2a364a;
+  --brand:#2dd4bf;--brandSoft:rgba(45,212,191,.14);--brandInk:#99f6e4;
+  --accent:#93c5fd;--ok:#4ade80;--okSoft:rgba(74,222,128,.14);--warn:#fbbf24;--warnSoft:rgba(251,191,36,.14);
+  --danger:#f87171;--dangerSoft:rgba(248,113,113,.14);--info:#38bdf8;--infoSoft:rgba(56,189,248,.14);
+  --shadow:0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--font);background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+.hidden{display:none!important}
+
+/* LOGIN */
+.login{min-height:100dvh;display:grid;grid-template-rows:auto 1fr}
+.login-hero{background:linear-gradient(145deg,#0b1f33 0%,#123047 50%,#0f766e 120%);color:#e8f4f2;padding:28px 22px 36px;position:relative;overflow:hidden}
+.login-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:rgba(45,212,191,.15)}
+.brand-row{display:flex;align-items:center;gap:12px;margin-bottom:22px;position:relative;z-index:1}
+.mark{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2dd4bf,#1e3a5f);display:grid;place-items:center;font-weight:800;font-size:13px;color:#fff}
+.chip{display:inline-flex;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.12);font-size:11px;font-weight:650;margin-bottom:12px}
+.login-hero h1{margin:0 0 10px;font-size:clamp(28px,7vw,36px);letter-spacing:-.04em;line-height:1.1;max-width:12ch;position:relative;z-index:1}
+.login-hero p{margin:0;opacity:.88;font-size:14px;max-width:36ch;position:relative;z-index:1}
+.login-card{margin:-24px 16px 24px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:22px;box-shadow:var(--shadow);position:relative;z-index:2}
+.login-card h2{margin:0 0 4px;font-size:20px;letter-spacing:-.03em}
+.login-card .sub{margin:0 0 18px;color:var(--ink3);font-size:13px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.field label{font-size:12px;font-weight:650;color:var(--ink2)}
+.control{height:42px;border-radius:11px;border:1px solid var(--border);background:var(--surface2);padding:0 12px;width:100%;outline:none}
+.control:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(15,118,110,.25);background:var(--surface)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 16px;border-radius:11px;font-weight:700;font-size:14px;transition:transform .1s ease,background .2s}
+.btn:active{transform:scale(.98)}
+.btn-primary{background:var(--brand);color:#fff;width:100%}
+[data-theme=dark] .btn-primary{color:#042f2e}
+.btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.btn-ghost{color:var(--ink2);height:36px;padding:0 10px;font-size:12.5px}
+.btn-sm{height:34px;padding:0 12px;font-size:12.5px;width:auto}
+.btn-danger{background:var(--dangerSoft);color:var(--danger)}
+.hint{font-size:11px;color:var(--ink3)}
+.foot-links{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;color:var(--ink3)}
+
+/* APP SHELL */
+.app{min-height:100dvh;display:flex;flex-direction:column}
+.top{height:var(--header);background:color-mix(in srgb,var(--surface) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 12px;position:sticky;top:0;z-index:20}
+.icon{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;color:var(--ink2)}
+.icon:hover{background:var(--hover)}
+.top .title{flex:1;min-width:0}
+.top .title strong{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top .title span{font-size:11px;color:var(--ink3)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--brand));color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+.drawer-bg{position:fixed;inset:0;background:rgba(15,27,45,.45);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-bg.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;left:0;top:0;bottom:0;width:min(86vw,300px);background:var(--surface);border-right:1px solid var(--border);z-index:50;transform:translateX(-105%);transition:transform .25s var(--ease);display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+.drawer.open{transform:none}
+.drawer .brand-row{padding:16px;border-bottom:1px solid var(--border);margin:0}
+.nav{flex:1;overflow:auto;padding:10px}
+.nav-sec{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);padding:12px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:11px;font-size:13.5px;font-weight:550;color:var(--ink2);margin-bottom:2px}
+.nav a.active,.nav a:hover{background:var(--brandSoft);color:var(--brandInk)}
+.nav .ico{width:20px;text-align:center;opacity:.85}
+
+.main{padding:14px 14px 88px;flex:1}
+.page-h{margin-bottom:14px}
+.page-h h1{margin:0 0 4px;font-size:22px;letter-spacing:-.03em}
+.page-h p{margin:0;color:var(--ink2);font-size:13px}
+.crumbs{font-size:11.5px;color:var(--ink3);margin-bottom:8px}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:0 1px 2px rgba(15,27,45,.05)}
+.kpi .l{font-size:11px;color:var(--ink3);font-weight:650;margin-bottom:6px}
+.kpi .v{font-size:20px;font-weight:800;letter-spacing:-.03em}
+.kpi .d{font-size:11px;margin-top:6px;color:var(--ink3)}
+.kpi .d.up{color:var(--ok)}.kpi .d.down{color:var(--danger)}
+
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:0 1px 2px rgba(15,27,45,.05)}
+.panel-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.panel-hd h3{margin:0;font-size:14px}
+.panel-bd{padding:12px 14px}
+.row{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:none}
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:7px;font-size:11px;font-weight:700}
+.b-ok{background:var(--okSoft);color:var(--ok)}.b-warn{background:var(--warnSoft);color:var(--warn)}
+.b-danger{background:var(--dangerSoft);color:var(--danger)}.b-info{background:var(--infoSoft);color:var(--info)}
+.b-brand{background:var(--brandSoft);color:var(--brandInk)}.b-neu{background:var(--surface2);color:var(--ink2);border:1px solid var(--border)}
+.alert{padding:11px 12px;border-radius:11px;font-size:12.5px;margin-bottom:8px}
+.alert.crit{background:var(--dangerSoft);color:var(--danger)}.alert.warn{background:var(--warnSoft);color:var(--warn)}
+.progress{height:7px;border-radius:99px;background:var(--surface2);overflow:hidden}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#0891b2);border-radius:inherit}
+.bars{display:flex;align-items:flex-end;gap:6px;height:110px;padding-top:6px}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bars .b i{width:100%;max-width:22px;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,#14b8a6,var(--brand))}
+.bars .b span{font-size:9px;color:var(--ink3)}
+.timeline{position:relative;padding-left:18px}
+.timeline::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--border)}
+.tl{position:relative;padding:0 0 14px 8px}
+.tl:last-child{padding-bottom:0}
+.tl::before{content:'';position:absolute;left:-18px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:3px solid var(--brand);box-shadow:0 0 0 3px var(--brandSoft)}
+.tl.done::before{background:var(--brand)}
+.tl h4{margin:0 0 2px;font-size:13px}.tl p,.tl time{margin:0;font-size:11.5px;color:var(--ink3)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:30}
+.tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:650;color:var(--ink3);padding:6px 2px}
+.tabbar button.on{color:var(--brandInk)}
+.tabbar .ti{font-size:16px}
+.toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:12px;font-size:13px;z-index:80;box-shadow:var(--shadow);max-width:90vw;text-align:center}
+[data-theme=dark] .toast{background:#e8eef7;color:#0b1220}
+.fade{animation:fade .28s var(--ease)}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.share-note{font-size:11px;color:var(--ink3);text-align:center;margin:8px 16px 0}
+@media(min-width:720px){
+  .login{grid-template-columns:1.1fr .9fr;grid-template-rows:1fr}
+  .login-hero{padding:48px}.login-card{margin:auto;width:min(400px,90%)}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+  .main{max-width:920px;margin:0 auto;width:100%;padding-bottom:40px}
+  .tabbar{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="screen-login" class="login">
+  <div class="login-hero">
+    <div class="brand-row">
+      <div class="mark">EG</div>
+      <div><strong style="font-size:14px">ERP+GRP Platform</strong><div style="opacity:.7;font-size:11px">Demo visual · sin backend</div></div>
+    </div>
+    <div class="chip">Piloto · Gobierno Municipal</div>
+    <h1>Municipio de Ejemplo</h1>
+    <p>Identidad, presupuesto, compras, workflow, documentos y auditoría — así se verá el producto en producción.</p>
+  </div>
+  <div>
+    <form class="login-card" id="login-form">
+      <h2>Iniciar sesión</h2>
+      <p class="sub">Usuario demo: <strong>Director de Administración</strong></p>
+      <div class="field"><label>Organización</label>
+        <select class="control"><option>Municipio de Ejemplo</option></select>
+      </div>
+      <div class="field"><label>Usuario</label><input class="control" value="mrios" readonly/></div>
+      <div class="field"><label>Contraseña</label><input class="control" type="password" value="demo1234"/><span class="hint">Demo: toque Entrar — no valida contraseña</span></div>
+      <button class="btn btn-primary" type="submit">Entrar al producto</button>
+      <div class="foot-links">
+        <button type="button" class="btn-ghost" id="theme1">Tema claro/oscuro</button>
+        <span>Archivo único · WhatsApp OK</span>
+      </div>
+    </form>
+    <p class="share-note">Puede reenviar este archivo .html por WhatsApp o correo. Ábralo con Chrome / Safari.</p>
+  </div>
+</section>
+
+<!-- APP -->
+<section id="screen-app" class="app hidden">
+  <header class="top">
+    <button class="icon" id="btn-menu" aria-label="Menú">☰</button>
+    <div class="title"><strong id="hdr-title">Dashboard</strong><span>Lic. Mariana Ríos · Dir. Administración</span></div>
+    <button class="icon" id="theme2" title="Tema">◐</button>
+    <div class="avatar">MR</div>
+  </header>
+
+  <div class="drawer-bg" id="drawer-bg"></div>
+  <aside class="drawer" id="drawer">
+    <div class="brand-row"><div class="mark">EG</div><div><strong>ERP+GRP</strong><div style="font-size:11px;color:var(--ink3)">Municipio de Ejemplo</div></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div style="padding:12px;border-top:1px solid var(--border)">
+      <button class="btn btn-secondary btn-sm" style="width:100%" id="btn-logout">Cerrar sesión</button>
+    </div>
+  </aside>
+
+  <main class="main"><div id="view" class="fade"></div></main>
+
+  <nav class="tabbar" id="tabbar">
+    <button data-go="dashboard" class="on"><span class="ti">▣</span>Inicio</button>
+    <button data-go="bandeja"><span class="ti">⟳</span>Aprobar</button>
+    <button data-go="compras"><span class="ti">◇</span>Compras</button>
+    <button data-go="docs"><span class="ti">▤</span>Docs</button>
+    <button data-go="mas"><span class="ti">☰</span>Más</button>
+  </nav>
+</section>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const $ = (s,e=document)=>e.querySelector(s);
+const money = n => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(n);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.add('hidden'),2600)}
+function themeToggle(){const cur=document.documentElement.getAttribute('data-theme');document.documentElement.setAttribute('data-theme',cur==='dark'?'light':'dark')}
+
+const NAV=[
+  {sec:'Inicio',items:[{id:'dashboard',l:'Dashboard ejecutivo',i:'▣'},{id:'escenarios',l:'Escenarios guiados',i:'▸'}]},
+  {sec:'Trabajar',items:[{id:'bandeja',l:'Bandeja de aprobación',i:'⟳'},{id:'compras',l:'Solicitudes de compra',i:'◇'},{id:'sc148',l:'Detalle SC-2026-0148',i:'·'},{id:'commit',l:'Commit Budget',i:'◈'},{id:'docs',l:'Expedientes / Visor',i:'▤'}]},
+  {sec:'Control',items:[{id:'presupuesto',l:'Presupuesto',i:'◈'},{id:'auditoria',l:'Auditoría',i:'◉'},{id:'iam',l:'IAM · Usuarios',i:'⬡'}]},
+];
+
+const VIEWS={
+dashboard(){return `
+  <div class="crumbs">Inicio / Dashboard</div>
+  <div class="page-h"><h1>Dashboard ejecutivo</h1><p>Municipio de Ejemplo · Ejercicio 2026</p></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="l">Disponible</div><div class="v">$18.4 MDP</div><div class="d">Techo liberable</div></div>
+    <div class="kpi"><div class="l">Comprometido</div><div class="v">$6.2 MDP</div><div class="d up">+4.1% mes</div></div>
+    <div class="kpi"><div class="l">Solicitudes</div><div class="v">14</div><div class="d down">3 críticas</div></div>
+    <div class="kpi"><div class="l">Mi bandeja</div><div class="v">5</div><div class="d down">1 vencida</div></div>
+  </div>
+  <div class="panel"><div class="panel-hd"><h3>Alertas</h3></div><div class="panel-bd">
+    <div class="alert crit">Partida 2211 al 92% — riesgo de insuficiencia Q4.</div>
+    <div class="alert warn">SC-2026-0148 lleva 4 h en su bandeja (laptops Obras).</div>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Consumo presupuestal</h3></div><div class="panel-bd">
+    <div class="bars">${[['E','22'],['F','28'],['M','35'],['A','42'],['M','48'],['J','55'],['J','61'],['A','68'],['S','74'],['O','82'],['N','88']].map(([n,p])=>`<div class="b"><i style="height:${p}%"></i><span>${n}</span></div>`).join('')}</div>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Compras por dependencia</h3></div><div class="panel-bd">
+    ${[['Obras',78,'$2.4 MDP'],['Admin',55,'$1.1 MDP'],['Compras',41,'$0.8 MDP']].map(([n,p,a])=>`
+      <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><strong>${n}</strong><span>${a}</span></div>
+      <div class="progress"><i style="width:${p}%"></i></div></div>`).join('')}
+  </div></div>
+  <div class="actions">
+    <button class="btn btn-primary btn-sm" onclick="go('bandeja')">Ir a bandeja</button>
+    <button class="btn btn-secondary btn-sm" onclick="go('compras')">Ver compras</button>
+  </div>`},
+
+bandeja(){return `
+  <div class="crumbs">Workflow / Bandeja</div>
+  <div class="page-h"><h1>Bandeja de aprobación</h1><p>Tareas PO_APPROVAL asignadas a DIR_ADMIN</p></div>
+  ${[
+    {id:'T-8841',t:'Compra laptops Obras',m:214800,sla:'vencida 4h',p:'Alta',ref:'SC-2026-0148'},
+    {id:'T-8837',t:'Mantenimiento flotilla',m:48600,sla:'18 h',p:'Media',ref:'SC-2026-0145'},
+    {id:'T-8832',t:'Material de oficina',m:12840,sla:'36 h',p:'Baja',ref:'SC-2026-0141'}
+  ].map(t=>`
+    <div class="panel" onclick="go('tarea')" style="cursor:pointer"><div class="panel-bd">
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <strong>${t.id}</strong>${t.sla.includes('vencida')?'<span class="badge b-danger">'+t.sla+'</span>':'<span class="badge b-neu">'+t.sla+'</span>'}
+      </div>
+      <div style="font-size:14px;margin-bottom:6px">${t.t}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink3)">
+        <span>${t.ref} · ${t.p}</span><strong style="color:var(--ink)">${money(t.m)}</strong>
+      </div>
+    </div></div>`).join('')}`},
+
+tarea(){return `
+  <div class="crumbs">Bandeja / T-8841</div>
+  <div class="page-h"><h1>Aprobar compra de laptops</h1><p>SC-2026-0148 · ${money(214800)}</p></div>
+  <div class="panel"><div class="panel-bd">
+    <div class="row"><div style="flex:1"><div class="hint">Solicitante</div><strong>Ana Beltrán</strong></div><div><div class="hint">OU</div><strong>Obras Públicas</strong></div></div>
+    <div class="field"><label>Comentario de decisión</label><textarea class="control" style="height:80px;padding:10px" placeholder="Fundamento…"></textarea></div>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Timeline</h3></div><div class="panel-bd"><div class="timeline">
+    <div class="tl done"><h4>WorkflowStarted</h4><p>Instancia desde SC</p><time>05 Nov 09:49</time></div>
+    <div class="tl done"><h4>Tarea OPEN</h4><p>Asignada a Mariana Ríos</p><time>05 Nov 09:49</time></div>
+    <div class="tl"><h4>CompleteTask</h4><p>APPROVE o REJECT</p><time>ahora</time></div>
+  </div></div></div>
+  <div class="actions">
+    <button class="btn btn-danger btn-sm" onclick="toast('Rechazo simulado');go('bandeja')">Rechazar</button>
+    <button class="btn btn-primary btn-sm" onclick="toast('Aprobada · siga a Commit');go('commit')">Aprobar</button>
+  </div>`},
+
+compras(){return `
+  <div class="crumbs">Compras / Solicitudes</div>
+  <div class="page-h"><h1>Solicitudes de compra</h1><p>Pipeline P2P municipal</p></div>
+  <div class="actions"><button class="btn btn-primary btn-sm" onclick="go('nueva')">+ Nueva solicitud</button></div>
+  ${[
+    ['SC-2026-0148','Laptops Obras',214800,'IN_APPROVAL','b-warn'],
+    ['SC-2026-0145','Mantenimiento flotilla',48600,'IN_APPROVAL','b-warn'],
+    ['SC-2026-0142','Útiles oficina Q4',86400,'APPROVED','b-ok'],
+    ['SC-2026-0139','Consultoría jurídica',180000,'COMMITTED','b-info'],
+    ['SC-2026-0133','Reactivos lab',39200,'REJECTED','b-danger']
+  ].map(([id,t,m,s,b])=>`
+    <div class="panel" style="cursor:pointer" onclick="go('sc148')"><div class="panel-bd">
+      <div style="display:flex;justify-content:space-between"><strong>${id}</strong><span class="badge ${b}">${s}</span></div>
+      <div style="margin:6px 0;font-size:13.5px">${t}</div>
+      <div style="font-size:12px;color:var(--ink3)">${money(m)}</div>
+    </div></div>`).join('')}`},
+
+nueva(){return `
+  <div class="crumbs">Compras / Nueva</div>
+  <div class="page-h"><h1>Nueva solicitud</h1><p>Formulario demo con validación básica</p></div>
+  <div class="panel"><div class="panel-bd">
+    <div class="field"><label>Título *</label><input class="control" id="sc-t" placeholder="Adquisición de…"/></div>
+    <div class="field"><label>Tipo</label><select class="control"><option>Tecnologías de información</option><option>Materiales</option><option>Servicios</option></select></div>
+    <div class="field"><label>Partida</label><select class="control"><option>2461 — Equipo de cómputo</option><option>2111 — Útiles de oficina</option></select></div>
+    <div class="field"><label>Justificación *</label><textarea class="control" id="sc-j" style="height:90px;padding:10px" placeholder="Mínimo 20 caracteres…"></textarea></div>
+  </div></div>
+  <div class="actions">
+    <button class="btn btn-secondary btn-sm" onclick="go('compras')">Cancelar</button>
+    <button class="btn btn-primary btn-sm" onclick="submitSc()">Enviar a aprobación</button>
+  </div>`},
+
+sc148(){return `
+  <div class="crumbs">Compras / SC-2026-0148</div>
+  <div class="page-h"><h1>Equipo de cómputo portátil</h1><p>Obras Públicas · Ana Beltrán</p></div>
+  <div class="panel"><div class="panel-bd">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px"><span class="badge b-warn">IN_APPROVAL</span><strong>${money(214800)}</strong></div>
+    <p style="margin:0;font-size:13px;color:var(--ink2)">Sustitución de 6 equipos obsoletos para supervisión de obra en campo. Cotizaciones anexas.</p>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Líneas</h3></div><div class="panel-bd" style="font-size:13px">
+    <div class="row"><div style="flex:1">Laptop i5 16GB × 6</div><div>${money(196800)}</div></div>
+    <div class="row"><div style="flex:1">Mochila × 6</div><div>${money(7200)}</div></div>
+    <div class="row"><div style="flex:1">Mouse × 6</div><div>${money(2700)}</div></div>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Timeline P2P</h3></div><div class="panel-bd"><div class="timeline">
+    <div class="tl done"><h4>Borrador / Enviada</h4><time>05 Nov 09:40</time></div>
+    <div class="tl done"><h4>En aprobación DIR_ADMIN</h4><time>05 Nov 09:49</time></div>
+    <div class="tl"><h4>Commit Budget</h4><time>—</time></div>
+    <div class="tl"><h4>OC → Recepción → Pago</h4><time>—</time></div>
+  </div></div></div>
+  <div class="actions">
+    <button class="btn btn-secondary btn-sm" onclick="go('tarea')">Abrir tarea</button>
+    <button class="btn btn-primary btn-sm" onclick="go('docs')">Ver expediente</button>
+  </div>`},
+
+commit(){return `
+  <div class="crumbs">Presupuesto / Commit</div>
+  <div class="page-h"><h1>Commit presupuestal</h1><p>SC-2026-0148 · partida 2461</p></div>
+  <div class="panel"><div class="panel-bd">
+    <div class="row"><div style="flex:1"><div class="hint">Monto</div><div style="font-size:22px;font-weight:800">${money(214800)}</div></div>
+      <div><div class="hint">Disponible</div><span class="badge b-ok">SUFICIENTE</span></div></div>
+    <div class="hint" style="margin-top:8px">Idempotency-Key: <code>idem_commit_SC-2026-0148_v1</code></div>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Efectos</h3></div><div class="panel-bd"><div class="timeline">
+    <div class="tl done"><h4>Validar disponibilidad</h4></div>
+    <div class="tl"><h4>BudgetCommitted</h4><p>Genera compromiso + movimiento</p></div>
+    <div class="tl"><h4>Habilitar Orden de Compra</h4></div>
+  </div></div></div>
+  <div class="actions"><button class="btn btn-primary btn-sm" onclick="toast('BudgetCommitted · CP-2026-0090');go('presupuesto')">Confirmar commit</button></div>`},
+
+docs(){return `
+  <div class="crumbs">Documentos / Expediente</div>
+  <div class="page-h"><h1>EXP-COMP-0148</h1><p>Expediente compra laptops Obras</p></div>
+  <div class="panel" style="cursor:pointer" onclick="go('visor')"><div class="panel-bd">
+    <strong>Cotización Tecnología del Centro.pdf</strong>
+    <div style="font-size:12px;color:var(--ink3);margin-top:4px">COT · v2 · 842 KB · Ana Beltrán</div>
+  </div></div>
+  <div class="panel"><div class="panel-bd">
+    <strong>Solicitud SC-2026-0148.pdf</strong>
+    <div style="font-size:12px;color:var(--ink3);margin-top:4px">REQ · v1 · 210 KB</div>
+  </div></div>
+  <div class="actions"><button class="btn btn-primary btn-sm" onclick="toast('Selector de archivo simulado')">Subir evidencia</button></div>`},
+
+visor(){return `
+  <div class="crumbs">Documentos / Visor</div>
+  <div class="page-h"><h1>Visor de documento</h1><p>PDF simulado · metadatos laterales</p></div>
+  <div class="panel" style="background:#1a1f2a;padding:16px">
+    <div style="background:#fff;color:#111;border-radius:8px;padding:20px;min-height:280px;font-size:12px;line-height:1.5">
+      <div style="text-align:right;font-size:10px;color:#666">Municipio de Ejemplo</div>
+      <h3 style="margin:8px 0;font-size:15px">Cotización · Tecnología del Centro</h3>
+      <p>Expediente EXP-COMP-0148 · Folio DOC-9912</p><hr/>
+      <p>6 laptops i5 / 16GB / 512SSD · Total ${money(214800)} IVA incluido.</p>
+      <p style="color:#666;margin-top:40px;border-top:1px solid #ddd;padding-top:8px;font-size:10px">Preview Kit · No es documento oficial</p>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-bd" style="font-size:13px">
+    <div class="row"><div style="flex:1">Estado</div><span class="badge b-ok">AVAILABLE</span></div>
+    <div class="row"><div style="flex:1">Versión</div><strong>v2</strong></div>
+    <div class="row"><div style="flex:1">Checksum</div><code style="font-size:11px">sha256:9f3a…c21e</code></div>
+  </div></div>`},
+
+presupuesto(){return `
+  <div class="crumbs">Presupuesto / Anual 2026</div>
+  <div class="page-h"><h1>Presupuesto anual</h1><p>Indicadores financieros del municipio</p></div>
+  <div class="kpi-grid">
+    <div class="kpi"><div class="l">Aprobado</div><div class="v">$29.4M</div></div>
+    <div class="kpi"><div class="l">Disponible</div><div class="v">$18.4M</div></div>
+    <div class="kpi"><div class="l">Comprometido</div><div class="v">$6.2M</div></div>
+    <div class="kpi"><div class="l">Ejercido</div><div class="v">$4.8M</div></div>
+  </div>
+  <div class="panel"><div class="panel-hd"><h3>Partidas clave</h3></div><div class="panel-bd" style="font-size:13px">
+    ${[['2461','Cómputo',68],['2111','Oficina',42],['3391','Servicios',55],['3551','Edificios',72]].map(([c,n,p])=>`
+      <div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between"><strong>${c}</strong><span>${n} · ${p}%</span></div>
+      <div class="progress"><i style="width:${p}%"></i></div></div>`).join('')}
+  </div></div>`},
+
+auditoria(){return `
+  <div class="crumbs">Auditoría / Bitácora</div>
+  <div class="page-h"><h1>Trazabilidad</h1><p>SC-2026-0148 · antes / después</p></div>
+  <div class="panel"><div class="panel-bd"><div class="timeline">
+    <div class="tl done"><h4>CREATE PurchaseRequest</h4><p>abeltran · 10.12.4.55</p><time>05 Nov 09:48</time></div>
+    <div class="tl done"><h4>UPDATE → SUBMITTED</h4><p>smendoza · WorkflowStarted</p><time>05 Nov 11:10</time></div>
+    <div class="tl"><h4>Pendiente APPROVE</h4><p>Bandeja T-8841 · mrios</p><time>ahora</time></div>
+  </div></div></div>
+  <div class="panel"><div class="panel-hd"><h3>Diff AUD-6998</h3></div><div class="panel-bd" style="display:grid;gap:8px;font-size:11.5px">
+    <pre style="margin:0;padding:10px;border-radius:10px;background:var(--dangerSoft);overflow:auto">{"status":"DRAFT"}</pre>
+    <pre style="margin:0;padding:10px;border-radius:10px;background:var(--okSoft);overflow:auto">{"status":"SUBMITTED"}</pre>
+  </div></div>`},
+
+iam(){return `
+  <div class="crumbs">IAM / Usuarios</div>
+  <div class="page-h"><h1>Usuarios del tenant</h1><p>RBAC + Organization Scope</p></div>
+  ${[
+    ['mrios','Mariana Ríos','ADMIN, DIR_ADMIN','ACTIVE'],
+    ['smendoza','Sofía Mendoza','PUR_BUYER','ACTIVE'],
+    ['abeltran','Ana Beltrán','PUR_REQUESTER','ACTIVE'],
+    ['hvaldez','Héctor Valdez','BUDGET_OPS','ACTIVE'],
+    ['lortega','Luis Ortega','PUR_REQUESTER','LOCKED']
+  ].map(([u,n,r,s])=>`
+    <div class="panel"><div class="panel-bd">
+      <div style="display:flex;justify-content:space-between"><strong>${n}</strong><span class="badge ${s==='LOCKED'?'b-danger':'b-ok'}">${s}</span></div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:4px">@${u} · <span class="badge b-brand">${r}</span></div>
+    </div></div>`).join('')}`},
+
+escenarios(){return `
+  <div class="crumbs">Escenarios</div>
+  <div class="page-h"><h1>Recorridos guiados</h1><p>Toque un caso para saltar al flujo</p></div>
+  ${[
+    ['Caso 1','Crear solicitud','nueva'],
+    ['Caso 2','Aprobar en bandeja','bandeja'],
+    ['Caso 3','Commit Budget','commit'],
+    ['Caso 4','Subir / ver evidencia','docs'],
+    ['Caso 5','Consultar auditoría','auditoria']
+  ].map(([k,t,id])=>`
+    <div class="panel" style="cursor:pointer" onclick="go('${id}')"><div class="panel-bd">
+      <span class="badge b-brand">${k}</span>
+      <div style="margin-top:8px;font-weight:700">${t}</div>
+    </div></div>`).join('')}`},
+
+mas(){return `
+  <div class="page-h"><h1>Más módulos</h1><p>Accesos del preview</p></div>
+  ${[['presupuesto','Presupuesto'],['iam','IAM'],['auditoria','Auditoría'],['escenarios','Escenarios'],['dashboard','Dashboard']].map(([id,l])=>`
+    <div class="panel" style="cursor:pointer" onclick="go('${id}')"><div class="panel-bd"><strong>${l}</strong></div></div>`).join('')}
+  <button class="btn btn-secondary btn-sm" style="width:100%;margin-top:8px" onclick="logout()">Cerrar sesión</button>`}
+};
+
+const TITLES={dashboard:'Dashboard',bandeja:'Bandeja',tarea:'Aprobación',compras:'Compras',nueva:'Nueva SC',sc148:'Detalle SC',commit:'Commit Budget',docs:'Documentos',visor:'Visor PDF',presupuesto:'Presupuesto',auditoria:'Auditoría',iam:'IAM',escenarios:'Escenarios',mas:'Más'};
+
+function buildNav(){
+  $('#nav').innerHTML=NAV.map(s=>`<div class="nav-sec">${s.sec}</div>`+s.items.map(i=>`<a href="#" data-go="${i.id}"><span class="ico">${i.i}</span>${i.l}</a>`).join('')).join('');
+  $('#nav').onclick=e=>{const a=e.target.closest('[data-go]');if(!a)return;e.preventDefault();closeDrawer();go(a.dataset.go)};
+}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#drawer-bg').classList.remove('open')}
+function openDrawer(){$('#drawer').classList.add('open');$('#drawer-bg').classList.add('open')}
+
+function go(id){
+  if(!VIEWS[id])id='dashboard';
+  const view=$('#view');
+  view.classList.remove('fade');void view.offsetWidth;
+  view.innerHTML=VIEWS[id]();
+  view.classList.add('fade');
+  $('#hdr-title').textContent=TITLES[id]||'ERP+GRP';
+  document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.go===id||(id==='tarea'&&b.dataset.go==='bandeja')||(id==='sc148'&&b.dataset.go==='compras')||(id==='visor'&&b.dataset.go==='docs')));
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.go===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+  history.replaceState(null,'','#'+id);
+}
+function submitSc(){
+  const t=$('#sc-t')?.value?.trim()||'';
+  const j=$('#sc-j')?.value?.trim()||'';
+  if(!t||j.length<20){toast('Complete título y justificación (20+ caracteres)');return}
+  toast('SC enviada · WorkflowStarted (demo)');go('bandeja');
+}
+function logout(){
+  $('#screen-app').classList.add('hidden');
+  $('#screen-login').classList.remove('hidden');
+  history.replaceState(null,'','#login');
+}
+function enter(){
+  $('#screen-login').classList.add('hidden');
+  $('#screen-app').classList.remove('hidden');
+  go((location.hash||'#dashboard').slice(1)||'dashboard');
+}
+
+$('#login-form').onsubmit=e=>{e.preventDefault();enter()};
+$('#theme1').onclick=themeToggle;
+$('#theme2').onclick=themeToggle;
+$('#btn-menu').onclick=openDrawer;
+$('#drawer-bg').onclick=closeDrawer;
+$('#btn-logout').onclick=logout;
+$('#tabbar').onclick=e=>{const b=e.target.closest('[data-go]');if(b)go(b.dataset.go)};
+buildNav();
+if(location.hash && location.hash!=='#login'){/* stay on login until enter */}
+</script>
+</body>
+</html>
