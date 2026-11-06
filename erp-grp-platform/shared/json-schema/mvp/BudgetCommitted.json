@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://erp-grp.local/schemas/events/mvp/BudgetCommitted.json",
+  "title": "BudgetCommitted",
+  "description": "Kafka event BudgetCommitted. Topic=grp.budget.events. Producer=budget-service. Version=1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "eventTimestamp",
+    "tenantId",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "BudgetCommitted"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "producer": {
+      "type": "string",
+      "const": "budget-service"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "movementId",
+        "allocationId",
+        "amount",
+        "currency",
+        "referenceType",
+        "referenceId"
+      ],
+      "properties": {
+        "movementId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "allocationId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "amount": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d{1,4})?$"
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "MXN"
+          ]
+        },
+        "referenceType": {
+          "type": "string",
+          "enum": [
+            "PURCHASE_ORDER",
+            "PURCHASE_REQUISITION",
+            "PURCHASE_REQUEST"
+          ]
+        },
+        "referenceId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "availableAfter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "idempotencyKey": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
+      }
+    }
+  },
+  "x-topic": "grp.budget.events",
+  "x-producer": "budget-service",
+  "x-event-version": 1,
+  "examples": [
+    {
+      "eventId": "22222222-2222-4222-8222-222222222222",
+      "eventType": "BudgetCommitted",
+      "eventVersion": 1,
+      "eventTimestamp": "2026-11-05T17:05:00Z",
+      "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "correlationId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "causationId": "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      "producer": "budget-service",
+      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+      "requestId": "ffffffff-ffff-4fff-8fff-ffffffffffff",
+      "payload": {
+        "movementId": "33333333-3333-4333-8333-333333333333",
+        "allocationId": "44444444-4444-4444-8444-444444444444",
+        "amount": "125000.00",
+        "currency": "MXN",
+        "referenceType": "PURCHASE_ORDER",
+        "referenceId": "55555555-5555-4555-8555-555555555555",
+        "availableAfter": "375000.00",
+        "idempotencyKey": "66666666-6666-4666-8666-666666666666"
+      }
+    }
+  ]
+}

@@ -1,0 +1,716 @@
+openapi: 3.1.0
+info:
+  title: IAM Service API
+  version: 1.0.0
+  summary: Identidad, autenticación OAuth2/OIDC, usuarios, roles, OrgScope y menús
+  description: |
+    Contrato OpenAPI 3.1 de `iam-service` (MVP Sprint 1).
+    Emite JWT; el resto de servicios validan vía JWKS.
+    MFA/SSO federado completo está fuera del Scope Freeze Sprint 1.
+  x-service: iam-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://iam.{env}.erp-grp.local
+    description: Gateway / servicio
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: OAuth2
+  - name: Users
+  - name: Roles
+  - name: Scopes
+  - name: Me
+
+security: []
+
+paths:
+  /oauth2/token:
+    post:
+      tags: [OAuth2]
+      operationId: issueToken
+      summary: Emitir access token (password o client_credentials según grant)
+      security: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRequestJson'
+      responses:
+        '200':
+          description: Token emitido
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: './common/v1.yaml#/components/responses/TooManyRequests'
+
+  /oauth2/jwks:
+    get:
+      tags: [OAuth2]
+      operationId: getJwks
+      summary: JSON Web Key Set para validación de JWT
+      security: []
+      responses:
+        '200':
+          description: JWKS
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JwksResponse'
+
+  /api/v1/users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      summary: Listar usuarios del tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/UserStatus'
+        - name: q
+          in: query
+          description: Búsqueda por username/email
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        '200':
+          description: Página de usuarios
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+    post:
+      tags: [Users]
+      operationId: createUser
+      summary: Crear usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: Usuario creado
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            Location:
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/users/{id}:
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Obtener usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/users/{id}/roles:
+    post:
+      tags: [Users]
+      operationId: assignUserRoles
+      summary: Asignar roles (reemplazo del set enviado)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRolesRequest'
+      responses:
+        '200':
+          description: Roles actualizados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/users/{id}/lock:
+    post:
+      tags: [Users]
+      operationId: lockUser
+      summary: Bloquear usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockUserRequest'
+      responses:
+        '200':
+          description: Usuario bloqueado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/roles:
+    get:
+      tags: [Roles]
+      operationId: listRoles
+      summary: Listar roles del tenant
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Página de roles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RolePage'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+    post:
+      tags: [Roles]
+      operationId: createRole
+      summary: Crear rol
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Rol creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/scopes:
+    post:
+      tags: [Scopes]
+      operationId: grantOrgScope
+      summary: Otorgar OrgScope a un usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantOrgScopeRequest'
+      responses:
+        '201':
+          description: Scope otorgado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgScopeGrantResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+  /api/v1/me:
+    get:
+      tags: [Me]
+      operationId: getMe
+      summary: Perfil del usuario autenticado (roles, scopes, modules)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+
+  /api/v1/me/menus:
+    get:
+      tags: [Me]
+      operationId: getMyMenus
+      summary: Árbol de menús filtrado por roles/módulos
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+      responses:
+        '200':
+          description: Menús
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTreeResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  parameters:
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    TokenRequest:
+      type: object
+      required: [grant_type]
+      properties:
+        grant_type:
+          type: string
+          enum: [password, client_credentials, refresh_token]
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        client_id:
+          type: string
+        client_secret:
+          type: string
+          format: password
+        refresh_token:
+          type: string
+        scope:
+          type: string
+        tenant_id:
+          type: string
+          format: uuid
+          description: Requerido en password grant multi-tenant capable
+    TokenRequestJson:
+      type: object
+      required: [grantType]
+      properties:
+        grantType:
+          type: string
+          enum: [password, client_credentials, refresh_token]
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+        clientId:
+          type: string
+        clientSecret:
+          type: string
+          format: password
+        refreshToken:
+          type: string
+        scope:
+          type: string
+        tenantId:
+          type: string
+          format: uuid
+    TokenResponse:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          enum: [Bearer]
+        expires_in:
+          type: integer
+          minimum: 1
+        refresh_token:
+          type: string
+        scope:
+          type: string
+    JwksResponse:
+      type: object
+      required: [keys]
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    UserStatus:
+      type: string
+      enum: [ACTIVE, LOCKED, DISABLED]
+    CreateUserRequest:
+      type: object
+      required: [username, email]
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 64
+          pattern: '^[a-zA-Z0-9._-]+$'
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+          maxLength: 120
+        temporaryPassword:
+          type: string
+          format: password
+          minLength: 12
+        roleCodes:
+          type: array
+          items:
+            type: string
+    AssignRolesRequest:
+      type: object
+      required: [roleCodes]
+      additionalProperties: false
+      properties:
+        roleCodes:
+          type: array
+          minItems: 0
+          items:
+            type: string
+            examples: [ADMIN, PUR_CLERK, PUR_MANAGER, PUR_DIRECTOR, AUDITOR, BUDGET_OPS]
+    LockUserRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+    UserResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, username, email, status]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            username:
+              type: string
+            email:
+              type: string
+              format: email
+            displayName:
+              type: string
+            status:
+              $ref: '#/components/schemas/UserStatus'
+            roles:
+              type: array
+              items:
+                type: string
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    UserPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'
+    CreateRoleRequest:
+      type: object
+      required: [code, name]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 64
+        name:
+          type: string
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 255
+        permissions:
+          type: array
+          items:
+            type: string
+    RoleResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, code, name]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            permissions:
+              type: array
+              items:
+                type: string
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    RolePage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'
+    GrantOrgScopeRequest:
+      type: object
+      required: [userId, type, orgUnitId]
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [OU_SUBTREE, OU_EXACT]
+        orgUnitId:
+          type: string
+          format: uuid
+    OrgScopeGrantResponse:
+      type: object
+      required: [id, tenantId, userId, type, orgUnitId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [OU_SUBTREE, OU_EXACT]
+        orgUnitId:
+          type: string
+          format: uuid
+    MeResponse:
+      type: object
+      required: [id, tenantId, username, roles, orgScopes, modules]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        displayName:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        orgScopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrgScopeClaim'
+        modules:
+          type: array
+          items:
+            type: string
+            examples: [core.document, erp.procurement, grp.budget]
+        sid:
+          type: string
+          format: uuid
+    OrgScopeClaim:
+      type: object
+      required: [type, orgUnitId]
+      properties:
+        type:
+          type: string
+          enum: [OU_SUBTREE, OU_EXACT]
+        orgUnitId:
+          type: string
+          format: uuid
+    MenuTreeResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuNode'
+    MenuNode:
+      type: object
+      required: [id, label]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        route:
+          type: string
+        module:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuNode'

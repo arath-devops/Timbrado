@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ingresar · ERP+GRP Municipal Preview</title>
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+</head>
+<body>
+  <div class="login-page">
+    <section class="login-hero">
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px">
+          <div class="brand-mark" style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#2dd4bf,#1e3a5f);display:grid;place-items:center;font-weight:800">EG</div>
+          <div>
+            <strong style="font-size:15px">ERP+GRP Platform</strong>
+            <div style="opacity:.75;font-size:12px">Frontend Preview Kit · sin backend</div>
+          </div>
+        </div>
+        <div class="chip" style="background:rgba(255,255,255,.12);color:#e8f4f2">Piloto · Gobierno Municipal</div>
+        <h1>Municipio de Ejemplo</h1>
+        <p>Plataforma integral de identidad, presupuesto, compras, workflow, documentos y auditoría — experiencia previa al desarrollo definitivo.</p>
+      </div>
+      <div style="opacity:.7;font-size:12px">Inspirado en patrones Fiori · Dynamics 365 · Fusion · Odoo · ServiceNow · Jira · Material 3</div>
+    </section>
+    <section class="login-card-wrap">
+      <form class="login-card" id="login-form">
+        <h2>Iniciar sesión</h2>
+        <p class="sub">Sesión simulada: <strong>Director de Administración Municipal</strong></p>
+        <div class="field" style="margin-bottom:12px">
+          <label>Organización / Tenant</label>
+          <select class="control" id="tenant">
+            <option>Municipio de Ejemplo</option>
+            <option disabled>Estado (post-MVP)</option>
+            <option disabled>Empresa privada (post-MVP)</option>
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:12px">
+          <label>Usuario</label>
+          <input class="control" id="user" value="mrios" autocomplete="username" />
+        </div>
+        <div class="field" style="margin-bottom:18px">
+          <label>Contraseña</label>
+          <input class="control" id="pass" type="password" value="••••••••" autocomplete="current-password" />
+          <span class="hint">Preview: cualquier contraseña admite el ingreso demo</span>
+        </div>
+        <button class="btn btn-primary" style="width:100%;height:44px" type="submit">Entrar al producto</button>
+        <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink-3)">
+          <button type="button" class="btn btn-ghost btn-sm" id="theme-toggle">Tema claro/oscuro</button>
+          <a href="docs/01-SITEMAP.md">Ver sitemap</a>
+        </div>
+      </form>
+    </section>
+  </div>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    ERPTheme.init();
+    document.getElementById('theme-toggle').onclick = () => ERPTheme.toggle();
+    document.getElementById('login-form').onsubmit = (e) => {
+      e.preventDefault();
+      sessionStorage.setItem('erp-preview-auth', '1');
+      sessionStorage.setItem('erp-preview-user', document.getElementById('user').value || 'mrios');
+      location.href = 'app.html#/dashboard';
+    };
+  </script>
+</body>
+</html>

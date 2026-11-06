@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://erp-grp.local/schemas/events/mvp/UserCreated.json",
+  "title": "UserCreated",
+  "description": "Kafka event UserCreated. Topic=core.iam.events. Producer=iam-service. Version=1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "eventTimestamp",
+    "tenantId",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "UserCreated"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "producer": {
+      "type": "string",
+      "const": "iam-service"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "userId",
+        "username",
+        "email",
+        "status"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "displayName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "LOCKED",
+            "DISABLED"
+          ]
+        },
+        "roleCodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "x-topic": "core.iam.events",
+  "x-producer": "iam-service",
+  "x-event-version": 1,
+  "examples": [
+    {
+      "eventId": "11111111-1111-4111-8111-111111111111",
+      "eventType": "UserCreated",
+      "eventVersion": 1,
+      "eventTimestamp": "2026-11-05T17:00:00Z",
+      "tenantId": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "correlationId": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      "causationId": null,
+      "producer": "iam-service",
+      "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+      "requestId": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      "payload": {
+        "userId": "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+        "username": "jperez",
+        "email": "jperez@municipio.gob.mx",
+        "displayName": "Juan P\u00e9rez",
+        "status": "ACTIVE",
+        "roleCodes": [
+          "PUR_CLERK"
+        ]
+      }
+    }
+  ]
+}

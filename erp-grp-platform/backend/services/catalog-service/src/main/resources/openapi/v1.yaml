@@ -1,0 +1,306 @@
+openapi: 3.1.0
+info:
+  title: Catalog Service API
+  version: 1.0.0
+  summary: Catálogos maestros versionados del tenant
+  description: |
+    Contrato OpenAPI 3.1 de `catalog-service` (MVP Sprint 1).
+    Tipos cerrados del baseline: ORG_UNIT, BUDGET_CATEGORY, SUPPLIER_BASIC, CURRENCY, DOC_TYPE.
+  x-service: catalog-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://catalog.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: CatalogItems
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/catalogs/{type}/items:
+    parameters:
+      - $ref: '#/components/parameters/CatalogType'
+      - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+    get:
+      tags: [CatalogItems]
+      operationId: listCatalogItems
+      summary: Listar ítems de un catálogo
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/CatalogItemStatus'
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 120
+      responses:
+        '200':
+          description: Página de ítems
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemPage'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+    post:
+      tags: [CatalogItems]
+      operationId: createCatalogItem
+      summary: Crear ítem de catálogo
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCatalogItemRequest'
+      responses:
+        '201':
+          description: Ítem creado
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            Location:
+              schema:
+                type: string
+                format: uri
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/catalogs/{type}/items/{code}:
+    parameters:
+      - $ref: '#/components/parameters/CatalogType'
+      - $ref: '#/components/parameters/ItemCode'
+      - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+    get:
+      tags: [CatalogItems]
+      operationId: getCatalogItem
+      summary: Obtener ítem por código
+      responses:
+        '200':
+          description: Ítem
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+    put:
+      tags: [CatalogItems]
+      operationId: updateCatalogItem
+      summary: Actualizar ítem (optimistic lock)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCatalogItemRequest'
+      responses:
+        '200':
+          description: Ítem actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+  /api/v1/catalogs/{type}/items/{code}/deactivate:
+    post:
+      tags: [CatalogItems]
+      operationId: deactivateCatalogItem
+      summary: Desactivar ítem (no borrado físico)
+      parameters:
+        - $ref: '#/components/parameters/CatalogType'
+        - $ref: '#/components/parameters/ItemCode'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeaderOptional'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeactivateCatalogItemRequest'
+      responses:
+        '200':
+          description: Ítem desactivado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogItemResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common/v1.yaml#/components/responses/Conflict'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  parameters:
+    CatalogType:
+      name: type
+      in: path
+      required: true
+      description: Tipo de catálogo (lista cerrada Sprint 1)
+      schema:
+        type: string
+        enum: [ORG_UNIT, BUDGET_CATEGORY, SUPPLIER_BASIC, CURRENCY, DOC_TYPE]
+    ItemCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 64
+        pattern: '^[A-Z0-9._-]+$'
+
+  schemas:
+    CatalogItemStatus:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+    CreateCatalogItemRequest:
+      type: object
+      required: [code, name]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 64
+          pattern: '^[A-Z0-9._-]+$'
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 500
+        attributes:
+          type: object
+          additionalProperties: true
+          description: Metadatos tipados por catálogo (p.ej. parentOrgUnitCode)
+    UpdateCatalogItemRequest:
+      type: object
+      required: [name, version]
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 500
+        attributes:
+          type: object
+          additionalProperties: true
+        version:
+          type: integer
+          minimum: 0
+    DeactivateCatalogItemRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: string
+          maxLength: 255
+        version:
+          type: integer
+          minimum: 0
+    CatalogItemResponse:
+      allOf:
+        - type: object
+          required: [id, tenantId, type, code, name, status]
+          properties:
+            id:
+              type: string
+              format: uuid
+            tenantId:
+              type: string
+              format: uuid
+            type:
+              type: string
+            code:
+              type: string
+            name:
+              type: string
+            description:
+              type: string
+            status:
+              $ref: '#/components/schemas/CatalogItemStatus'
+            attributes:
+              type: object
+              additionalProperties: true
+        - $ref: './common/v1.yaml#/components/schemas/AuditFields'
+    CatalogItemPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogItemResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'

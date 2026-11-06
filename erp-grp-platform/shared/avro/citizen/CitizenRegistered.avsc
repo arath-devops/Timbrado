@@ -1,0 +1,11 @@
+{
+  "type": "record",
+  "name": "CitizenRegistered",
+  "namespace": "mx.gov.erpgrp.events.citizen",
+  "fields": [
+    {"name": "citizenId", "type": "string"},
+    {"name": "curp", "type": "string"},
+    {"name": "fullName", "type": "string"},
+    {"name": "email", "type": ["null","string"], "default": null}
+  ]
+}
