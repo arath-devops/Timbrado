@@ -1,0 +1,90 @@
+{{- range $name, $svc := .Values.services }}
+{{- if $svc.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}-service
+  labels:
+    app.kubernetes.io/name: {{ $name }}-service
+    app.kubernetes.io/part-of: erp-grp-mvp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ $name }}-service
+  template:
+    metadata:
+      labels:
+        app: {{ $name }}-service
+    spec:
+      serviceAccountName: {{ $name }}-service
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: app
+          image: "{{ $.Values.global.imageRegistry }}/{{ $name }}-service:{{ $.Values.gateway.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ $svc.port }}
+          env:
+            - name: SERVER_PORT
+              value: "{{ $svc.port }}"
+            - name: DB_HOST
+              value: {{ $.Values.global.dbHost | quote }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: erpgrp-db
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: erpgrp-db
+                  key: password
+            - name: REDIS_HOST
+              value: {{ $.Values.global.redisHost | quote }}
+            - name: KAFKA_BOOTSTRAP
+              value: {{ $.Values.global.kafkaBootstrap | quote }}
+            - name: JWKS_URI
+              value: {{ $.Values.global.jwksUri | quote }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ $.Values.global.otelEndpoint | quote }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ $svc.port }}
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $svc.port }}
+            initialDelaySeconds: 40
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $name }}-service
+spec:
+  selector:
+    app: {{ $name }}-service
+  ports:
+    - port: {{ $svc.port }}
+      targetPort: {{ $svc.port }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ $name }}-service
+{{- end }}
+{{- end }}

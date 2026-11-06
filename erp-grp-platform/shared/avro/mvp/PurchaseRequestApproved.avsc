@@ -1,0 +1,121 @@
+{
+  "type": "record",
+  "name": "PurchaseRequestApproved",
+  "namespace": "mx.gov.erpgrp.events.mvp",
+  "doc": "Kafka event PurchaseRequestApproved on topic erp.procurement.events produced by procurement-service. eventVersion=1",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "PurchaseRequestApprovedPayload",
+        "namespace": "mx.gov.erpgrp.events.mvp",
+        "fields": [
+          {
+            "name": "purchaseRequestId",
+            "type": "string"
+          },
+          {
+            "name": "purchaseOrderId",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null,
+            "doc": "Optional linked PO if approval is at PO level"
+          },
+          {
+            "name": "allocationId",
+            "type": "string"
+          },
+          {
+            "name": "totalAmount",
+            "type": "string"
+          },
+          {
+            "name": "currency",
+            "type": "string",
+            "default": "MXN"
+          },
+          {
+            "name": "budgetMovementId",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "processInstanceId",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "approvedBy",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

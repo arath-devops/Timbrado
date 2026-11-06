@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://erp-grp.local/schemas/events/mvp/DocumentLinked.json",
+  "title": "DocumentLinked",
+  "description": "Kafka event DocumentLinked. Topic=core.document.events. Producer=document-service. Version=1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "eventTimestamp",
+    "tenantId",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "DocumentLinked"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "producer": {
+      "type": "string",
+      "const": "document-service"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documentId",
+        "linkId",
+        "boundedContext",
+        "aggregateType",
+        "aggregateId",
+        "linkedBy"
+      ],
+      "properties": {
+        "documentId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "linkId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "boundedContext": {
+          "type": "string"
+        },
+        "aggregateType": {
+          "type": "string"
+        },
+        "aggregateId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "relation": {
+          "type": "string",
+          "enum": [
+            "SUPPORTING",
+            "PRIMARY",
+            "ANNEX"
+          ]
+        },
+        "linkedBy": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    }
+  },
+  "x-topic": "core.document.events",
+  "x-producer": "document-service",
+  "x-event-version": 1
+}

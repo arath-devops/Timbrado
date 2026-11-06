@@ -1,0 +1,115 @@
+{
+  "type": "record",
+  "name": "WorkflowApproved",
+  "namespace": "mx.gov.erpgrp.events.mvp",
+  "doc": "Kafka event WorkflowApproved on topic core.workflow.events produced by workflow-service. eventVersion=1",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "WorkflowApprovedPayload",
+        "namespace": "mx.gov.erpgrp.events.mvp",
+        "fields": [
+          {
+            "name": "processInstanceId",
+            "type": "string"
+          },
+          {
+            "name": "processKey",
+            "type": "string"
+          },
+          {
+            "name": "taskId",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          },
+          {
+            "name": "boundedContext",
+            "type": "string"
+          },
+          {
+            "name": "aggregateType",
+            "type": "string"
+          },
+          {
+            "name": "aggregateId",
+            "type": "string"
+          },
+          {
+            "name": "approvedBy",
+            "type": "string"
+          },
+          {
+            "name": "comment",
+            "type": [
+              "null",
+              "string"
+            ],
+            "default": null
+          }
+        ]
+      }
+    }
+  ]
+}

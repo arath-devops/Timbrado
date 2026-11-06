@@ -1,0 +1,278 @@
+openapi: 3.1.0
+info:
+  title: Audit Service API
+  version: 1.0.0
+  summary: Ingesta append-only y consulta de AuditFact
+  description: |
+    Contrato OpenAPI 3.1 de `audit-service` (MVP Sprint 1).
+    Los facts no se actualizan ni eliminan. Ingesta M2M o bridge outbox.
+  x-service: audit-service
+  x-api-version: v1
+  x-baseline: BL-S1-001
+
+servers:
+  - url: https://audit.{env}.erp-grp.local
+    variables:
+      env:
+        default: int
+        enum: [local, int, prod]
+
+tags:
+  - name: Facts
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/facts:
+    post:
+      tags: [Facts]
+      operationId: ingestAuditFact
+      summary: Registrar hecho auditable (append-only)
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceparentHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestAuditFactRequest'
+      responses:
+        '201':
+          description: Fact registrado
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+            X-Trace-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Trace-Id'
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditFactResponse'
+        '200':
+          description: Replay idempotente (mismo Idempotency-Key)
+          headers:
+            Idempotency-Replayed:
+              $ref: './common/v1.yaml#/components/headers/Idempotency-Replayed'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditFactResponse'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '409':
+          description: Conflicto de idempotencia (mismo key, body distinto)
+          content:
+            application/json:
+              schema:
+                $ref: './common/v1.yaml#/components/schemas/ApiError'
+    get:
+      tags: [Facts]
+      operationId: searchAuditFacts
+      summary: Consultar facts por entidad y/o filtros
+      parameters:
+        - $ref: './common/v1.yaml#/components/parameters/PageParam'
+        - $ref: './common/v1.yaml#/components/parameters/SizeParam'
+        - $ref: './common/v1.yaml#/components/parameters/SortParam'
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TraceIdHeader'
+        - name: entityType
+          in: query
+          required: true
+          schema:
+            type: string
+            examples: [PurchaseOrder, BudgetAllocation, UserAccount]
+        - name: entityId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: action
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Página de facts (orden cronológico ascendente por defecto)
+          headers:
+            X-Correlation-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Correlation-Id'
+            X-Request-Id:
+              $ref: './common/v1.yaml#/components/headers/X-Request-Id'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditFactPage'
+        '400':
+          $ref: './common/v1.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+
+  /api/v1/facts/{id}:
+    get:
+      tags: [Facts]
+      operationId: getAuditFact
+      summary: Obtener fact por id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: './common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: './common/v1.yaml#/components/parameters/TenantIdHeader'
+      responses:
+        '200':
+          description: Fact
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditFactResponse'
+        '401':
+          $ref: './common/v1.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common/v1.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common/v1.yaml#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: './common/v1.yaml#/components/securitySchemes/bearerAuth'
+
+  schemas:
+    IngestAuditFactRequest:
+      type: object
+      required: [entityType, entityId, action, actor]
+      additionalProperties: false
+      properties:
+        entityType:
+          type: string
+          maxLength: 120
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+          maxLength: 64
+          examples: [CREATED, SUBMITTED, APPROVED, REJECTED, CANCELLED, LOCKED]
+        actor:
+          type: string
+          format: uuid
+          description: Usuario o principal M2M
+        actorType:
+          type: string
+          enum: [USER, SYSTEM, M2M]
+          default: USER
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        correlationId:
+          type: string
+          format: uuid
+          description: Debe alinearse con X-Correlation-Id cuando exista
+        causationId:
+          type: string
+          format: uuid
+        sourceService:
+          type: string
+          examples: [procurement-service, budget-service]
+        occurredAt:
+          type: string
+          format: date-time
+          description: Si se omite, server timestamp
+    AuditFactResponse:
+      type: object
+      required: [id, tenantId, entityType, entityId, action, actor, occurredAt, recordedAt]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenantId:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+        entityId:
+          type: string
+          format: uuid
+        action:
+          type: string
+        actor:
+          type: string
+          format: uuid
+        actorType:
+          type: string
+          enum: [USER, SYSTEM, M2M]
+        before:
+          type: object
+          additionalProperties: true
+        after:
+          type: object
+          additionalProperties: true
+        correlationId:
+          type: string
+          format: uuid
+        causationId:
+          type: string
+          format: uuid
+        requestId:
+          type: string
+          format: uuid
+        traceId:
+          type: string
+        sourceService:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        recordedAt:
+          type: string
+          format: date-time
+        contentHash:
+          type: string
+          description: Hash de integridad del fact (opcional Sprint 1)
+    AuditFactPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditFactResponse'
+        page:
+          $ref: './common/v1.yaml#/components/schemas/PageMeta'

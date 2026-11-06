@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erpgrp-core
+  labels:
+    app.kubernetes.io/part-of: erp-grp-platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erpgrp-erp
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erpgrp-grp
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: erpgrp-edge
