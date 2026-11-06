@@ -16,6 +16,7 @@
 3. [Context Map](03-CONTEXT-MAP.md)
 4. [Bounded Contexts](04-BOUNDED-CONTEXTS.md)
 5. [Dependencias entre dominios](05-DEPENDENCIAS.md)
+6. [Domain Portfolio Map ERP+GRP](06-DOMAIN-PORTFOLIO-MAP.md) — **DDD-PORT-001**
 
 ## Principios aplicados
 
