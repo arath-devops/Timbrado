@@ -13,6 +13,6 @@
 2. [ERP Field & Rules Matrix](02-ERP-FIELD-MATRIX.md) — **ERP-FM-001**
 3. [ERP Executive Gap Review](03-ERP-EXECUTIVE-GAP-REVIEW.md) — **ERP-XR-001**
 4. [ERP Preview UX Role Review](04-ERP-PREVIEW-UX-ROLE-REVIEW.md) — **ERP-UX-001**
-5. [ERP Scope Freeze MVP](05-ERP-SCOPE-FREEZE-MVP.md) — **ERP-SF-001** *(propuesto para firma)*
+5. [ERP Scope Freeze MVP](05-ERP-SCOPE-FREEZE-MVP.md) — **ERP-SF-001** *(VoBo 2026-11-07)*
 6. [ERP MVP Control Pack](06-ERP-MVP-CONTROL-PACK.md) — **ERP-CP-001** *(fusionado en FM §19)*
 7. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)

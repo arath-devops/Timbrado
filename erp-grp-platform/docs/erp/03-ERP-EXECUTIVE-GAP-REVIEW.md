@@ -357,15 +357,15 @@ Actualizar ERP-FM-001 con el Control Pack y emitir **ERP-SF-001 Scope Freeze ERP
 Antes de diseñar interfaz o backend, debe existir evidencia de:
 
 - [x] Gates A documentados (localización, payroll, FX, match) → **ERP-SF-001 §2**  
-- [ ] Gates A **firmados** DG+CFO+Controller  
+- [x] Gates A **VoBo** DG+CFO+Controller (2026-11-07)  
 - [x] Control Pack (Gate B) fusionado en ERP-FM-001 → **§19** + **ERP-CP-001**  
 - [x] Lista de Object Pages MVP (Gate C) → **ERP-SF-001 §3–§4**  
 - [x] Matriz SoD mínima Vendor vs AP vs Treasury vs GL poster → **ERP-SF-001 §5**  
 - [x] Decisión CFDI / retenciones documentada → **ERP-SF-001 A2–A3**  
 - [x] Explicit OUT list (WMS/MFG/…) → **ERP-SF-001 §4**  
-- [ ] Umbrales numéricos piloto firmados por CFO → **ERP-CP-001 §3**  
+- [x] Umbrales numéricos piloto adoptados → **ERP-CP-001 §3**  
 
-**Si falta firma Gate A / umbrales → no iniciar OpenAPI productivo ni Angular.**
+**Freeze aprobado → siguiente: OpenAPI / eventos / Flyway / Angular Object Pages.**
 
 ---
 

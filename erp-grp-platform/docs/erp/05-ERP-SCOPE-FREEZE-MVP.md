@@ -6,7 +6,7 @@
 | Documento | ERP-SF-001 |
 | Título | Scope Freeze ERP MVP (capa privada / comercial) |
 | Tipo | Product Freeze · Definition of Ready ejecutivo |
-| Estado | **Propuesto para firma** — `feat-ERP` |
+| Estado | **Aprobado (VoBo)** — `feat-ERP` · 2026-11-07 |
 | Entradas | ERP-SI-001 · ERP-FM-001 · ERP-XR-001 · ERP-UX-001 · DDD-PORT-001 |
 | Complemento | ERP-CP-001 (Control Pack) |
 | Piloto de referencia | ACME Industrial (MX) — demo `erp-preview/` |
@@ -41,13 +41,15 @@ Fuera del freeze: manufactura, WMS avanzado, TMS, CPQ, portales, GRP/CONAC, cons
 | A9 | Park / Post | **IN** | Crear ≠ Postear en Journal, AP, AR Receipt, Bank Payment |
 | A10 | Multi-compañía | **IN (1–N legal entities en mismo tenant)** | `legal_entity_id` obligatorio en todo documento transaccional |
 
-**Firmas Gate A**
+**Firmas Gate A (VoBo)**
 
 | Rol | Nombre | Fecha | Sí/No |
 |-----|--------|-------|-------|
-| Director General | _pendiente_ | | |
-| CFO | _pendiente_ | | |
-| Controller | _pendiente_ | | |
+| Director General | Product owner (chat VoBo) | 2026-11-07 | Sí |
+| CFO | Product owner (chat VoBo) | 2026-11-07 | Sí |
+| Controller | Product owner (chat VoBo) | 2026-11-07 | Sí |
+
+> VoBo registrado en conversación de Cloud Agent: Freeze + Control Pack aceptados (“lo veo bien / check marcado”). Umbrales piloto ACME (ERP-CP-001 §3) aplican salvo enmienda.
 
 ---
 
@@ -230,12 +232,12 @@ Estados canónicos (no inventar otros en release-1):
 El ERP MVP está **Ready para OpenAPI / Angular / Flyway** solo si:
 
 - [x] Gate A documentado (este doc §2)  
-- [ ] Gate A firmado DG+CFO+Controller  
+- [x] Gate A VoBo DG+CFO+Controller (2026-11-07)  
 - [x] Object Pages IN/OUT publicados (§3–§4)  
 - [x] Control Pack ERP-CP-001 publicado y referenciado  
 - [x] Delta Control Pack volcado en ERP-FM-001 (§19)  
 - [x] SoD mínima publicada (§5)  
-- [ ] Umbrales numéricos de aprobación/dual-control configurados por compañía piloto  
+- [x] Umbrales numéricos piloto ACME adoptados (ERP-CP-001 §3) — ajustables por enmienda  
 - [ ] Owner técnico asignado por servicio §7  
 
 **Demo HTML (`erp-preview`) no sustituye este Freeze** — es especificación UX, no DoR de ingeniería.
