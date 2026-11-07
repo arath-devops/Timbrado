@@ -18,7 +18,8 @@
 5. [Congelamiento de alcance MVP](05-ERP-SCOPE-FREEZE-MVP.md) — **ERP-SF-001** *(VoBo 2026-11-07)*
 6. [Paquete de control MVP](06-ERP-MVP-CONTROL-PACK.md) — **ERP-CP-001** *(fusionado en FM §19)*
 7. [Glosario para desarrollo](07-GLOSARIO-ERP-DESARROLLO.md) — **ERP-GL-001**
-8. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)
+8. [Acoplamiento pre-desarrollo](08-ERP-ACOPLAMIENTO-PRE-DESARROLLO.md) — **ERP-AC-001**
+9. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)
 
 ## Cómo leer estos documentos
 
