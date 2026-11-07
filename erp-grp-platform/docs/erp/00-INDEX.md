@@ -3,10 +3,11 @@
 
 | Campo | Valor |
 |-------|--------|
-| Suite | ERP empresarial (capa privada / compartida del portafolio) |
+| Suite | **Solo ERP** empresarial (capa privada / comercial) |
 | Rama de trabajo | `feat-ERP` |
 | Idioma de trabajo | **Español** (nombres técnicos de campos/APIs se conservan en inglés como identificadores) |
-| Entradas | DDD-PORT-001 · SA-MS-001 · referentes SAP/Oracle/D365/NetSuite/Infor/Odoo |
+| Entradas | DDD-PORT-001 · SA-MS-001 · referentes de mercado solo como benchmark |
+| Fuera de este hilo | **GRP** (presupuesto público, CONAC, ciudadano, etc.) y cualquier alcance “tipo SAP suite completa” se trabajan en **ramas/docs aparte** — no mezclar pantallas ni servicios |
 
 ## Contenido
 

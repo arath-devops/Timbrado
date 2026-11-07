@@ -13,7 +13,8 @@
 | Piloto de referencia | ACME Industrial (MX) — demo `erp-preview/` |
 
 > **Regla:** lo que no esté listado como **DENTRO** queda **FUERA** del primer release ERP.  
-> Cambios posteriores requieren enmienda versionada (`ERP-SF-001.rN`) con VoBo de DG + CFO + Controller.
+> Cambios posteriores requieren enmienda versionada (`ERP-SF-001.rN`) con VoBo de DG + CFO + Controller.  
+> **Separación de productos:** este congelamiento es **solo ERP**. GRP (gobierno) y expansiones tipo suite SAP completa (WMS/MFG/TMS/etc. empresariales) van en **iniciativas aparte**; no compartir pantallas, backlog ni bases de datos con esos hilos.
 
 **Equivalencias rápidas:** DENTRO = IN · FUERA = OUT · Compra a pago = P2P · Pedido a cobro = O2C · Ver [glosario](07-GLOSARIO-ERP-DESARROLLO.md).
 
@@ -272,6 +273,7 @@ La demo HTML (`erp-preview`) **no sustituye** este congelamiento: es especificac
 |-----|-------|--------|------|
 | r0 | 2026-11-07 | Creación y aprobación del congelamiento MVP | Dueño de producto |
 | r0.1 | 2026-11-07 | Redacción completa en español para el equipo de desarrollo | — |
+| r0.2 | 2026-11-07 | Aclaración: foco solo ERP; GRP y suite SAP aparte | Dueño de producto |
 
 ---
 
