@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Asientos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Asientos'}])+
+pageHead('Libro diario / asientos', 'balanced: ΣDebit=ΣCredit · periodo OPEN',
+  `<button class="btn btn-primary btn-sm" onclick="toast('Asiento DRAFT simulado')">Nuevo asiento</button>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>journal_date</th><th>period_id</th><th>currency</th><th>header_text</th><th>debit</th><th>credit</th><th>status</th></tr></thead>
+<tbody>${D.journals.map(j=>`<tr><td><strong>${j.id}</strong></td><td>${j.journal_date}</td><td>${j.period_id}</td><td>${j.currency}</td><td>${j.header_text}</td><td>${D.money(j.debit)}</td><td>${D.money(j.credit)}</td><td>${D.badge(j.status)}</td></tr>`).join('')}</tbody></table></div>
+<div class="panel" style="margin-top:12px"><div class="panel-hd"><h3>Captura (campos FM)</h3></div><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">journal_date</label><input class="control" type="date" value="2026-11-07"/></div>
+  <div class="field"><label class="req">period_id</label><input class="control" value="2026-11"/></div>
+  <div class="field"><label class="req">currency</label><input class="control" value="MXN"/></div>
+  <div class="field full"><label class="req">header_text</label><input class="control" placeholder="3–200"/></div>
+  <div class="field"><label class="req">line_account</label><select class="control">${D.accounts.filter(a=>a.allow_manual_posting).map(a=>`<option>${a.account_code}</option>`).join('')}</select></div>
+  <div class="field"><label>line_debit</label><input class="control" type="number" value="1000"/></div>
+  <div class="field"><label>line_credit</label><input class="control" type="number" value="0"/></div>
+  <div class="field"><label>line_cost_center</label><input class="control" placeholder="OU/CC"/></div>
+  <div class="field"><label class="req">balanced</label><div><span class="badge b-ok">true</span> Abs(diff)&lt;0.01</div></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

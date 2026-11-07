@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Estado de cuenta · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'AR',href:'facturas-ar.html'},{label:'Estado de cuenta'}])+
+pageHead('Estado de cuenta cliente', 'customer_id obligatorio', '')+
+`<div class="field" style="max-width:320px"><label class="req">customer_id</label><select class="control">${D.customers.map(c=>`<option>${c.code} — ${c.name}</option>`).join('')}</select></div>
+<div class="panel"><div class="panel-bd">
+  <div class="list-row"><div style="flex:1">AR-44102</div><div>${D.money(312800)}</div></div>
+  <div class="list-row"><div style="flex:1">Saldo</div><div><strong>${D.money(312800)}</strong></div></div>
+</div></div>
+;
+  
+});
+</script></body></html>

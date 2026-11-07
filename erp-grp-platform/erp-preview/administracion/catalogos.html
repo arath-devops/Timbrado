@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Catálogos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Catálogos'}])+
+pageHead('Catálogos maestros (hub)', 'catalog_code, item_code, item_name, active', '')+
+`<div class="table-wrap"><table class="data"><thead><tr><th>catalog_code</th><th>item_code</th><th>item_name</th><th>active</th></tr></thead>
+<tbody>${D.catalogs.map(c=>`<tr><td>${c.catalog_code}</td><td><strong>${c.item_code}</strong></td><td>${c.item_name}</td><td>${c.active}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

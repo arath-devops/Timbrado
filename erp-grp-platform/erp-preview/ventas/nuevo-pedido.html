@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nuevo pedido · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Ventas',href:'index.html'},{label:'Nuevo pedido'}])+
+pageHead('Crear / editar pedido', 'FM §8.1 · line_discount_pct > umbral → WF',
+  `<button class="btn btn-primary btn-sm" onclick="toast('SO DRAFT/CONFIRMED simulado');location.href='pedidos.html'">Guardar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">customer_id</label><select class="control">${D.customers.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">order_date</label><input class="control" type="date" value="2026-11-07"/></div>
+  <div class="field"><label>requested_date</label><input class="control" type="date" value="2026-11-18"/></div>
+  <div class="field"><label class="req">currency</label><input class="control" value="MXN"/></div>
+  <div class="field"><label>price_list_id</label><input class="control" placeholder="opcional"/></div>
+  <div class="field"><label class="req">line_item_id</label><select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">line_qty</label><input class="control" type="number" value="5"/></div>
+  <div class="field"><label class="req">line_price</label><input class="control" type="number" value="8450"/></div>
+  <div class="field"><label>line_discount_pct</label><input class="control" type="number" value="0"/><span class="hint">0–100 · WF si &gt; umbral</span></div>
+  <div class="field"><label class="req">total_amount</label><input class="control" value="42250" readonly/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

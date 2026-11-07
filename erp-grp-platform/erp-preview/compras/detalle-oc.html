@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle OC · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+(()=>{const id=new URLSearchParams(location.search).get('id')||'PO-2026-0842';
+const p=D.pos.find(x=>x.id===id)||D.pos[0];
+const v=D.vendors.find(x=>x.vendor_code===p.vendor_id);
+return crumbs([{label:'Órdenes',href:'ordenes.html'},{label:p.id}])+
+pageHead(p.id, (v?v.legal_name:p.vendor_id)+' · '+D.money(p.total_amount),
+  `<a class="btn btn-secondary btn-sm" href="recepcion.html">Recepción</a>
+   <a class="btn btn-primary btn-sm" href="../administracion/bandeja.html">Aprobar (bandeja)</a>`)+
+`<div class="grid-2"><div class="panel"><div class="panel-hd"><h3>Cabecera</h3>${D.badge(p.status)}</div><div class="panel-bd form-grid">
+  <div class="field"><label>vendor_id</label><div>${p.vendor_id}</div></div>
+  <div class="field"><label>order_date</label><div>${p.order_date}</div></div>
+  <div class="field"><label>currency</label><div>${p.currency}</div></div>
+  <div class="field"><label>payment_terms</label><div>${p.payment_terms}</div></div>
+  <div class="field full"><label>delivery_address</label><div>${p.delivery_address}</div></div>
+  <div class="field"><label>pr_id</label><div>${p.pr_id||'—'}</div></div>
+  <div class="field"><label>buyer_id</label><div>${p.buyer_id}</div></div>
+</div></div>
+<div class="panel"><div class="panel-hd"><h3>Estados / WF / Docs / Audit</h3></div><div class="panel-bd">
+<div class="timeline">
+  <div class="tl done"><h4>DRAFT</h4></div>
+  <div class="tl done"><h4>PENDING_APPROVAL</h4><p>PO_APPROVAL</p></div>
+  <div class="tl"><h4>APPROVED → SENT → RECEIVED</h4></div>
+</div>
+<p class="hint">Documentos: OC, COT · Auditoría: PO_*</p>
+</div></div></div>`;})()
+;
+  
+});
+</script></body></html>

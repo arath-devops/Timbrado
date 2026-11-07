@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Finanzas · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas'}])+
+pageHead('Finanzas', 'GL · AP · AR/Billing · Tesorería', '')+
+`<div class="grid-3">
+${[['Contabilidad GL','plan-cuentas.html','COA, periodos, asientos, mayor, balanza, EEFF'],
+['Cuentas por pagar','facturas-ap.html','Facturas proveedor, programación pagos, aging'],
+['Cuentas por cobrar','facturas-ar.html','Facturas cliente, cobros, aging'],
+['Billing','emitir-factura.html','Emisión de factura / comprobante'],
+['Tesorería','bancos.html','Bancos, posición, órdenes de pago, conciliación'],
+['Asientos','asientos.html','Libro diario']].map(([t,h,d])=>`<a class="panel" href="${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}
+</div>
+<div class="kpi-row" style="margin-top:8px">
+  <div class="kpi"><div class="l">AP abierto</div><div class="v">${D.money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+  <div class="kpi"><div class="l">AR abierto</div><div class="v">${D.money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
+  <div class="kpi"><div class="l">Periodo actual</div><div class="v">2026-11</div><div class="d">${D.badge('OPEN')}</div></div>
+  <div class="kpi"><div class="l">Efectivo</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div>
+</div>
+;
+  
+});
+</script></body></html>

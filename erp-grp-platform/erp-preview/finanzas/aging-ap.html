@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aging AP · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'AP',href:'facturas-ap.html'},{label:'Aging'}])+
+pageHead('Antigüedad de saldos AP', 'as_of_date obligatorio', '')+
+`<div class="field" style="max-width:220px"><label class="req">as_of_date</label><input class="control" type="date" value="2026-11-07"/></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>vendor_id</th><th>0-30</th><th>31-60</th><th>61+</th><th>Total</th></tr></thead>
+<tbody>
+<tr><td>V-1044</td><td>${D.money(128400)}</td><td>${D.money(0)}</td><td>${D.money(0)}</td><td>${D.money(128400)}</td></tr>
+<tr><td>V-1001</td><td>${D.money(125000)}</td><td>${D.money(0)}</td><td>${D.money(0)}</td><td>${D.money(125000)}</td></tr>
+</tbody></table></div>
+;
+  
+});
+</script></body></html>

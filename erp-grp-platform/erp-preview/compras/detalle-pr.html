@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle PR · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+(()=>{const id=new URLSearchParams(location.search).get('id')||'PR-2026-1204';
+const p=D.prs.find(x=>x.id===id)||D.prs[0];
+return crumbs([{label:'Requisiciones',href:'requisiciones.html'},{label:p.id}])+
+pageHead(p.title, p.id + ' · status ' + p.status,
+  `<a class="btn btn-secondary btn-sm" href="../administracion/bandeja.html">Ir a bandeja</a>`)+
+`<div class="grid-2"><div class="panel"><div class="panel-hd"><h3>Consulta</h3>${D.badge(p.status)}</div><div class="panel-bd form-grid">
+  <div class="field"><label>requester_id</label><div>${p.requester_id}</div></div>
+  <div class="field"><label>org_unit_id</label><div>${p.org_unit_id}</div></div>
+  <div class="field"><label>need_by_date</label><div>${p.need_by_date||'—'}</div></div>
+  <div class="field"><label>priority</label><div>${p.priority||'—'}</div></div>
+  <div class="field"><label>total_amount</label><div style="font-size:20px;font-weight:700">${D.money(p.total_amount)}</div></div>
+  <div class="field full"><label>justification</label><div style="color:var(--ink-2)">${p.justification}</div></div>
+</div></div>
+<div class="panel"><div class="panel-hd"><h3>Workflow / Estados</h3></div><div class="panel-bd"><div class="timeline">
+  <div class="tl done"><h4>DRAFT</h4><time>creada</time></div>
+  <div class="tl done"><h4>SUBMITTED</h4><p>PR_APPROVAL</p></div>
+  <div class="tl"><h4>APPROVED / REJECTED</h4><time>—</time></div>
+</div><p class="hint" style="margin-top:10px">Documentos: REQ, COT · Auditoría: PR_*</p></div></div></div>`;})()
+;
+  
+});
+</script></body></html>

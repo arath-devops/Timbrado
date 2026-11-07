@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle SO · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+(()=>{const id=new URLSearchParams(location.search).get('id')||'SO-2026-0551';
+const s=D.salesOrders.find(x=>x.id===id)||D.salesOrders[0];
+return crumbs([{label:'Pedidos',href:'pedidos.html'},{label:s.id}])+
+pageHead(s.id, D.money(s.total_amount),
+  `<a class="btn btn-secondary btn-sm" href="entregas.html">Entrega</a>
+   <a class="btn btn-primary btn-sm" href="../finanzas/emitir-factura.html">Facturar</a>`)+
+`<div class="panel"><div class="panel-bd form-grid">
+  <div class="field"><label>customer_id</label><div>${s.customer_id}</div></div>
+  <div class="field"><label>status</label><div>${D.badge(s.status)}</div></div>
+  <div class="field"><label>order_date</label><div>${s.order_date}</div></div>
+  <div class="field"><label>requested_date</label><div>${s.requested_date||'—'}</div></div>
+  <div class="field"><label>currency</label><div>${s.currency}</div></div>
+</div></div>
+<p class="hint">Estados: DRAFT→CONFIRMED→DELIVERED→INVOICED · Docs: SO, DN · Audit: SO_*</p>`;})()
+;
+  
+});
+</script></body></html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Órdenes de compra · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Compras',href:'index.html'},{label:'Órdenes'}])+
+pageHead('Lista de órdenes de compra', 'Workbench comprador',
+  `<a class="btn btn-primary btn-sm" href="nueva-oc.html">Crear OC</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>vendor_id</th><th>order_date</th><th>currency</th><th>payment_terms</th><th>pr_id</th><th>buyer_id</th><th>total_amount</th><th>status</th></tr></thead>
+<tbody>${D.pos.map(p=>`<tr class="clickable" onclick="location.href='detalle-oc.html?id=${p.id}'"><td><strong>${p.id}</strong></td><td>${p.vendor_id}</td><td>${p.order_date}</td><td>${p.currency}</td><td>${p.payment_terms}</td><td>${p.pr_id||'—'}</td><td>${p.buyer_id}</td><td>${D.money(p.total_amount)}</td><td>${D.badge(p.status)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

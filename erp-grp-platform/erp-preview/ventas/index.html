@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ventas · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Operación'},{label:'Ventas'}])+
+pageHead('Ventas (Order-to-Cash)', 'Pedidos · Entregas · enlace Billing',
+  `<a class="btn btn-primary btn-sm" href="nuevo-pedido.html">Crear pedido</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+  <a class="btn btn-secondary btn-sm" href="pedidos.html">Lista de pedidos</a>
+  <a class="btn btn-secondary btn-sm" href="nuevo-pedido.html">Crear / editar pedido</a>
+  <a class="btn btn-secondary btn-sm" href="entregas.html">Entregas / remisiones</a>
+  <a class="btn btn-secondary btn-sm" href="../finanzas/emitir-factura.html">Billing</a>
+</div></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>customer_id</th><th>order_date</th><th>requested_date</th><th>currency</th><th>total_amount</th><th>status</th></tr></thead>
+<tbody>${D.salesOrders.map(s=>`<tr class="clickable" onclick="location.href='detalle-pedido.html?id=${s.id}'"><td><strong>${s.id}</strong></td><td>${s.customer_id}</td><td>${s.order_date}</td><td>${s.requested_date||'—'}</td><td>${s.currency}</td><td>${D.money(s.total_amount)}</td><td>${D.badge(s.status)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Entregas · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Ventas',href:'index.html'},{label:'Entregas'}])+
+pageHead('Entregas / remisiones', 'FM §8.1 delivery',
+  `<button class="btn btn-primary btn-sm" onclick="toast('DELIVERY_POSTED')">Postear entrega</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">sales_order_id</label><select class="control">${D.salesOrders.map(s=>`<option>${s.id}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">warehouse_id</label><select class="control"><option>WH-FG</option><option>WH-P1</option></select></div>
+  <div class="field"><label class="req">line_qty_deliver</label><input class="control" type="number" value="5"/></div>
+  <div class="field"><label class="req">delivery_date</label><input class="control" type="date" value="2026-11-07"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

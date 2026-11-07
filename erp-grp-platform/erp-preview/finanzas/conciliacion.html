@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conciliación · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Tesorería',href:'bancos.html'},{label:'Conciliación bancaria'}])+
+pageHead('Conciliación bancaria', 'statement_balance vs libro',
+  `<button class="btn btn-primary btn-sm" onclick="toast('RECON MATCHED (simulado)')">Conciliar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">bank_account_id</label><select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">statement_date</label><input class="control" type="date" value="2026-11-06"/></div>
+  <div class="field"><label class="req">statement_balance</label><input class="control" type="number" value="1840000"/></div>
+  <div class="field full"><label>matched_tx_ids</label><input class="control" placeholder="Ref[] match libro↔banco"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

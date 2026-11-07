@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nómina · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Personas'},{label:'Nómina'}])+
+pageHead('Nómina', 'Corrida · Dispersión',
+  `<a class="btn btn-primary btn-sm" href="corrida.html">Corrida de nómina</a>
+   <a class="btn btn-secondary btn-sm" href="dispersion.html">Dispersión</a>`)+
+`<div class="alert">WF: PAYROLL_APPROVAL · Estados corrida: DRAFT→CALCULATED→APPROVED→PAID</div>
+<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label>pay_period (vista)</label><div>2026-11-Q1</div></div>
+  <div class="field"><label>Última corrida</label><div>PAY-2026-11A · ${D.badge('APPROVED')}</div></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

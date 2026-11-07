@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Aging AR · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'AR',href:'facturas-ar.html'},{label:'Aging'}])+
+pageHead('Antigüedad saldos AR', '', '')+
+`<div class="field" style="max-width:220px"><label class="req">as_of_date</label><input class="control" type="date" value="2026-11-07"/></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>customer_id</th><th>0-30</th><th>31-60</th><th>Total open</th></tr></thead>
+<tbody>${D.arInvoices.filter(i=>i.open_amount>0).map(i=>`<tr><td>${i.customer_id}</td><td>${D.money(i.open_amount)}</td><td>$0</td><td>${D.money(i.open_amount)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

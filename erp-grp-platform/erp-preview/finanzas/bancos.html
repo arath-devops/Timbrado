@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bancos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Tesorería'}])+
+pageHead('Cuentas bancarias / Posición de efectivo', '',
+  `<a class="btn btn-secondary btn-sm" href="ordenes-pago.html">Órdenes de pago</a>
+   <a class="btn btn-secondary btn-sm" href="conciliacion.html">Conciliación</a>`)+
+`<div class="kpi-row"><div class="kpi"><div class="l">as_of_datetime</div><div class="v" style="font-size:16px">2026-11-07 10:00</div></div>
+<div class="kpi"><div class="l">Posición MXN</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>bank_name</th><th>account_number</th><th>currency</th><th>gl_cash_account</th><th>balance</th></tr></thead>
+<tbody>${D.banks.map(b=>`<tr><td><strong>${b.bank_name}</strong></td><td class="mono">${b.account_number}</td><td>${b.currency}</td><td>${b.gl_cash_account}</td><td>${b.currency==='MXN'?D.money(b.balance):('$'+b.balance.toLocaleString())}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

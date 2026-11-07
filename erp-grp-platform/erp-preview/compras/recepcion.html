@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Recepción · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Compras',href:'index.html'},{label:'Recepción'}])+
+pageHead('Recepción de mercancías / servicios', 'FM-001 §6.3 · qty ≤ open*(1+tol)',
+  `<button class="btn btn-primary btn-sm" onclick="toast('GR POSTED · Auditoría GR_POSTED');">Postear recepción</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">po_id</label><select class="control">${D.pos.map(p=>`<option>${p.id} (${p.status})</option>`).join('')}</select></div>
+  <div class="field"><label class="req">receipt_date</label><input class="control" type="date" value="2026-11-07"/></div>
+  <div class="field"><label>warehouse_id</label><select class="control"><option>WH-P1</option><option>WH-P2</option><option>WH-FG</option></select><span class="hint">Obligatorio si item STOCK</span></div>
+  <div class="field"><label class="req">receipt_type</label><select class="control"><option>PARTIAL</option><option>FULL</option></select></div>
+  <div class="field"><label class="req">line_po_line_id</label><input class="control" value="1"/></div>
+  <div class="field"><label class="req">line_qty_received</label><input class="control" type="number" value="500"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

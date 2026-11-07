@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Roles · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Roles'}])+
+pageHead('Roles y permisos', 'role_code, role_name, permission_codes', '')+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">role_code</label><input class="control" value="BUY"/></div>
+  <div class="field"><label class="req">role_name</label><input class="control" value="Comprador"/></div>
+  <div class="field full"><label class="req">permission_codes</label><div style="display:flex;flex-wrap:wrap;gap:6px">
+    ${['proc.request.create','proc.po.create','proc.receipt','ap.read','catalog.read'].map(p=>`<span class="badge b-neu">${p}</span>`).join('')}
+  </div></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

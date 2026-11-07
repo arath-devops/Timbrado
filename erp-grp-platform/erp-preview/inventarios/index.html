@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inventarios · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Operación'},{label:'Inventarios'}])+
+pageHead('Inventarios', 'Artículos · Existencias · Movimientos', '')+
+`<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+  <a class="btn btn-secondary btn-sm" href="articulos.html">Maestro de artículos</a>
+  <a class="btn btn-secondary btn-sm" href="existencias.html">Consulta existencias</a>
+  <a class="btn btn-secondary btn-sm" href="movimientos.html">Movimientos</a>
+</div></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>item_code</th><th>warehouse_id</th><th>qty</th></tr></thead>
+<tbody>${D.stock.map(s=>`<tr><td><strong>${s.item_code}</strong></td><td>${s.warehouse_id}</td><td>${s.qty.toLocaleString('es-MX')}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

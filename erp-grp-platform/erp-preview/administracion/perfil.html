@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Perfil · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Mi perfil'}])+
+pageHead('Mi perfil', 'display_name, email, locale, theme',
+  `<button class="btn btn-primary btn-sm" onclick="toast('PROFILE_UPDATE')">Guardar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">display_name</label><input class="control" value="${D.session.display_name}"/></div>
+  <div class="field"><label class="req">email</label><input class="control" value="${D.session.email}"/></div>
+  <div class="field"><label>locale</label><select class="control"><option>es-MX</option><option>en-US</option></select></div>
+  <div class="field"><label>theme</label><select class="control"><option>light</option><option>dark</option></select></div>
+  <div class="field"><label>new_password</label><input class="control" type="password" placeholder="condicional"/></div>
+  <div class="field"><label>Empresa</label><div>${D.session.company}</div></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

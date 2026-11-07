@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nueva requisición · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Compras',href:'index.html'},{label:'Nueva requisición'}])+
+pageHead('Nueva requisición', 'Campos obligatorios FM-001 §6.1',
+  `<button class="btn btn-secondary btn-sm" type="button" onclick="history.back()">Cancelar</button>
+   <button class="btn btn-ghost btn-sm" type="button" onclick="toast('Borrador simulado')">Guardar borrador</button>
+   <button class="btn btn-primary btn-sm" type="button" onclick="submitPR()">Enviar (SUBMITTED)</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field full"><label class="req">title</label><input class="control" id="title" placeholder="5–200 caracteres"/></div>
+  <div class="field"><label class="req">requester_id</label><input class="control" value="mhernandez" readonly/></div>
+  <div class="field"><label class="req">org_unit_id</label><select class="control">${D.orgUnits.map(o=>`<option value="${o.ou_code}">${o.ou_code} — ${o.ou_name}</option>`).join('')}</select></div>
+  <div class="field"><label>need_by_date</label><input class="control" type="date" value="2026-11-20"/></div>
+  <div class="field"><label>priority</label><select class="control"><option>LOW</option><option selected>MED</option><option>HIGH</option></select></div>
+  <div class="field full"><label class="req">justification</label><textarea class="control" id="just" placeholder="≥20 caracteres"></textarea><span class="hint">Motivo de compra</span></div>
+  <div class="field"><label>line_item_id</label><select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">line_description</label><input class="control" value="Tornillo hex M12x40"/></div>
+  <div class="field"><label class="req">line_qty</label><input class="control" type="number" value="5000"/></div>
+  <div class="field"><label class="req">line_uom</label><input class="control" value="PZA"/></div>
+  <div class="field"><label class="req">line_est_price</label><input class="control" type="number" value="2.1"/></div>
+  <div class="field"><label>suggested_vendor_id</label><select class="control"><option value="">—</option>${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">total_amount</label><input class="control" value="10500" readonly/><span class="hint">Σ líneas · >0 para submit</span></div>
+</div></div></div>
+;
+  
+window.submitPR=()=>{
+  const t=document.getElementById('title').value.trim();
+  const j=document.getElementById('just').value.trim();
+  if(t.length<5||j.length<20){toast('Validación: title≥5 y justification≥20');return;}
+  toast('PR enviada · status SUBMITTED · Workflow PR_APPROVAL');
+  location.href='requisiciones.html';
+};
+
+});
+</script></body></html>

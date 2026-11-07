@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nueva OC · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Compras',href:'index.html'},{label:'Nueva OC'}])+
+pageHead('Crear / editar OC', 'Campos FM-001 §6.2 · vendor ACTIVE no blocked',
+  `<button class="btn btn-secondary btn-sm" onclick="history.back()">Cancelar</button>
+   <button class="btn btn-primary btn-sm" onclick="toast('OC guardada DRAFT → puede enviarse a PO_APPROVAL');location.href='ordenes.html'">Guardar</button>`)+
+`<div class="alert warn">Validación: vendor_id status debe ser ACTIVE (V-1102 BLOCKED rechazado).</div>
+<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">vendor_id</label><select class="control">${D.vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.legal_name} (${v.status})</option>`).join('')}</select></div>
+  <div class="field"><label class="req">order_date</label><input class="control" type="date" value="2026-11-07"/></div>
+  <div class="field"><label class="req">currency</label><select class="control"><option>MXN</option><option>USD</option></select></div>
+  <div class="field"><label class="req">payment_terms</label><select class="control"><option>NET15</option><option selected>NET30</option><option>NET45</option></select></div>
+  <div class="field full"><label class="req">delivery_address</label><input class="control" value="Almacén Planta 1 · Av. Industrial 120"/></div>
+  <div class="field"><label>pr_id</label><select class="control"><option value="">—</option>${D.prs.filter(p=>p.status==='APPROVED').map(p=>`<option>${p.id}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">buyer_id</label><input class="control" value="clopez"/></div>
+  <div class="field"><label class="req">line_item_id</label><select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">line_qty</label><input class="control" type="number" value="1000"/></div>
+  <div class="field"><label class="req">line_price</label><input class="control" type="number" value="22"/></div>
+  <div class="field"><label class="req">line_tax_code</label><input class="control" value="IVA16"/></div>
+  <div class="field"><label class="req">total_amount</label><input class="control" value="25520" readonly/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

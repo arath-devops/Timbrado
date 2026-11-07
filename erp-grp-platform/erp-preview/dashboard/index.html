@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dashboard · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML =
+    crumbs([{label:'Inicio',href:'index.html'},{label:'Dashboard'}])+
+    pageHead('Dashboard ejecutivo', D.session.company + ' · ' + D.session.legal_entity,
+      `<a class="btn btn-secondary btn-sm" href="../administracion/bandeja.html">Bandeja (${D.tasks.length})</a>
+       <a class="btn btn-primary btn-sm" href="../compras/nueva-requisicion.html">Nueva requisición</a>`)+
+    `<div class="kpi-row">${D.kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d ${k.t}">${k.d}</div></div>`).join('')}</div>
+    <div class="grid-2">
+      <div class="panel"><div class="panel-hd"><h3>Tareas de aprobación</h3><a href="../administracion/bandeja.html">Ver todas</a></div>
+      <div class="panel-bd">${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.task_id}</strong> · ${t.ref}<div style="font-size:12px;color:var(--ink-3)">${t.title}</div></div>
+        <div style="text-align:right">${D.money(t.amount)}<div style="font-size:11px">${t.sla.includes('vencida')?'<span class="badge b-danger">'+t.sla+'</span>':t.sla}</div></div></div>`).join('')}</div></div>
+      <div class="panel"><div class="panel-hd"><h3>Alertas</h3></div><div class="panel-bd">
+        <div class="alert warn">Periodo 2026-11 OPEN — soft close en 12 días.</div>
+        <div class="alert">3 OC en PENDING_APPROVAL · 1 factura AP sin OC.</div>
+        <div class="alert danger">Proveedor V-1102 BLOCKED — no generar OC/pagos.</div>
+      </div></div>
+    </div>
+    <div class="panel"><div class="panel-hd"><h3>Accesos rápidos (SI-001 MVP)</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+      ${[['Compras','../compras/index.html'],['Ventas','../ventas/index.html'],['Inventarios','../inventarios/index.html'],['Finanzas','../finanzas/index.html'],['AP','../finanzas/facturas-ap.html'],['AR','../finanzas/facturas-ar.html'],['Tesorería','../finanzas/bancos.html'],['RRHH','../rh/index.html'],['Nómina','../nomina/index.html'],['Activos','../activos/index.html'],['Proyectos','../proyectos/index.html'],['Administración','../administracion/index.html'],['Reportes','../reportes/index.html']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="${h}">${l}</a>`).join('')}
+    </div></div>`;
+});
+</script></body></html>

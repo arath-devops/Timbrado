@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Activos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas'},{label:'Activos'}])+
+pageHead('Activo fijo', 'Alta · Depreciación (Professional)',
+  `<a class="btn btn-primary btn-sm" href="alta.html">Alta de activo</a>
+   <a class="btn btn-secondary btn-sm" href="depreciacion.html">Depreciación</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>asset_code</th><th>asset_name</th><th>capitalization_date</th><th>acquisition_cost</th><th>useful_life_months</th><th>depreciation_method</th><th>status</th></tr></thead>
+<tbody>${D.assets.map(a=>`<tr><td><strong>${a.asset_code}</strong></td><td>${a.asset_name}</td><td>${a.capitalization_date}</td><td>${D.money(a.acquisition_cost)}</td><td>${a.useful_life_months}</td><td>${a.depreciation_method}</td><td>${D.badge(a.status)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Administración · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Plataforma'},{label:'Administración'}])+
+pageHead('Administración', 'IAM · Org · Catálogos · Docs · Perfil', '')+
+`<div class="grid-3">
+${[['Usuarios','usuarios.html'],['Roles y permisos','roles.html'],['Estructura organizacional','organizacion.html'],['Catálogos maestros','catalogos.html'],['Bandeja de aprobación','bandeja.html'],['Documentos / expediente','documentos.html'],['Subir evidencia','subir.html'],['Notificaciones','notificaciones.html'],['Mi perfil','perfil.html'],['Consulta auditoría','auditoria.html']].map(([t,h])=>`<a class="panel" href="${h}"><div class="panel-bd"><strong>${t}</strong></div></a>`).join('')}
+</div>
+;
+  
+});
+</script></body></html>
