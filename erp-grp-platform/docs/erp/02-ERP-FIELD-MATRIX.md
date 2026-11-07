@@ -6,8 +6,9 @@
 | Documento | ERP-FM-001 |
 | Entrada | ERP-SI-001 (Screen Inventory) |
 | Referentes | SAP S/4HANA · Oracle Fusion · NetSuite · Infor · Odoo Enterprise |
-| Estado | Borrador funcional — `feat-ERP` |
+| Estado | Borrador funcional + **Control Pack §19** — `feat-ERP` |
 | Entregable | Matriz funcional (sin HTML / sin código) |
+| Complementos | ERP-CP-001 · ERP-SF-001 · ERP-XR-001 |
 
 ---
 
@@ -1009,10 +1010,94 @@ Company
 
 # §18 Próximo paso
 
-1. Congelar **subset MVP** de esta matriz como DoR de pantallas.  
-2. Derivar OpenAPI `properties` + enums de estado **solo** tras Freeze (sin inventar contratos ahora).  
-3. HTML/wireframes: explícitamente fuera de alcance de ERP-FM-001.
+1. ~~Congelar subset MVP~~ → ver **ERP-SF-001**.  
+2. Derivar OpenAPI `properties` + enums de estado **solo tras firma** de ERP-SF-001.  
+3. HTML preview (`erp-preview/`) es UX spec; no sustituye esta matriz ni el Freeze.
 
 ---
 
-**Fin ERP-FM-001** — Matriz funcional completa alineada a ERP-SI-001 y patrones SAP S/4HANA, Oracle Fusion, NetSuite, Infor y Odoo Enterprise.
+# §19 Control Pack MVP (fusionado desde ERP-CP-001 / ERP-XR-001)
+
+Normativo para release-1. Campos **adicionales o reforzados** respecto a §1–§14.  
+Detalle narrativo: `06-ERP-MVP-CONTROL-PACK.md` (ERP-CP-001).
+
+## 19.1 Transversal — todos los documentos transaccionales
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Transversal | Headers TX | legal_entity_id | Sí | Ref | Documento anclado a LE | Scope usuario |
+| Transversal | Headers TX | document_number | Sí (al submit/post) | Text | Folio serie+LE+tipo | Único |
+| Transversal | Headers TX | created_by | Sí | Ref | Autor creación | — |
+| Transversal | Headers TX | created_at | Sí | DateTime | — | — |
+| Transversal | Headers TX | posted_by | Condicional | Ref | Al POSTED/ISSUED/SENT | Permiso post |
+| Transversal | Headers TX | posted_at | Condicional | DateTime | — | ≥ created_at |
+| Transversal | Docs multi-moneda | exchange_rate | Condicional | Number | Si currency ≠ functional LE | > 0 |
+| Transversal | Docs multi-moneda | rate_date | Condicional | Date | Fecha de tasa | ≤ posting_date |
+| Transversal | Docs multi-moneda | rate_type | Condicional | Enum | SPOT/COMPANY/MANUAL | Enum |
+| Transversal | Líneas FX | functional_currency_amount | Condicional | Money | amount × rate | Calculado |
+
+## 19.2 Cliente / Ventas — crédito
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Master | Ficha cliente | credit_limit | Sí | Money | Límite autorizado | ≥ 0 |
+| Master | Ficha cliente | credit_block | Sí | Boolean | Bloqueo duro | — |
+| Master/SO | Cliente / SO | credit_exposure | Sí (calc) | Money | Open SO + open AR | Sistema |
+| Ventas | Crear/Confirmar SO | credit_check_result | Sí | Enum | OK/HOLD/BLOCKED | BLOCKED⇒no confirm |
+| Ventas | SO | credit_override_reason | Condicional | Text | Override HOLD | ≥10 + WF |
+
+## 19.3 Proveedor / CxP — hold, match, retenciones, unicidad
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Compras | Ficha proveedor | hold_reason | Condicional | Text | Si BLOCKED/hold | Obl. al bloquear |
+| CxP | Factura AP | payment_block | Sí | Boolean | Fuera de propuesta pago | — |
+| CxP | Factura AP | payment_block_reason | Condicional | Text | Si block=true | ≥5 |
+| CxP | Factura AP | withholding_tax_code | Condicional | Ref | Retención MX | Catálogo |
+| CxP | Factura AP | withholding_base | Condicional | Money | Base | ≥0 |
+| CxP | Factura AP | withholding_amount | Condicional | Money | Retención | ≤ subtotal |
+| Master | Proveedor | withholding_applicable | Sí | Boolean | Default retención | — |
+| CxP | Captura AP | (vendor_id, invoice_number, legal_entity_id) | Sí | — | Unique | DB+UI |
+| CxP | Detalle AP | match_status | Sí | Enum | MATCHED/TOLERANCE/FAILED/NOT_REQUIRED | — |
+| Config | Match policy | match_tolerance_qty_pct | Sí | Percent | Over-receipt/invoice | 0–100 |
+| Config | Match policy | match_tolerance_amt | Sí | Money/% | Diff PO vs AP | ≥0 |
+| Compras | PO / Item | gr_based_invoice | Condicional | Boolean | STOCK default true | — |
+| Compras | PO line | over_delivery_tolerance | Condicional | Percent | Default policy | ≥0 |
+| Compras | PO line | under_delivery_tolerance | Condicional | Percent | Default policy | ≥0 |
+
+## 19.4 Compras — account assignment
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Compras | PR/PO line | account_assignment_category | Sí | Enum | COST_CENTER/STOCK (+PROJECT/ASSET si enabled) | Enum |
+| Compras | PR/PO line | cost_center_id | Condicional | Ref | Si COST_CENTER | Existe |
+| Compras | PR/PO line | project_id | Condicional | Ref | Si PROJECT | Existe |
+| Compras | PR/PO line | asset_id | Condicional | Ref | Si ASSET | Existe |
+| CxP | AP line | cost_center_id | Condicional | Ref | Hereda PO o captura | Si expense |
+
+## 19.5 Tesorería — dual control + banco vendor
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Tesorería | Orden de pago | maker_user_id | Sí | Ref | Solicitante | ≠ approver |
+| Tesorería | Orden de pago | dual_control_approver_id | Condicional | Ref | Si amount ≥ threshold | Rol TRE2 |
+| Tesorería | Orden de pago | dual_control_status | Sí | Enum | NOT_REQUIRED/PENDING/APPROVED | — |
+| Config | Thresholds | dual_control_threshold | Sí | Money | Por LE | >0 |
+| Compras | Vendor bank change | bank_change_request_id | Condicional | Ref | Cambio cuenta vía WF | BANK_CHANGE |
+| Audit | Vendor bank | before/after | Sí | JSON | Trail | AuditFact |
+
+## 19.6 Inventario — ATP (refuerzo)
+
+| Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla de Negocio | Validación |
+|--------|----------|-------|-------------|------|------------------|------------|
+| Inventarios | Existencias | qty_on_hand | Sí | Number | Existencia física | ≥0 política |
+| Inventarios | Existencias | qty_reserved | Sí | Number | Reservas SO/etc. | ≥0 |
+| Inventarios | Existencias | qty_available | Sí (calc) | Number | on_hand − reserved | ≥0 si no negative stock |
+
+## 19.7 Workflows de control (referencia)
+
+PR_APPROVAL · PO_APPROVAL · AP_INVOICE_APPROVAL · PAYMENT_DUAL_CONTROL · BANK_CHANGE · CREDIT_OVERRIDE
+
+---
+
+**Fin ERP-FM-001** — Matriz funcional + Control Pack §19 (ERP-CP-001), alineada a ERP-SI-001 / ERP-SF-001.

@@ -356,14 +356,16 @@ Actualizar ERP-FM-001 con el Control Pack y emitir **ERP-SF-001 Scope Freeze ERP
 
 Antes de diseñar interfaz o backend, debe existir evidencia de:
 
-- [ ] Gates A firmados (localización, payroll, FX, match)  
-- [ ] Control Pack (Gate B) fusionado en ERP-FM-001  
-- [ ] Lista de Object Pages MVP (Gate C) aprobada  
-- [ ] Matriz SoD mínima Vendor vs AP vs Treasury vs GL poster  
-- [ ] Decisión CFDI / retenciones documentada  
-- [ ] Explicit OUT list (WMS/MFG/…) publicada al equipo  
+- [x] Gates A documentados (localización, payroll, FX, match) → **ERP-SF-001 §2**  
+- [ ] Gates A **firmados** DG+CFO+Controller  
+- [x] Control Pack (Gate B) fusionado en ERP-FM-001 → **§19** + **ERP-CP-001**  
+- [x] Lista de Object Pages MVP (Gate C) → **ERP-SF-001 §3–§4**  
+- [x] Matriz SoD mínima Vendor vs AP vs Treasury vs GL poster → **ERP-SF-001 §5**  
+- [x] Decisión CFDI / retenciones documentada → **ERP-SF-001 A2–A3**  
+- [x] Explicit OUT list (WMS/MFG/…) → **ERP-SF-001 §4**  
+- [ ] Umbrales numéricos piloto firmados por CFO → **ERP-CP-001 §3**  
 
-**Si falta un ítem → no iniciar UI ni OpenAPI.**
+**Si falta firma Gate A / umbrales → no iniciar OpenAPI productivo ni Angular.**
 
 ---
 
@@ -380,4 +382,4 @@ Antes de diseñar interfaz o backend, debe existir evidencia de:
 
 ---
 
-**Documento siguiente sugerido:** `04-ERP-MVP-CONTROL-PACK.md` (delta exacto de campos a insertar en ERP-FM-001) + `05-ERP-SCOPE-FREEZE-MVP.md`.
+**Documentos emitidos:** [ERP-SF-001](05-ERP-SCOPE-FREEZE-MVP.md) · [ERP-CP-001](06-ERP-MVP-CONTROL-PACK.md) · FM-001 §19.
