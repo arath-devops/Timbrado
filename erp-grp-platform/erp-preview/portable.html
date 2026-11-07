@@ -592,7 +592,7 @@ const VIEWS = {
         </div></div>
       </div>
       <div class="panel"><div class="panel-hd"><h3>Módulos</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        ${[['Compras','compras'],['Ventas','ventas'],['Inventarios','inventarios'],['Finanzas','finanzas'],['AP','facturas-ap'],['AR','facturas-ar'],['Tesorería','bancos'],['RRHH','rh'],['Nómina','nomina'],['Activos','activos'],['Proyectos','proyectos'],['Admin','admin'],['Reportes','reportes']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="#${h}">${l}</a>`).join('')}
+        ${[['Compras','compras'],['Ventas','ventas'],['Inventarios','inventarios'],['Contabilidad','contabilidad'],['CxP','cxp'],['Facturación','facturacion'],['CxC','cxc'],['Tesorería','tesoreria'],['RRHH','rh'],['Nómina','nomina'],['Activos','activos'],['Proyectos','proyectos'],['Admin','admin'],['Reportes','reportes']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="#${h}">${l}</a>`).join('')}
       </div></div>`;
   },
   compras(){
@@ -680,14 +680,111 @@ const VIEWS = {
       table(['vendor_code','legal_name','tax_id','email','payment_terms','currency','status'],
         D.vendors.map(v=>`<tr><td><strong>${v.vendor_code}</strong></td><td>${v.legal_name}</td><td class="mono">${v.tax_id}</td><td>${v.email}</td><td>${v.payment_terms_default}</td><td>${v.currency}</td><td>${badge(v.status)}</td></tr>`).join(''));
   },
+
+  contabilidad(){
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Contabilidad GL'}])+
+      pageHead('Contabilidad (GL)','COA · periodos · asientos · mayor',
+        `<a class="btn btn-primary btn-sm" href="#asientos">Asientos</a>`)+
+      `<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn btn-secondary btn-sm" href="#plan-cuentas">Plan de cuentas</a>
+        <a class="btn btn-secondary btn-sm" href="#periodos">Periodos</a>
+        <a class="btn btn-secondary btn-sm" href="#asientos">Libro diario</a>
+      </div></div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="l">Periodo</div><div class="v">2026-11</div><div class="d">${badge('OPEN')}</div></div>
+        <div class="kpi"><div class="l">Cuentas</div><div class="v">${D.accounts.length}</div></div>
+        <div class="kpi"><div class="l">Asientos</div><div class="v">${D.journals.length}</div></div>
+      </div>`;
+  },
+  cxp(){
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'CxP'}])+
+      pageHead('Cuentas por pagar (CxP)','Facturas proveedor · match · pagos · aging',
+        `<a class="btn btn-primary btn-sm" href="#captura-ap">Capturar factura</a>
+         <a class="btn btn-secondary btn-sm" href="#pagos-ap">Programar pagos</a>`)+
+      `<div class="kpi-row">
+        <div class="kpi"><div class="l">Abierto</div><div class="v">${money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+        <div class="kpi"><div class="l">Facturas</div><div class="v">${D.apInvoices.length}</div></div>
+        <div class="kpi"><div class="l">Pend. aprobación</div><div class="v">${D.apInvoices.filter(i=>i.status==='PENDING_APPROVAL').length}</div></div>
+      </div>
+      <div class="panel"><div class="panel-hd"><h3>Procesos CxP</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn btn-secondary btn-sm" href="#facturas-ap">Lista facturas proveedor</a>
+        <a class="btn btn-secondary btn-sm" href="#captura-ap">Captura factura</a>
+        <a class="btn btn-secondary btn-sm" href="#pagos-ap">Programación de pagos</a>
+        <a class="btn btn-secondary btn-sm" href="#aging-ap">Aging AP</a>
+        <a class="btn btn-secondary btn-sm" href="#proveedores">Proveedores</a>
+        <a class="btn btn-secondary btn-sm" href="#ordenes-pago">Órdenes de pago</a>
+      </div></div>`+
+      table(['id','vendor_id','invoice_number','grand_total','due_date','match_status','status'],
+        D.apInvoices.map(i=>`<tr class="clickable" onclick="location.hash='detalle-ap/${i.id}'"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${i.invoice_number}</td><td>${money(i.grand_total)}</td><td>${i.due_date}</td><td>${i.match_status}</td><td>${badge(i.status)}</td></tr>`).join(''));
+  },
+  facturacion(){
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Facturación'}])+
+      pageHead('Facturación / Billing','Emisión de factura · CFDI · enlace a pedidos',
+        `<a class="btn btn-primary btn-sm" href="#billing">Emitir factura</a>
+         <a class="btn btn-secondary btn-sm" href="#ventas">Pedidos</a>`)+
+      `<div class="alert">customer_id, invoice_date, sales_order_id, payment_terms, líneas, tax_code, grand_total, cfdi_usage.</div>
+      <div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn btn-secondary btn-sm" href="#billing">Emisión de factura / CFDI</a>
+        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Facturas emitidas</a>
+        <a class="btn btn-secondary btn-sm" href="#entregas">Entregas</a>
+        <a class="btn btn-secondary btn-sm" href="#cxc">Continuar a CxC</a>
+      </div></div>`+
+      table(['id','customer_id','sales_order_id','invoice_date','grand_total','status'],
+        D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.sales_order_id}</td><td>${i.invoice_date}</td><td>${money(i.grand_total)}</td><td>${badge(i.status)}</td></tr>`).join(''));
+  },
+  cxc(){
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'CxC'}])+
+      pageHead('Cuentas por cobrar (CxC)','Facturas cliente · cobros · aging · edo. cuenta',
+        `<a class="btn btn-primary btn-sm" href="#cobros">Registrar cobro</a>
+         <a class="btn btn-secondary btn-sm" href="#facturacion">Facturación</a>`)+
+      `<div class="kpi-row">
+        <div class="kpi"><div class="l">Saldo abierto</div><div class="v">${money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
+        <div class="kpi"><div class="l">Facturas</div><div class="v">${D.arInvoices.length}</div></div>
+        <div class="kpi"><div class="l">Clientes</div><div class="v">${D.customers.length}</div></div>
+      </div>
+      <div class="panel"><div class="panel-hd"><h3>Procesos CxC</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Lista facturas cliente</a>
+        <a class="btn btn-secondary btn-sm" href="#cobros">Registro de cobros</a>
+        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Aging / cartera</a>
+        <a class="btn btn-secondary btn-sm" href="#facturacion">Facturación</a>
+      </div></div>`+
+      table(['id','customer_id','invoice_date','grand_total','open_amount','status'],
+        D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.invoice_date}</td><td>${money(i.grand_total)}</td><td>${money(i.open_amount)}</td><td>${badge(i.status)}</td></tr>`).join(''));
+  },
+  tesoreria(){
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Tesorería'}])+
+      pageHead('Tesorería','Bancos · posición · órdenes de pago · conciliación',
+        `<a class="btn btn-primary btn-sm" href="#ordenes-pago">Orden de pago</a>
+         <a class="btn btn-secondary btn-sm" href="#conciliacion">Conciliar</a>`)+
+      `<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        <a class="btn btn-secondary btn-sm" href="#bancos">Cuentas bancarias</a>
+        <a class="btn btn-secondary btn-sm" href="#ordenes-pago">Órdenes de pago</a>
+        <a class="btn btn-secondary btn-sm" href="#conciliacion">Conciliación</a>
+        <a class="btn btn-secondary btn-sm" href="#cxp">Desde CxP</a>
+      </div></div>`+
+      table(['bank_name','account_number','currency','balance'],
+        D.banks.map(b=>`<tr><td><strong>${b.bank_name}</strong></td><td class="mono">${b.account_number}</td><td>${b.currency}</td><td>${b.currency==='MXN'?money(b.balance):('$'+b.balance.toLocaleString())}</td></tr>`).join(''));
+  },
   finanzas(){
-    return crumbs([{label:'Finanzas'}])+pageHead('Finanzas','GL · AP · AR · Tesorería')+
+    const D=ERPDemo;
+    return crumbs([{label:'Finanzas'}])+pageHead('Finanzas','Contabilidad · CxP · Facturación · CxC · Tesorería')+
       `<div class="grid-3">${[
-        ['Plan de cuentas','plan-cuentas'],['Periodos','periodos'],['Asientos','asientos'],
-        ['Facturas AP','facturas-ap'],['Programación pagos','pagos-ap'],['Aging AP','aging-ap'],
-        ['Facturas AR','facturas-ar'],['Emisión factura','billing'],['Cobros','cobros'],
-        ['Bancos','bancos'],['Órdenes de pago','ordenes-pago'],['Conciliación','conciliacion']
-      ].map(([t,h])=>`<a class="panel" href="#${h}"><div class="panel-bd"><strong>${t}</strong></div></a>`).join('')}</div>`;
+        ['Contabilidad (GL)','contabilidad','COA, periodos, asientos'],
+        ['CxP · Cuentas por pagar','cxp','Facturas proveedor, pagos, aging'],
+        ['Facturación','facturacion','Emisión factura / CFDI'],
+        ['CxC · Cuentas por cobrar','cxc','Facturas cliente, cobros'],
+        ['Tesorería','tesoreria','Bancos, pagos, conciliación'],
+        ['Asientos','asientos','Libro diario']
+      ].map(([t,h,d])=>`<a class="panel" href="#${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}</div>
+      <div class="kpi-row" style="margin-top:8px">
+        <div class="kpi"><div class="l">CxP abierto</div><div class="v">${money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+        <div class="kpi"><div class="l">CxC abierto</div><div class="v">${money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
+      </div>`;
   },
   'plan-cuentas'(){
     const D=ERPDemo;
@@ -1140,7 +1237,16 @@ document.addEventListener('click', function(e){
 const NAV=[
   {sec:'Inicio',items:[{h:'dashboard',l:'Dashboard',i:'▣'}]},
   {sec:'Operación',items:[{h:'compras',l:'Compras',i:'◇'},{h:'ventas',l:'Ventas',i:'▤'},{h:'inventarios',l:'Inventarios',i:'▦'}]},
-  {sec:'Finanzas',items:[{h:'finanzas',l:'Finanzas',i:'◈'},{h:'activos',l:'Activos',i:'▣'},{h:'proyectos',l:'Proyectos',i:'◎'}]},
+  {sec:'Finanzas',items:[
+    {h:'contabilidad',l:'Contabilidad (GL)',i:'◈',m:['contabilidad','plan-cuentas','periodos','asientos']},
+    {h:'cxp',l:'CxP · Cuentas por pagar',i:'⇩',m:['cxp','facturas-ap','captura-ap','pagos-ap','aging-ap','detalle-ap']},
+    {h:'facturacion',l:'Facturación',i:'▤',m:['facturacion','billing']},
+    {h:'cxc',l:'CxC · Cuentas por cobrar',i:'⇧',m:['cxc','facturas-ar','cobros','aging-ar']},
+    {h:'tesoreria',l:'Tesorería',i:'₩',m:['tesoreria','bancos','ordenes-pago','conciliacion']},
+    {h:'finanzas',l:'Finanzas (hub)',i:'◇',m:['finanzas']},
+    {h:'activos',l:'Activos',i:'▣'},
+    {h:'proyectos',l:'Proyectos',i:'◎'}
+  ]},
   {sec:'Personas',items:[{h:'rh',l:'RRHH',i:'♟'},{h:'nomina',l:'Nómina',i:'₮'}]},
   {sec:'Plataforma',items:[{h:'bandeja',l:'Bandeja',i:'⟳',b:3},{h:'admin',l:'Administración',i:'⬡'},{h:'reportes',l:'Reportes',i:'▥'}]}
 ];
@@ -1157,7 +1263,9 @@ function buildShell(){
   // better active: match top-level module
   document.querySelectorAll('#sidebar .nav a').forEach(a=>{
     const h=a.getAttribute('href').slice(1);
-    a.classList.toggle('active', route===h || (route.startsWith(h) && h.length>3));
+    const item=NAV.flatMap(s=>s.items).find(it=>it.h===h);
+    const keys=(item&&item.m)||[h];
+    a.classList.toggle('active', keys.includes(route) || route===h);
   });
   document.getElementById('topbar').innerHTML=`
     <button class="icon-btn" id="btn-side" type="button">☰</button>

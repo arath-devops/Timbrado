@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contabilidad · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Contabilidad GL'}])+
+pageHead('Contabilidad (GL)', 'Plan de cuentas · periodos · asientos · mayor / EEFF',
+  `<a class="btn btn-primary btn-sm" href="asientos.html">Nuevo asiento</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="plan-cuentas.html">Plan de cuentas</a>
+  <a class="btn btn-secondary btn-sm" href="periodos.html">Periodos contables</a>
+  <a class="btn btn-secondary btn-sm" href="asientos.html">Libro diario / asientos</a>
+  <a class="btn btn-secondary btn-sm" href="mayor.html">Mayor · Balanza · EEFF</a>
+</div></div>
+<div class="kpi-row">
+  <div class="kpi"><div class="l">Periodo actual</div><div class="v">2026-11</div><div class="d">${D.badge('OPEN')}</div></div>
+  <div class="kpi"><div class="l">Cuentas COA</div><div class="v">${D.accounts.length}</div></div>
+  <div class="kpi"><div class="l">Asientos</div><div class="v">${D.journals.length}</div></div>
+</div>
+;
+});
+</script></body></html>

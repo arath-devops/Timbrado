@@ -12,7 +12,12 @@
       { href: 'inventarios/index.html', label: 'Inventarios', ico: '▦' }
     ]},
     { sec: 'Finanzas', items: [
-      { href: 'finanzas/index.html', label: 'Finanzas', ico: '◈' },
+      { href: 'finanzas/contabilidad.html', label: 'Contabilidad (GL)', ico: '◈', match: ['plan-cuentas','periodos','asientos','mayor','contabilidad'] },
+      { href: 'finanzas/cxp.html', label: 'CxP · Cuentas por pagar', ico: '⇩', match: ['cxp','facturas-ap','captura-factura-ap','detalle-factura-ap','programacion-pagos','aging-ap'] },
+      { href: 'finanzas/facturacion.html', label: 'Facturación', ico: '▤', match: ['facturacion','emitir-factura'] },
+      { href: 'finanzas/cxc.html', label: 'CxC · Cuentas por cobrar', ico: '⇧', match: ['cxc','facturas-ar','cobros','aging-ar','estado-cuenta'] },
+      { href: 'finanzas/tesoreria.html', label: 'Tesorería', ico: '₩', match: ['tesoreria','bancos','ordenes-pago','conciliacion'] },
+      { href: 'finanzas/index.html', label: 'Finanzas (hub)', ico: '◇', match: ['finanzas/index'] },
       { href: 'activos/index.html', label: 'Activos', ico: '▣' },
       { href: 'proyectos/index.html', label: 'Proyectos', ico: '◎' }
     ]},
@@ -27,10 +32,13 @@
     ]}
   ];
 
-  function pathMatch(href) {
+  function pathMatch(it) {
     const loc = location.pathname.replace(/\\/g, '/');
+    const href = typeof it === 'string' ? it : it.href;
     const leaf = href.split('/').slice(-2).join('/');
-    return loc.endsWith(href) || loc.includes('/' + leaf);
+    if (loc.endsWith(href) || loc.includes('/' + leaf)) return true;
+    const keys = (it && it.match) || [];
+    return keys.some((k) => loc.includes('/' + k) || loc.endsWith(k + '.html'));
   }
 
   function injectShell() {
@@ -52,7 +60,7 @@
       <nav class="nav">${NAV.map((sec) => `
         <div class="nav-sec">${sec.sec}</div>
         ${sec.items.map((it) => `
-          <a class="${pathMatch(it.href) ? 'active' : ''}" href="${A(it.href)}">
+          <a class="${pathMatch(it) ? 'active' : ''}" href="${A(it.href)}">
             <span class="ico">${it.ico}</span><span class="nav-label">${it.label}</span>
             ${it.badge ? `<span class="badge">${it.badge}</span>` : ''}
           </a>`).join('')}

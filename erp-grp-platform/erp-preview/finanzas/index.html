@@ -14,22 +14,23 @@ document.addEventListener('DOMContentLoaded',()=>{
   const D=ERPDemo;
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Finanzas'}])+
-pageHead('Finanzas', 'GL · AP · AR/Billing · Tesorería', '')+
+pageHead('Finanzas', 'Contabilidad · CxP · Facturación · CxC · Tesorería', '')+
 `<div class="grid-3">
-${[['Contabilidad GL','plan-cuentas.html','COA, periodos, asientos, mayor, balanza, EEFF'],
-['Cuentas por pagar','facturas-ap.html','Facturas proveedor, programación pagos, aging'],
-['Cuentas por cobrar','facturas-ar.html','Facturas cliente, cobros, aging'],
-['Billing','emitir-factura.html','Emisión de factura / comprobante'],
-['Tesorería','bancos.html','Bancos, posición, órdenes de pago, conciliación'],
-['Asientos','asientos.html','Libro diario']].map(([t,h,d])=>`<a class="panel" href="${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}
+${[
+  ['Contabilidad (GL)','contabilidad.html','COA, periodos, asientos, mayor, balanza, EEFF'],
+  ['CxP · Cuentas por pagar','cxp.html','Facturas proveedor, 3-way match, pagos, aging'],
+  ['Facturación','facturacion.html','Emisión de factura / CFDI desde pedidos'],
+  ['CxC · Cuentas por cobrar','cxc.html','Facturas cliente, cobros, aging, edo. cuenta'],
+  ['Tesorería','tesoreria.html','Bancos, posición, órdenes de pago, conciliación'],
+  ['Asientos (atajo)','asientos.html','Libro diario']
+].map(([t,h,d])=>`<a class="panel" href="${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}
 </div>
 <div class="kpi-row" style="margin-top:8px">
-  <div class="kpi"><div class="l">AP abierto</div><div class="v">${D.money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
-  <div class="kpi"><div class="l">AR abierto</div><div class="v">${D.money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
-  <div class="kpi"><div class="l">Periodo actual</div><div class="v">2026-11</div><div class="d">${D.badge('OPEN')}</div></div>
-  <div class="kpi"><div class="l">Efectivo</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div>
+  <div class="kpi"><div class="l">CxP abierto</div><div class="v">${D.money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+  <div class="kpi"><div class="l">CxC abierto</div><div class="v">${D.money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
+  <div class="kpi"><div class="l">Periodo</div><div class="v">2026-11</div><div class="d">${D.badge('OPEN')}</div></div>
+  <div class="kpi"><div class="l">Efectivo MXN</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div>
 </div>
 ;
-  
 });
 </script></body></html>

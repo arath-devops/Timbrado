@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Facturación · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Facturación'}])+
+pageHead('Facturación / Billing', 'Emisión de factura / comprobante (SI-001 Billing) · enlace O2C',
+  `<a class="btn btn-primary btn-sm" href="emitir-factura.html">Emitir factura</a>
+   <a class="btn btn-secondary btn-sm" href="../ventas/index.html">Pedidos de venta</a>`)+
+`<div class="alert">Campos FM: customer_id, invoice_date, sales_order_id, payment_terms, líneas, tax_code, grand_total, cfdi_usage (condicional MX).</div>
+<div class="panel"><div class="panel-hd"><h3>Procesos de facturación</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="emitir-factura.html">Emisión de factura / CFDI</a>
+  <a class="btn btn-secondary btn-sm" href="facturas-ar.html">Facturas emitidas (AR)</a>
+  <a class="btn btn-secondary btn-sm" href="../ventas/entregas.html">Entregas / remisiones</a>
+  <a class="btn btn-secondary btn-sm" href="cxc.html">Continuar a CxC (cobros)</a>
+</div></div>
+<div class="panel"><div class="panel-hd"><h3>Facturas emitidas recientes</h3></div><div class="panel-bd">
+<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>customer_id</th><th>sales_order_id</th><th>invoice_date</th><th>grand_total</th><th>status</th></tr></thead>
+<tbody>${D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.sales_order_id}</td><td>${i.invoice_date}</td><td>${D.money(i.grand_total)}</td><td>${D.badge(i.status)}</td></tr>`).join('')}</tbody></table></div>
+</div></div>
+;
+});
+</script></body></html>

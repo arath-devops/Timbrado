@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tesorería · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Tesorería'}])+
+pageHead('Tesorería', 'Bancos · posición de efectivo · órdenes de pago · conciliación',
+  `<a class="btn btn-primary btn-sm" href="ordenes-pago.html">Orden de pago</a>
+   <a class="btn btn-secondary btn-sm" href="conciliacion.html">Conciliar</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="bancos.html">Cuentas bancarias / posición</a>
+  <a class="btn btn-secondary btn-sm" href="ordenes-pago.html">Órdenes de pago</a>
+  <a class="btn btn-secondary btn-sm" href="conciliacion.html">Conciliación bancaria</a>
+  <a class="btn btn-secondary btn-sm" href="cxp.html">Desde CxP</a>
+  <a class="btn btn-secondary btn-sm" href="../nomina/dispersion.html">Desde Nómina</a>
+</div></div>
+<div class="kpi-row">
+  <div class="kpi"><div class="l">Posición MXN</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div>
+  <div class="kpi"><div class="l">Cuentas</div><div class="v">${D.banks.length}</div></div>
+</div>
+;
+});
+</script></body></html>

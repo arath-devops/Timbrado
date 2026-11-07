@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CxP · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'CxP · Cuentas por pagar'}])+
+pageHead('Cuentas por pagar (CxP)', 'Facturas proveedor · 3-way match · programación de pagos · aging',
+  `<a class="btn btn-primary btn-sm" href="captura-factura-ap.html">Capturar factura</a>
+   <a class="btn btn-secondary btn-sm" href="programacion-pagos.html">Programar pagos</a>`)+
+`<div class="kpi-row">
+  <div class="kpi"><div class="l">Abierto</div><div class="v">${D.money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+  <div class="kpi"><div class="l">Facturas</div><div class="v">${D.apInvoices.length}</div></div>
+  <div class="kpi"><div class="l">Pend. aprobación</div><div class="v">${D.apInvoices.filter(i=>i.status==='PENDING_APPROVAL').length}</div></div>
+  <div class="kpi"><div class="l">Match</div><div class="v">${D.apInvoices.filter(i=>i.match_status==='MATCHED').length}</div></div>
+</div>
+<div class="panel"><div class="panel-hd"><h3>Procesos CxP (SI-001)</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="facturas-ap.html">Lista de facturas proveedor</a>
+  <a class="btn btn-secondary btn-sm" href="captura-factura-ap.html">Captura factura</a>
+  <a class="btn btn-secondary btn-sm" href="programacion-pagos.html">Programación de pagos</a>
+  <a class="btn btn-secondary btn-sm" href="aging-ap.html">Antigüedad de saldos</a>
+  <a class="btn btn-secondary btn-sm" href="../compras/proveedores.html">Proveedores</a>
+  <a class="btn btn-secondary btn-sm" href="ordenes-pago.html">Órdenes de pago (tesorería)</a>
+</div></div>
+<div class="panel"><div class="panel-hd"><h3>Facturas recientes</h3><a href="facturas-ap.html">Ver todas</a></div><div class="panel-bd">
+<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>vendor_id</th><th>invoice_number</th><th>grand_total</th><th>due_date</th><th>match_status</th><th>status</th></tr></thead>
+<tbody>${D.apInvoices.map(i=>`<tr class="clickable" onclick="location.href='detalle-factura-ap.html?id=${i.id}'"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${i.invoice_number}</td><td>${D.money(i.grand_total)}</td><td>${i.due_date}</td><td>${i.match_status}</td><td>${D.badge(i.status)}</td></tr>`).join('')}</tbody></table></div>
+</div></div>
+;
+});
+</script></body></html>
