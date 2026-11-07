@@ -1,16 +1,18 @@
-# ERP Preview Kit — Revisión por roles reales
+# Kit de preview ERP — Revisión por roles reales
 ## ERP-UX-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-UX-001 |
-| Título | Análisis UX / productividad del Frontend Preview Kit |
-| Tipo | Role-based UX Review (sin backend) |
-| Estado | Borrador · `feat-ERP` |
+| Título | Análisis de experiencia de usuario y productividad del kit HTML de preview |
+| Tipo | Revisión UX basada en roles (sin backend) |
+| Estado | Borrador · `feat-ERP` · mejoras P0 aplicadas |
+| Idioma | Español |
 | Artefacto revisado | `erp-grp-platform/erp-preview/` (+ `portable.html`) |
 | Base funcional | ERP-SI-001 · ERP-FM-001 · ERP-XR-001 |
-| Método | Simulación de usuarios reales por rol; walkthrough de menú, hubs, formularios y listados |
-| Fuera de alcance | Calidad de código Angular/prod, performance real de API, accesibilidad WCAG formal |
+| Método | Simulación de usuarios reales por rol; recorrido de menú, hubs, formularios y listados |
+| Fuera de alcance | Calidad de código Angular de producción, rendimiento real de API, accesibilidad WCAG formal |
+| Glosario | [ERP-GL-001](07-GLOSARIO-ERP-DESARROLLO.md) |
 
 ---
 

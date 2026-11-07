@@ -1,15 +1,17 @@
-# ERP Screen Inventory
+# Inventario de pantallas ERP
 ## ERP-SI-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-SI-001 |
 | Título | Inventario funcional de pantallas ERP |
-| Tipo | UX / Product Inventory (sin UI) |
+| Tipo | Inventario de producto / UX (sin interfaz implementada) |
 | Estado | Borrador de alineación — `feat-ERP` |
+| Idioma | Español (prioridad MVP/Profesional/Empresarial; códigos de rol en inglés) |
 | Referentes | SAP S/4HANA (Fiori) · Oracle Fusion Cloud ERP · Microsoft Dynamics 365 F&SCM · NetSuite · Infor CloudSuite · Odoo Enterprise |
 | Arquitectura | DDD-PORT-001 · SA-MS-001 |
 | Alcance | **Solo ERP** (capa privada + dominios compartidos usados por empresa). No incluye pantallas exclusivas GRP (presupuesto público CONAC, obra pública, transparencia, ciudadano, etc.) |
+| Glosario | [ERP-GL-001](07-GLOSARIO-ERP-DESARROLLO.md) |
 
 ---
 
@@ -19,9 +21,9 @@
 
 | Nivel | Significado |
 |-------|-------------|
-| **MVP** | Mínimo para operar un ciclo P2P + Order-to-Cash light + finanzas básicas en una PyME/empresa mediana |
-| **Professional** | Operación completa de finanzas, compras, inventario, ventas y RRHH sin manufactura avanzada |
-| **Enterprise** | Suite completa: manufactura, WMS, TMS, controlling profundo, multi-compañía, GRC, self-service masivo |
+| **MVP** | Mínimo para operar compras-a-pago + pedido-a-cobro ligero + finanzas básicas en PyME/empresa mediana |
+| **Profesional** (`Professional`) | Operación completa de finanzas, compras, inventario, ventas y RRHH sin manufactura avanzada |
+| **Empresarial** (`Enterprise`) | Suite completa: manufactura, almacén avanzado, transporte, controlling profundo, multi-compañía, GRC, autoservicio masivo |
 
 ### 0.2 Columnas
 

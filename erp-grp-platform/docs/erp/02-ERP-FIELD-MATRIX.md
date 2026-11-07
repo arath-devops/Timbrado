@@ -1,14 +1,16 @@
-# ERP Field & Rules Matrix
+# Matriz de campos y reglas ERP
 ## ERP-FM-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-FM-001 |
-| Entrada | ERP-SI-001 (Screen Inventory) |
+| Título | Matriz funcional de campos, validaciones y reglas |
+| Entrada | ERP-SI-001 (Inventario de pantallas) |
 | Referentes | SAP S/4HANA · Oracle Fusion · NetSuite · Infor · Odoo Enterprise |
-| Estado | Borrador funcional + **Control Pack §19** — `feat-ERP` |
-| Entregable | Matriz funcional (sin HTML / sin código) |
-| Complementos | ERP-CP-001 · ERP-SF-001 · ERP-XR-001 |
+| Estado | Borrador funcional + **Paquete de control §19** — `feat-ERP` |
+| Idioma | Español en reglas/validaciones; **nombres de campo en inglés** (identificadores API/BD) |
+| Entregable | Matriz funcional (sin HTML / sin código de producto) |
+| Complementos | ERP-CP-001 · ERP-SF-001 · ERP-XR-001 · [Glosario](07-GLOSARIO-ERP-DESARROLLO.md) |
 
 ---
 
@@ -1016,10 +1018,10 @@ Company
 
 ---
 
-# §19 Control Pack MVP (fusionado desde ERP-CP-001 / ERP-XR-001)
+# §19 Paquete de control MVP (fusionado desde ERP-CP-001 / ERP-XR-001)
 
-Normativo para release-1. Campos **adicionales o reforzados** respecto a §1–§14.  
-Detalle narrativo: `06-ERP-MVP-CONTROL-PACK.md` (ERP-CP-001).
+Normativo para el release-1. Campos **adicionales o reforzados** respecto a §1–§14.  
+Detalle narrativo en español: [Paquete de control](06-ERP-MVP-CONTROL-PACK.md) (ERP-CP-001).
 
 ## 19.1 Transversal — todos los documentos transaccionales
 

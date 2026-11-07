@@ -1,7 +1,9 @@
-# ERP Preview Kit (HTML / CSS / JS)
+# Kit de preview ERP (HTML / CSS / JS)
 
-Demo visual del ERP definida en **ERP-SI-001** + **ERP-FM-001**.  
-Sin Angular · sin backend · sin pantallas/campos inventados.
+Demo visual del ERP según **ERP-SI-001** + **ERP-FM-001** + mejoras P0 de **ERP-UX-001**.  
+Sin Angular · sin backend · sin pantallas ni campos inventados.
+
+Documentación de producto (español): [`../docs/erp/`](../docs/erp/) · Glosario [`../docs/erp/07-GLOSARIO-ERP-DESARROLLO.md`](../docs/erp/07-GLOSARIO-ERP-DESARROLLO.md)
 
 ## Arranque
 
@@ -11,47 +13,46 @@ python3 -m http.server 4174 --bind 127.0.0.1
 # http://127.0.0.1:4174/
 ```
 
-En el login elige **empresa + rol** (DG, CFO, Contador, Comprador, Vendedor, Almacén, RRHH). Cualquier password.
+En el inicio de sesión elige **empresa + rol** (Director General, CFO, Contador, Comprador, Vendedor, Almacén, RRHH). Cualquier contraseña.
 
-### P0 UX (ERP-UX-001)
+### Mejoras P0 de experiencia
 
-- Labels en español (+ hint técnico)
-- Switcher de empresa y rol (menú filtrado)
-- Grid de líneas + totales calculados
-- Object pages con tabs (Datos / Líneas / WF / Docs / Audit)
-- Match 3-way en CxP
-- OC desde PR + open qty
+- Etiquetas en español (+ pista técnica del campo)
+- Selector de empresa y rol (menú filtrado)
+- Tabla de líneas + totales calculados
+- Fichas con pestañas (Datos / Líneas / Flujo / Documentos / Auditoría)
+- Cuadre triple en CxP
+- Crear OC desde requisición + cantidad abierta
 - Crédito en pedidos / clientes
-- ATP en existencias + recepción en Inventarios
-- Dashboard por rol
+- Existencias disponibles (ATP) + recepción en Inventarios
+- Tablero según rol
 
-### Portable (1 archivo)
+### Archivo portable (uno solo)
 
-**No uses** `raw.githubusercontent.com` ni `htmlpreview.github.io`.
+**No uses** `raw.githubusercontent.com` ni `htmlpreview.github.io` (muestran código o rompen la navegación).
 
 https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-preview/portable.html
-
 
 ## Estructura
 
 ```text
 erp-preview/
-  index.html                 # Login (tenant_or_company, username, password)
-  dashboard/                 # Home ejecutivo
-  finanzas/                  # GL, AP, AR, Billing, Tesorería
-  compras/                   # PR, OC, Recepción, Proveedores
+  index.html                 # Inicio de sesión
+  dashboard/                 # Inicio ejecutivo
+  finanzas/                  # Contabilidad, CxP, CxC, Facturación, Tesorería
+  compras/                   # Requisiciones, OC, Recepción, Proveedores
   ventas/                    # Pedidos, Entregas
-  inventarios/               # Artículos, Existencias, Movimientos
+  inventarios/               # Artículos, Existencias, Movimientos, Recepción
   rh/                        # Empleados, Ausencias
-  nomina/                    # Corrida, Dispersión
-  activos/                   # Alta, Depreciación
-  proyectos/                 # Lista, Timesheets
-  administracion/            # IAM, Org, Catálogos, Bandeja, Docs, Perfil, Audit
+  nomina/                    # Corrida, Dispersión (stub Profesional)
+  activos/                   # Alta, Depreciación (stub)
+  proyectos/                 # Lista, Timesheets (stub)
+  administracion/            # Usuarios, Org, Catálogos, Bandeja, Docs, Perfil, Auditoría
   reportes/                  # Reportes estándar MVP
   assets/css|js
 ```
 
-## UX
+## Experiencia
 
-Sidebar + Navbar + Breadcrumbs + Notificaciones + Perfil + Tema claro/oscuro.  
-Inspiración: SAP Fiori · Oracle Fusion · NetSuite · Odoo Enterprise.
+Barra lateral + barra superior + migas de pan + notificaciones + perfil + tema claro/oscuro.  
+Inspiración visual: SAP Fiori · Oracle Fusion · NetSuite · Odoo Enterprise.

@@ -1,177 +1,180 @@
-# ERP MVP Control Pack
+# Paquete de control ERP MVP
 ## ERP-CP-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-CP-001 |
-| Título | Control Pack MVP — delta obligatorio pre-backend |
-| Tipo | Field / Rules delta |
-| Estado | **Normativo para Freeze** — `feat-ERP` |
-| Origen | ERP-XR-001 Gate B |
+| Título | Paquete de control MVP — campos obligatorios antes de backend |
+| Tipo | Delta de campos y reglas |
+| Estado | **Normativo para el congelamiento** — `feat-ERP` |
+| Idioma | Español |
+| Origen | ERP-XR-001 Puerta B |
 | Destino | Fusionado en ERP-FM-001 §19 |
-| Freeze | ERP-SF-001 |
+| Congelamiento | ERP-SF-001 |
 
 ---
 
 ## 1. Propósito
 
-Definir el conjunto **mínimo no negociable** de campos y reglas de control financiero/operativo que deben existir en contratos (OpenAPI/DB/UI) del ERP MVP, aunque no estuvieran completos en ERP-FM-001 r0.
+Definir el conjunto **mínimo no negociable** de campos y reglas de control financiero/operativo que deben existir en contratos (OpenAPI / base de datos / interfaz) del ERP MVP, aunque no estuvieran completos en la matriz FM-001 versión inicial.
 
-Sin este pack: **no** abrir OpenAPI ni Angular de AP/AR/GL/Treasury/SO.
+Sin este paquete: **no** abrir OpenAPI ni Angular de CxP / CxC / contabilidad / tesorería / pedidos.
+
+Los **nombres de campo** (`legal_entity_id`, etc.) se mantienen en inglés como identificadores de API; la columna de regla/validación está en español.
 
 ---
 
 ## 2. Controles (12) — especificación
 
-Formato alineado a FM: `Modulo | Pantalla | Campo | Obligatorio | Tipo | Regla | Validación`
+Formato alineado a la matriz: `Módulo | Pantalla | Campo | Obligatorio | Tipo | Regla | Validación`
 
-### CP-01 Legal entity
+### CP-01 Entidad legal
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla de negocio | Validación |
 |--------|----------|-------|------|------|------------------|------------|
-| Transversal | Todo documento TX | legal_entity_id | Sí | Ref | Documento pertenece a una LE del tenant | Existe; usuario tiene scope |
-| Transversal | Todo documento TX | company_code | Cond. | Text | Alias display de LE si se usa SAP-style | Único por tenant |
+| Transversal | Todo documento transaccional | legal_entity_id | Sí | Ref | El documento pertenece a una entidad legal del tenant | Existe; el usuario tiene alcance |
+| Transversal | Todo documento transaccional | company_code | Cond. | Text | Alias de visualización de la entidad (estilo SAP) | Único por tenant |
 
-### CP-02 Numeración
-
-| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
-|--------|----------|-------|------|------|-------|------------|
-| Transversal | PR/PO/GR/AP/AR/SO/Journal/Payment | document_number | Sí (al post/submit) | Text | Folio humano por serie+LE+tipo | Único; gapless policy por serie |
-| Admin/Config | Numbering series | series_code, doc_type, legal_entity_id, next_value | Sí | — | Config no UI end-user | next_value atómico |
-
-### CP-03 Crédito cliente
+### CP-02 Numeración / folios
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Master | Ficha cliente | credit_limit | Sí | Money | Límite autorizado | ≥ 0 |
-| Master | Ficha cliente | credit_block | Sí | Boolean | Bloqueo manual duro | — |
-| Calculado | Cliente / SO | credit_exposure | Sí (calc) | Money | Open SO + open AR | Sistema |
-| Ventas | Crear/Confirmar SO | credit_check_result | Sí | Enum | OK / HOLD / BLOCKED | BLOCKED⇒no CONFIRMED |
-| Ventas | SO | credit_override_reason | Cond. | Text | Si APPR override HOLD | min 10 chars + WF |
+| Transversal | Requisición/OC/Recepción/CxP/CxC/Pedido/Asiento/Pago | document_number | Sí (al enviar/contabilizar) | Text | Folio humano por serie + entidad + tipo | Único; política sin huecos por serie |
+| Admin/Config | Series de numeración | series_code, doc_type, legal_entity_id, next_value | Sí | — | Configuración (no pantalla de usuario final) | `next_value` atómico |
 
-### CP-04 Bloqueo proveedor / pago
+### CP-03 Crédito del cliente
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Compras | Ficha proveedor | hold_reason | Cond. | Text/Enum | Si status BLOCKED o payment hold | obligatorio al bloquear |
-| CxP | Factura AP / Vendor | payment_block | Sí | Boolean | Impide incluir en propuesta pago | — |
-| CxP | Factura AP | payment_block_reason | Cond. | Text | Si payment_block=true | min 5 chars |
+| Maestro | Ficha cliente | credit_limit | Sí | Money | Límite autorizado | ≥ 0 |
+| Maestro | Ficha cliente | credit_block | Sí | Boolean | Bloqueo manual duro | — |
+| Calculado | Cliente / Pedido | credit_exposure | Sí (calc) | Money | Pedidos abiertos + CxC abierta | Sistema |
+| Ventas | Crear/Confirmar pedido | credit_check_result | Sí | Enum | OK / HOLD / BLOCKED | BLOCKED ⇒ no confirmar |
+| Ventas | Pedido | credit_override_reason | Cond. | Text | Si un aprobador anula HOLD | mín. 10 caracteres + flujo |
 
-### CP-05 Dual control pagos
+### CP-04 Bloqueo de proveedor / pago
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Tesorería | Orden de pago | maker_user_id | Sí | Ref | Quien crea/solicita | ≠ approver |
-| Tesorería | Orden de pago | dual_control_approver_id | Cond. | Ref | Si amount ≥ threshold LE | ≠ maker; rol TRE2 |
+| Compras | Ficha proveedor | hold_reason | Cond. | Text/Enum | Si estado BLOCKED o retención de pago | Obligatorio al bloquear |
+| CxP | Factura proveedor | payment_block | Sí | Boolean | Impide incluir en propuesta de pago | — |
+| CxP | Factura proveedor | payment_block_reason | Cond. | Text | Si payment_block = true | mín. 5 caracteres |
+
+### CP-05 Doble control de pagos
+
+| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
+|--------|----------|-------|------|------|-------|------------|
+| Tesorería | Orden de pago | maker_user_id | Sí | Ref | Quien crea/solicita | ≠ aprobador |
+| Tesorería | Orden de pago | dual_control_approver_id | Cond. | Ref | Si importe ≥ umbral de la entidad | ≠ solicitante; rol TRE2 |
 | Tesorería | Orden de pago | dual_control_status | Sí | Enum | NOT_REQUIRED / PENDING / APPROVED | — |
-| Config | Payment thresholds | dual_control_threshold | Sí | Money | Por LE/currency | > 0 |
+| Config | Umbrales de pago | dual_control_threshold | Sí | Money | Por entidad / moneda | > 0 |
 
-### CP-06 Cambio cuenta bancaria vendor
-
-| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
-|--------|----------|-------|------|------|-------|------------|
-| Compras | Ficha proveedor | bank_account | Sí | Text | Cuenta pago | mask display |
-| Compras | Cambio banco | bank_change_request_id | Cond. | Ref | Todo cambio de banco vía solicitud | WF BANK_CHANGE |
-| Audit | Vendor bank | before/after bank | Sí | JSON | Trail obligatorio | AuditFact |
-
-### CP-07 Tolerancias match
+### CP-06 Cambio de cuenta bancaria del proveedor
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Config | Match policy | match_tolerance_qty_pct | Sí | Percent | Over-receipt / invoice qty | 0–100 |
-| Config | Match policy | match_tolerance_amt | Sí | Money/% | Diff PO vs AP | ≥ 0 |
-| CxP | Detalle AP | match_status | Sí | Enum | MATCHED / TOLERANCE / FAILED / NOT_REQUIRED | — |
-| Compras | PO line | over_delivery_tolerance | Cond. | Percent | Default desde policy | ≥ 0 |
-| Compras | PO line | under_delivery_tolerance | Cond. | Percent | Default desde policy | ≥ 0 |
-| Compras | PO / Item | gr_based_invoice | Cond. | Boolean | True⇒exige GR antes AP | STOCK default true |
+| Compras | Ficha proveedor | bank_account | Sí | Text | Cuenta de pago | Mostrar enmascarada |
+| Compras | Cambio de banco | bank_change_request_id | Cond. | Ref | Todo cambio de banco vía solicitud | Flujo BANK_CHANGE |
+| Auditoría | Banco proveedor | before/after bank | Sí | JSON | Rastro obligatorio | Hecho de auditoría |
 
-### CP-08 Account assignment
+### CP-07 Tolerancias de cuadre (match)
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Compras | PR/PO line | account_assignment_category | Sí | Enum | COST_CENTER / PROJECT / ASSET / STOCK | Enum cerrado |
-| Compras | PR/PO line | cost_center_id | Cond. | Ref | Si category=COST_CENTER | Existe OU/CC |
-| Compras | PR/PO line | project_id | Cond. | Ref | Si category=PROJECT | Existe (si Proyectos IN; else OUT category) |
-| Compras | PR/PO line | asset_id | Cond. | Ref | Si category=ASSET | Existe |
-| CxP | AP line | cost_center_id | Cond. | Ref | Hereda de PO o captura | Requerido si expense |
+| Config | Política de cuadre | match_tolerance_qty_pct | Sí | Percent | Sobre-recepción / cantidad factura | 0–100 |
+| Config | Política de cuadre | match_tolerance_amt | Sí | Money/% | Diferencia OC vs factura | ≥ 0 |
+| CxP | Detalle factura | match_status | Sí | Enum | MATCHED / TOLERANCE / FAILED / NOT_REQUIRED | — |
+| Compras | Línea OC | over_delivery_tolerance | Cond. | Percent | Por defecto desde política | ≥ 0 |
+| Compras | Línea OC | under_delivery_tolerance | Cond. | Percent | Por defecto desde política | ≥ 0 |
+| Compras | OC / Artículo | gr_based_invoice | Cond. | Boolean | true ⇒ exige recepción antes de CxP | STOCK por defecto true |
 
-**Nota Freeze:** en release-1, categories habilitadas = **COST_CENTER** y **STOCK**. PROJECT/ASSET opcionales solo si stubs activados; default deshabilitar en config.
-
-### CP-09 FX (multi-moneda light)
-
-| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
-|--------|----------|-------|------|------|-------|------------|
-| Transversal | Docs con currency | currency | Sí | Enum | ISO-4217 | |
-| Transversal | Docs | exchange_rate | Cond. | Number | Si currency ≠ LE functional | > 0 |
-| Transversal | Docs | rate_date | Cond. | Date | Fecha tasa | ≤ posting_date |
-| Transversal | Docs | rate_type | Cond. | Enum | SPOT / COMPANY / MANUAL | |
-| Transversal | Líneas | functional_currency_amount | Cond. | Money | amount × rate | Calculado; audit si MANUAL |
-
-### CP-10 Retenciones MX
+### CP-08 Asignación contable (account assignment)
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| CxP | Factura AP | withholding_tax_code | Cond. | Ref | Si vendor/servicio sujeto a retención | Catálogo TAX_WH |
-| CxP | Factura AP | withholding_amount | Cond. | Money | Calculado o capturado | ≥ 0; ≤ subtotal |
-| CxP | Factura AP | withholding_base | Cond. | Money | Base gravable | ≥ 0 |
-| Master | Vendor | withholding_applicable | Sí | Boolean | Default retención | |
+| Compras | Línea requisición/OC | account_assignment_category | Sí | Enum | COST_CENTER / PROJECT / ASSET / STOCK | Enum cerrado |
+| Compras | Línea requisición/OC | cost_center_id | Cond. | Ref | Si categoría = COST_CENTER | Existe centro/OU |
+| Compras | Línea requisición/OC | project_id | Cond. | Ref | Si categoría = PROJECT | Existe (si proyectos habilitados) |
+| Compras | Línea requisición/OC | asset_id | Cond. | Ref | Si categoría = ASSET | Existe |
+| CxP | Línea factura | cost_center_id | Cond. | Ref | Hereda de OC o se captura | Requerido si es gasto |
 
-### CP-11 Posted by / at (park-post)
+**Nota del congelamiento:** en release-1, categorías habilitadas = **COST_CENTER** y **STOCK**. PROJECT/ASSET solo si se activan stubs; por defecto deshabilitar en configuración.
+
+### CP-09 Tipo de cambio (multi-moneda ligero)
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| Transversal | Journal/AP/AR/Payment/GR | created_by | Sí | Ref | Usuario creación | |
+| Transversal | Documentos con moneda | currency | Sí | Enum | ISO-4217 | |
+| Transversal | Documentos | exchange_rate | Cond. | Number | Si moneda ≠ funcional de la entidad | > 0 |
+| Transversal | Documentos | rate_date | Cond. | Date | Fecha de la tasa | ≤ fecha contable |
+| Transversal | Documentos | rate_type | Cond. | Enum | SPOT / COMPANY / MANUAL | |
+| Transversal | Líneas | functional_currency_amount | Cond. | Money | importe × tasa | Calculado; auditar si MANUAL |
+
+### CP-10 Retenciones México
+
+| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
+|--------|----------|-------|------|------|-------|------------|
+| CxP | Factura proveedor | withholding_tax_code | Cond. | Ref | Si proveedor/servicio sujeto a retención | Catálogo TAX_WH |
+| CxP | Factura proveedor | withholding_amount | Cond. | Money | Calculado o capturado | ≥ 0; ≤ subtotal |
+| CxP | Factura proveedor | withholding_base | Cond. | Money | Base gravable | ≥ 0 |
+| Maestro | Proveedor | withholding_applicable | Sí | Boolean | Indica si aplica retención por defecto | |
+
+### CP-11 Contabilizado por / en (guardar vs contabilizar)
+
+| Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
+|--------|----------|-------|------|------|-------|------------|
+| Transversal | Asiento/CxP/CxC/Pago/Recepción | created_by | Sí | Ref | Usuario de creación | |
 | Transversal | | created_at | Sí | DateTime | | |
 | Transversal | | posted_by | Cond. | Ref | Al pasar a POSTED/ISSUED/SENT | Permiso post:* |
 | Transversal | | posted_at | Cond. | DateTime | | ≥ created_at |
-| GL/AP | UI acciones | action_park vs action_post | Sí | — | Botones separados | RBAC distinto |
+| Contabilidad/CxP | Acciones de UI | acción guardar vs contabilizar | Sí | — | Botones separados | RBAC distinto |
 
-### CP-12 Unique vendor invoice
+### CP-12 Unicidad de factura de proveedor
 
 | Módulo | Pantalla | Campo | Obl. | Tipo | Regla | Validación |
 |--------|----------|-------|------|------|-------|------------|
-| CxP | Captura AP | vendor_id + invoice_number + legal_entity_id | Sí | — | Unicidad | Unique constraint DB+UI |
+| CxP | Captura factura | vendor_id + invoice_number + legal_entity_id | Sí | — | Unicidad | Restricción única en BD + UI |
 
-*(Ya estaba en FM; se eleva a Control Pack con LE en la clave.)*
-
----
-
-## 3. Umbrales piloto ACME (propuesta config — ajustar en firma)
-
-| Parámetro | Valor propuesto piloto |
-|-----------|------------------------|
-| dual_control_threshold (MXN) | 50,000 |
-| PO_APPROVAL amount threshold | 200,000 |
-| AP sin OC approval threshold | 100,000 |
-| match_tolerance_qty_pct | 2% |
-| match_tolerance_amt | 1% o $10 (menor) |
-| credit_check | ON |
-| gr_based_invoice default STOCK | true |
-| gr_based_invoice default SERVICE | false |
+*(Ya estaba en la matriz; se eleva al paquete de control con la entidad legal en la clave.)*
 
 ---
 
-## 4. Workflows adicionales mínimos
+## 3. Umbrales piloto ACME (propuesta de configuración)
 
-| Process code | Disparador |
-|--------------|------------|
-| PR_APPROVAL | PR submit |
-| PO_APPROVAL | PO submit / amount |
-| AP_INVOICE_APPROVAL | AP sin OC o over tolerance / amount |
-| PAYMENT_DUAL_CONTROL | Payment ≥ threshold |
-| BANK_CHANGE | Vendor bank update |
-| CREDIT_OVERRIDE | SO credit HOLD override |
+| Parámetro | Valor propuesto piloto | Significado |
+|-----------|------------------------|------------|
+| dual_control_threshold (MXN) | 50,000 | Importe desde el cual el pago exige doble control |
+| Umbral aprobación de OC | 200,000 | OC sobre este monto → flujo de aprobación |
+| Umbral factura CxP sin OC | 100,000 | Factura sin OC sobre este monto → aprobación |
+| match_tolerance_qty_pct | 2% | Tolerancia de cantidad en cuadre |
+| match_tolerance_amt | 1% o $10 (el menor) | Tolerancia de importe |
+| credit_check | Activado | Validación de crédito en pedidos |
+| gr_based_invoice default STOCK | true | Bienes exigen recepción antes de facturar |
+| gr_based_invoice default SERVICE | false | Servicios: cuadre doble OC↔factura |
 
 ---
 
-## 5. Checklist de fusión
+## 4. Flujos de trabajo adicionales mínimos
+
+| Código de proceso | Disparador | Nombre en español |
+|------------------|------------|-------------------|
+| PR_APPROVAL | Envío de requisición | Aprobación de requisición |
+| PO_APPROVAL | Envío de OC / por importe | Aprobación de orden de compra |
+| AP_INVOICE_APPROVAL | CxP sin OC, fuera de tolerancia o por importe | Aprobación de factura proveedor |
+| PAYMENT_DUAL_CONTROL | Pago ≥ umbral | Doble control de pago |
+| BANK_CHANGE | Actualización de banco del proveedor | Cambio de cuenta bancaria |
+| CREDIT_OVERRIDE | Anulación de retención por crédito en pedido | Excepción de crédito |
+
+---
+
+## 5. Lista de verificación de fusión
 
 - [x] Publicado ERP-CP-001  
 - [x] Volcado en ERP-FM-001 §19  
 - [x] Referenciado por ERP-SF-001  
-- [ ] Umbrales §3 firmados por CFO  
+- [x] Umbrales §3 adoptados con VoBo del congelamiento  
 - [ ] OpenAPI incluye propiedades CP-*  
-- [ ] Flyway unique (vendor, invoice_number, legal_entity_id)  
+- [ ] Migración Flyway: único (proveedor, folio factura, entidad legal)  
 
 ---
 

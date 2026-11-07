@@ -1,14 +1,17 @@
-# ERP Executive Gap Review
+# Revisión ejecutiva de brechas ERP
 ## ERP-XR-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-XR-001 |
+| Título | Análisis de gaps por roles ejecutivos (pre-diseño / pre-backend) |
 | Entradas | ERP-SI-001 · ERP-FM-001 · DDD-PORT-001 |
 | Panel | CFO · Controller · Director de Compras · Director Comercial · Director de RRHH · Director General |
-| Benchmark | SAP S/4HANA · Oracle Fusion Cloud ERP · NetSuite |
-| Estado | **Recomendaciones obligatorias pre-UI / pre-backend** |
+| Referencia de mercado | SAP S/4HANA · Oracle Fusion Cloud ERP · NetSuite |
+| Estado | Recomendaciones emitidas; **congelamiento y paquete de control ya con VoBo** (ERP-SF-001 / ERP-CP-001) |
+| Idioma | Español |
 | Rama | `feat-ERP` |
+| Glosario | [ERP-GL-001](07-GLOSARIO-ERP-DESARROLLO.md) |
 
 ---
 

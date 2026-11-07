@@ -1,153 +1,156 @@
-# ERP Scope Freeze — MVP
+# Congelamiento de alcance ERP — MVP
 ## ERP-SF-001
 
 | Campo | Valor |
 |-------|--------|
 | Documento | ERP-SF-001 |
-| Título | Scope Freeze ERP MVP (capa privada / comercial) |
-| Tipo | Product Freeze · Definition of Ready ejecutivo |
+| Título | Congelamiento de alcance del ERP MVP (capa privada / comercial) |
+| Tipo | Congelamiento de producto · Definición de listo (DoR) ejecutivo |
 | Estado | **Aprobado (VoBo)** — `feat-ERP` · 2026-11-07 |
+| Idioma | Español |
 | Entradas | ERP-SI-001 · ERP-FM-001 · ERP-XR-001 · ERP-UX-001 · DDD-PORT-001 |
-| Complemento | ERP-CP-001 (Control Pack) |
+| Complemento | ERP-CP-001 (Paquete de control) |
 | Piloto de referencia | ACME Industrial (MX) — demo `erp-preview/` |
 
-> **Regla:** lo no listado en **IN** queda **OUT** del primer release ERP.  
-> Cambios post-firma requieren enmienda versionada (`ERP-SF-001.rN`) firmada por DG + CFO + Controller.
+> **Regla:** lo que no esté listado como **DENTRO** queda **FUERA** del primer release ERP.  
+> Cambios posteriores requieren enmienda versionada (`ERP-SF-001.rN`) con VoBo de DG + CFO + Controller.
+
+**Equivalencias rápidas:** DENTRO = IN · FUERA = OUT · Compra a pago = P2P · Pedido a cobro = O2C · Ver [glosario](07-GLOSARIO-ERP-DESARROLLO.md).
 
 ---
 
 ## 1. Declaración de congelamiento
 
-Queda congelado el **ERP MVP Spine**:
+Queda congelado el **núcleo operativo del ERP MVP**:
 
-**Purchase-to-Pay (P2P) + Order-to-Cash light (O2C) + Finanzas operativas (GL/AP/AR/Billing/Treasury) + Inventario básico + Plataforma (IAM/WF/Docs/Audit/Catalog).**
+**Compras a pago (P2P) + Pedido a cobro ligero (O2C) + Finanzas operativas (contabilidad / CxP / CxC / facturación / tesorería) + Inventario básico + Plataforma (identidad, flujos, documentos, auditoría, catálogos).**
 
-Fuera del freeze: manufactura, WMS avanzado, TMS, CPQ, portales, GRP/CONAC, consolidación intercompañía, GRC studio, payroll profundo (ver Gate A).
+Fuera del congelamiento: manufactura, almacén avanzado (WMS), transporte (TMS), cotizador (CPQ), portales, GRP/CONAC, consolidación intercompañía, estudio GRC, nómina profunda (ver Puerta A).
 
 ---
 
-## 2. Gate A — Decisiones de producto (congeladas propuestas)
+## 2. Puerta A — Decisiones de producto (congeladas)
 
-| # | Decisión | Valor freeze | Implicación |
-|---|----------|--------------|-------------|
-| A1 | País / localización MVP | **MX-first** | Catálogos fiscales MX; CFDI como capacidad Billing; validaciones RFC |
-| A2 | CFDI | **IN (emisión + UUID en AP opcional/condicional)** | Billing emite; AP captura `cfdi_uuid` si política compañía lo exige |
-| A3 | Retenciones (ISR/IVA) | **IN (Control Pack)** | Campos withholding en AP Invoice + config tax |
-| A4 | Payroll / Nómina | **OUT del ERP MVP release-1** | Pantallas demo = stub Professional; sin IMSS/CURP obligatorios en release-1 |
-| A5 | Multi-moneda | **IN light** | Docs permiten `currency` ≠ funcional; **obligatorio** `exchange_rate` + `rate_date` si currency ≠ company currency |
-| A6 | Match PO/GR/AP | **Híbrido** | STOCK / bienes: **3-way**; SERVICE: **2-way** (PO↔AP) salvo flag `gr_based_invoice` |
-| A7 | Crédito cliente | **IN (hard stop)** | `credit_block` / exposición bloquea confirmación SO y emisión AR |
-| A8 | Dual control pagos | **IN** | Órdenes de pago > umbral config requieren 2º aprobador ≠ solicitante |
-| A9 | Park / Post | **IN** | Crear ≠ Postear en Journal, AP, AR Receipt, Bank Payment |
-| A10 | Multi-compañía | **IN (1–N legal entities en mismo tenant)** | `legal_entity_id` obligatorio en todo documento transaccional |
+| # | Decisión | Valor congelado | Implicación |
+|---|----------|-----------------|-------------|
+| A1 | País / localización MVP | **México primero** | Catálogos fiscales MX; CFDI en facturación; validaciones RFC |
+| A2 | CFDI | **DENTRO** (emisión + UUID en CxP opcional/condicional) | Facturación emite; CxP captura `cfdi_uuid` si la política de la compañía lo exige |
+| A3 | Retenciones (ISR/IVA) | **DENTRO** (Paquete de control) | Campos de retención en factura proveedor + configuración de impuestos |
+| A4 | Nómina | **FUERA** del release-1 del ERP MVP | Pantallas demo = marcadas stub Profesional; sin IMSS/CURP obligatorios en release-1 |
+| A5 | Multi-moneda | **DENTRO (ligero)** | Los documentos permiten moneda ≠ funcional; **obligatorio** `exchange_rate` + `rate_date` si la moneda ≠ moneda de la compañía |
+| A6 | Cuadre OC / recepción / factura (match) | **Híbrido** | Bienes STOCK: **triple** (3-way); SERVICIO: **doble** (2-way OC↔factura) salvo bandera `gr_based_invoice` |
+| A7 | Crédito cliente | **DENTRO (bloqueo duro)** | `credit_block` / exposición bloquean confirmar pedido y emitir CxC |
+| A8 | Doble control de pagos | **DENTRO** | Órdenes de pago sobre umbral requieren 2º aprobador ≠ solicitante |
+| A9 | Guardar vs contabilizar (park/post) | **DENTRO** | Crear ≠ Contabilizar en asientos, CxP, cobros y pagos bancarios |
+| A10 | Multi-compañía | **DENTRO (1–N entidades legales en el mismo tenant)** | `legal_entity_id` obligatorio en todo documento transaccional |
 
-**Firmas Gate A (VoBo)**
+**VoBo Puerta A**
 
 | Rol | Nombre | Fecha | Sí/No |
 |-----|--------|-------|-------|
-| Director General | Product owner (chat VoBo) | 2026-11-07 | Sí |
-| CFO | Product owner (chat VoBo) | 2026-11-07 | Sí |
-| Controller | Product owner (chat VoBo) | 2026-11-07 | Sí |
+| Director General | Dueño de producto (VoBo en chat) | 2026-11-07 | Sí |
+| CFO | Dueño de producto (VoBo en chat) | 2026-11-07 | Sí |
+| Controller | Dueño de producto (VoBo en chat) | 2026-11-07 | Sí |
 
-> VoBo registrado en conversación de Cloud Agent: Freeze + Control Pack aceptados (“lo veo bien / check marcado”). Umbrales piloto ACME (ERP-CP-001 §3) aplican salvo enmienda.
+> VoBo: congelamiento + paquete de control aceptados. Umbrales piloto ACME (ERP-CP-001 §3) aplican salvo enmienda.
 
 ---
 
-## 3. Gate C — Object Pages MVP (IN — diseñar/construir)
+## 3. Puerta C — Fichas / pantallas objeto MVP (DENTRO — diseñar/construir)
 
-Únicas fichas/object pages del release-1 (lista + detalle + captura según SI):
+Únicas fichas del release-1 (lista + detalle + captura según inventario SI):
 
-### 3.1 Plataforma (shell)
+### 3.1 Plataforma (envoltorio)
 
-| Object / pantalla | Notas |
+| Pantalla / objeto | Notas |
 |-------------------|--------|
-| Login / company select | |
-| Home / Launchpad por rol | |
-| Bandeja de aprobación | Shell único |
+| Inicio de sesión / selección de compañía | |
+| Inicio / lanzador por rol | |
+| Bandeja de aprobación | Envoltorio único |
 | Notificaciones | |
 | Mi perfil | |
-| Expediente / Visor / Subir evidencia | Shell único |
-| Consulta auditoría por documento | |
-| Usuarios · Roles · Org · Catálogos | Admin mínimo |
+| Expediente / Visor / Subir evidencia | Envoltorio único |
+| Consulta de auditoría por documento | |
+| Usuarios · Roles · Organización · Catálogos | Administración mínima |
 
-### 3.2 Master data
+### 3.2 Datos maestros
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Proveedor (Vendor) | Incluye banco + hold |
-| Cliente (Customer) | Incluye crédito |
-| Artículo (Item) | STOCK/SERVICE + costeo |
-| Cuenta contable / COA | |
+| Proveedor | Incluye banco + bloqueo |
+| Cliente | Incluye crédito |
+| Artículo | STOCK/SERVICE + costeo |
+| Plan de cuentas | |
 | Periodo contable | |
 | Cuenta bancaria | |
-| Centro de costo / OU | vía Org |
+| Centro de costo / unidad org. | vía estructura organizacional |
 
-### 3.3 P2P
+### 3.3 Compras a pago (P2P)
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Requisición (PR) | |
-| Orden de compra (PO) | |
-| Recepción (GR) | |
-| Factura proveedor (AP Invoice) | + match panel |
+| Requisición | |
+| Orden de compra | |
+| Recepción de mercancías/servicios | |
+| Factura de proveedor (CxP) | + panel de cuadre |
 | Propuesta / programación de pagos | |
-| Aging AP · saldo proveedor | Consultas |
+| Antigüedad CxP · saldo proveedor | Consultas |
 
-### 3.4 O2C + Billing
+### 3.4 Pedido a cobro + facturación (O2C)
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Pedido de venta (SO) | + credit check |
+| Pedido de venta | + validación de crédito |
 | Entrega / remisión | |
-| Factura cliente / CFDI (AR Invoice / Billing) | |
-| Cobro / receipt | |
-| Aging AR · estado de cuenta | Consultas |
+| Factura cliente / CFDI | |
+| Cobro / aplicación | |
+| Antigüedad CxC · estado de cuenta | Consultas |
 
-### 3.5 GL + Treasury
+### 3.5 Contabilidad + tesorería
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Asiento / Journal | park/post |
-| Mayor / Balanza / EEFF básicos | Consultas/reportes |
-| Orden de pago bancaria | dual control |
+| Asiento contable | guardar vs contabilizar |
+| Mayor / balanza / estados financieros básicos | Consultas/reportes |
+| Orden de pago bancaria | doble control |
 | Conciliación bancaria | |
 | Posición de efectivo | |
 
 ### 3.6 Inventario
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Existencias (ATP) | on hand / reserved / available |
-| Movimiento de inventario | IN/OUT/TRANSFER/ADJUST |
+| Existencias (disponible / reservado / on hand) | ATP |
+| Movimiento de inventario | entrada/salida/traspaso/ajuste |
 
-### 3.7 Analytics
+### 3.7 Analítica
 
-| Object | Notas |
+| Objeto | Notas |
 |--------|--------|
-| Dashboard ejecutivo / por rol | KPIs spine |
-| Reportes estándar (export) | Sin BI embebido |
+| Tablero ejecutivo / por rol | Indicadores del núcleo |
+| Reportes estándar (exportar) | Sin BI embebido |
 
-**Total orientativo:** ~45 pantallas MVP SI (listas+fichas+consultas) — **no** expandir a Professional/Enterprise en release-1.
+**Orientación:** ~45 pantallas MVP del inventario — **no** ampliar a Profesional/Empresarial en release-1.
 
 ---
 
-## 4. OUT explícito (prohibido en release-1)
+## 4. FUERA explícito (prohibido en release-1)
 
-| Dominio | OUT |
-|---------|-----|
-| Manufactura | MRP, BOM, MO, capacity, shop floor |
-| WMS | bins, waves, putaway, RF avanzado |
-| TMS / flota | |
-| CPQ / suscripciones | |
-| Portales | proveedor, cliente, empleado ESS avanzado |
-| GRP / público | presupuesto CONAC, obra pública, transparencia, ciudadano |
-| Payroll profundo | incidencias IMSS, timbrado nómina, dispersión productiva |
+| Dominio | Fuera de alcance |
+|---------|------------------|
+| Manufactura | MRP, listas de materiales, órdenes de fabricación, capacidad, piso |
+| Almacén avanzado (WMS) | ubicaciones, olas, putaway, RF avanzado |
+| Transporte / flota (TMS) | |
+| Cotizador / suscripciones (CPQ) | |
+| Portales | proveedor, cliente, autoservicio empleado avanzado |
+| GRP / sector público | presupuesto CONAC, obra pública, transparencia, ciudadano |
+| Nómina profunda | incidencias IMSS, timbrado nómina, dispersión productiva |
 | Activo fijo profundo | altas masivas, bajas complejas (stub OK en demo) |
-| Proyectos profundo | WBS costeo avanzado (stub OK) |
-| Tesorería avanzada | hedges, debt, leasing, cash pooling |
-| GRC | SoD matrix rica, impersonación, audit studio |
-| Intercompany | consolidación, eliminaciones |
-| CRM avanzado | opportunity pipeline completo |
+| Proyectos profundos | EDT/costeo avanzado (stub OK) |
+| Tesorería avanzada | coberturas, deuda, leasing, cash pooling |
+| GRC | matriz SoD rica, impersonación, estudio de auditoría |
+| Intercompañía | consolidación, eliminaciones |
+| CRM avanzado | embudo de oportunidades completo |
 
 ---
 
@@ -155,109 +158,129 @@ Fuera del freeze: manufactura, WMS avanzado, TMS, CPQ, portales, GRP/CONAC, cons
 
 | Código | Rol | Capacidades núcleo |
 |--------|-----|-------------------|
-| EMP | Solicitante | PR create/submit |
-| BUY | Comprador | PR→PO, vendor (read/write limitado) |
-| INV | Almacén | GR, stock, movements |
-| SAL | Vendedor | SO, delivery request, billing request |
-| AP | Contador CxP | AP invoice park/post, payment proposal |
-| AR | Contador CxC | AR invoice, receipts |
-| GL | Contador general | Journals, periods, COA (con ADM) |
-| TRE | Tesorería | Bank payments (maker), recon, cash |
-| TRE2 | Tesorería aprobador | Dual control payments (≠ TRE maker) |
-| APPR | Manager | Inbox approvals |
-| ADM | Admin | Users, roles, catalogs, org |
-| CFO | Director financiero | Read + approve high-value; dashboards |
-| AUD | Auditor | Audit read-only |
-| DG | Dirección | Dashboards / approve excepciones |
+| EMP | Solicitante | Crear/enviar requisición |
+| BUY | Comprador | Requisición→OC, proveedor (lectura/escritura limitada) |
+| INV | Almacén | Recepción, existencias, movimientos |
+| SAL | Vendedor | Pedido, entrega, solicitud de facturación |
+| AP | Contador CxP | Factura proveedor guardar/contabilizar, propuesta de pago |
+| AR | Contador CxC | Factura cliente, cobros |
+| GL | Contador general | Asientos, periodos, plan de cuentas (con ADM) |
+| TRE | Tesorería (ejecutor) | Pagos bancarios (quien solicita), conciliación, efectivo |
+| TRE2 | Tesorería (aprobador) | Doble control de pagos (≠ TRE ejecutor) |
+| APPR | Gerente / aprobador | Bandeja de aprobaciones |
+| ADM | Administrador | Usuarios, roles, catálogos, organización |
+| CFO | Director financiero | Lectura + aprobar alto valor; tableros |
+| AUD | Auditor | Solo lectura de auditoría |
+| DG | Dirección general | Tableros / aprobar excepciones |
 
-**SoD mínima (no negociable):**
+**Segregación de funciones mínima (no negociable):**
 
-1. Quien crea/modifica **cuenta bancaria vendor** ≠ quien **aprueba pago**.  
-2. **TRE maker** ≠ **TRE2** en el mismo payment.  
-3. Quien **park** asiento/AP ≠ obligatorio mismo usuario que **post** (permisos separados; mismo user solo si policy lo permite y queda auditado).  
-4. Vendor master bank change → WF + before/after audit.
+1. Quien crea/modifica **cuenta bancaria del proveedor** ≠ quien **aprueba el pago**.  
+2. **Ejecutor de tesorería (TRE)** ≠ **aprobador (TRE2)** en el mismo pago.  
+3. Quien **guarda** asiento/CxP y quien **contabiliza** son permisos separados (mismo usuario solo si la política lo permite y queda auditado).  
+4. Cambio de banco del proveedor → flujo de aprobación + auditoría antes/después.
 
 ---
 
-## 6. Flujos de dinero y control (Gate D)
+## 6. Flujos de dinero y control (Puerta D)
 
 Toda transición con impacto monetario exige:
 
 | Control | Requisito |
 |---------|-----------|
 | Permiso RBAC | Acción explícita |
-| Workflow o dual control | Según matriz de umbrales |
-| AuditFact | before/after + actor + timestamp |
-| Idempotency-Key | En approve/post/pay |
-| Legal entity | `legal_entity_id` en header |
-| Periodo | Posting solo si periodo OPEN (o soft-close policy) |
+| Flujo de trabajo o doble control | Según matriz de umbrales |
+| Hecho de auditoría | antes/después + actor + marca de tiempo |
+| Clave de idempotencia | En aprobar / contabilizar / pagar |
+| Entidad legal | `legal_entity_id` en cabecera |
+| Periodo | Contabilizar solo si el periodo está ABIERTO (o política de cierre suave) |
 
-Estados canónicos (no inventar otros en release-1):
+Estados canónicos (no inventar otros en release-1) — código EN / significado ES:
 
-- **PR:** DRAFT → SUBMITTED → APPROVED/REJECTED → CLOSED  
-- **PO:** DRAFT → PENDING_APPROVAL → APPROVED → SENT → PARTIALLY_RECEIVED → RECEIVED → CLOSED  
-- **GR:** DRAFT → POSTED  
-- **AP Invoice:** DRAFT → PENDING_APPROVAL → POSTED → PARTIALLY_PAID → PAID / VOID  
-- **Payment:** DRAFT → PENDING_DUAL → APPROVED → SENT → CLEARED  
-- **SO:** DRAFT → CREDIT_HOLD/CONFIRMED → DELIVERED → INVOICED → CLOSED  
-- **AR Invoice:** DRAFT → ISSUED → PARTIALLY_PAID → PAID / VOID  
-- **Journal:** DRAFT → POSTED / VOID  
+| Código | Significado |
+|--------|------------|
+| DRAFT | Borrador |
+| SUBMITTED | Enviada |
+| PENDING_APPROVAL | Pendiente de aprobación |
+| APPROVED / REJECTED | Aprobada / Rechazada |
+| SENT | Enviada a proveedor/banco |
+| PARTIALLY_RECEIVED / RECEIVED | Recibo parcial / Recibida |
+| POSTED | Contabilizada |
+| PARTIALLY_PAID / PAID | Pago parcial / Pagada |
+| ISSUED | Emitida (factura cliente) |
+| CONFIRMED / DELIVERED / INVOICED | Confirmado / Entregado / Facturado |
+| CREDIT_HOLD | Retenido por crédito |
+| PENDING_DUAL | Pendiente de doble control |
+| CLEARED | Compensada / conciliada |
+| CLOSED / VOID | Cerrada / Anulada |
 
----
+Ciclos:
 
-## 7. Servicios / bounded contexts (mapa release-1)
-
-| Servicio | Ownership release-1 | Nota |
-|----------|---------------------|------|
-| iam-service | IN | Ya core |
-| catalog-service | IN | Masters + numbering series config |
-| workflow-service | IN | PR/PO/AP/Payment/SO credit override |
-| document-service | IN | Expedientes |
-| audit-service | IN | Trail |
-| procurement-service | IN | PR, PO, GR, Vendor |
-| inventory-service | IN | Stock, movements, ATP |
-| finance-ap-service *o* finance-service módulo AP | IN | AP + payment proposal |
-| finance-ar-service *o* módulo AR/Billing | IN | SO link, AR, CFDI emit stub/adapter |
-| accounting-service (GL) | IN | COA, periods, journals, postings |
-| treasury-service | IN | Banks, payments execution, recon |
-| payroll-service | **OUT** release-1 | |
-| budget-service (GRP) | **OUT** ERP MVP | Dominio GRP |
-
-\* Decisión de empaquetado micro vs modular monorepo: ADR posterior; **no compartir BD** entre AP/AR/GL/Payroll/Procurement.
+- **Requisición:** DRAFT → SUBMITTED → APPROVED/REJECTED → CLOSED  
+- **OC:** DRAFT → PENDING_APPROVAL → APPROVED → SENT → PARTIALLY_RECEIVED → RECEIVED → CLOSED  
+- **Recepción:** DRAFT → POSTED  
+- **Factura CxP:** DRAFT → PENDING_APPROVAL → POSTED → PARTIALLY_PAID → PAID / VOID  
+- **Pago:** DRAFT → PENDING_DUAL → APPROVED → SENT → CLEARED  
+- **Pedido venta:** DRAFT → CREDIT_HOLD/CONFIRMED → DELIVERED → INVOICED → CLOSED  
+- **Factura CxC:** DRAFT → ISSUED → PARTIALLY_PAID → PAID / VOID  
+- **Asiento:** DRAFT → POSTED / VOID  
 
 ---
 
-## 8. Criterios de aceptación del Freeze (DoR)
+## 7. Servicios / contextos delimitados (mapa release-1)
 
-El ERP MVP está **Ready para OpenAPI / Angular / Flyway** solo si:
+| Servicio | En release-1 | Nota |
+|----------|--------------|------|
+| iam-service (identidad) | DENTRO | Ya en núcleo |
+| catalog-service (catálogos) | DENTRO | Maestros + series de folio |
+| workflow-service (flujos) | DENTRO | Requisición/OC/CxP/Pago/crédito |
+| document-service (documentos) | DENTRO | Expedientes |
+| audit-service (auditoría) | DENTRO | Rastro |
+| procurement-service (compras) | DENTRO | Proveedor, requisición, OC, recepción |
+| inventory-service (inventario) | DENTRO | Existencias, movimientos, disponible |
+| Módulo o servicio CxP | DENTRO | Facturas proveedor + propuesta de pago |
+| Módulo o servicio CxC / facturación | DENTRO | Pedido→factura, CFDI (adaptador) |
+| accounting-service (contabilidad) | DENTRO | Plan de cuentas, periodos, asientos |
+| treasury-service (tesorería) | DENTRO | Bancos, ejecución de pagos, conciliación |
+| payroll-service (nómina) | **FUERA** release-1 | |
+| budget-service (presupuesto GRP) | **FUERA** ERP MVP | Dominio GRP |
 
-- [x] Gate A documentado (este doc §2)  
-- [x] Gate A VoBo DG+CFO+Controller (2026-11-07)  
-- [x] Object Pages IN/OUT publicados (§3–§4)  
-- [x] Control Pack ERP-CP-001 publicado y referenciado  
-- [x] Delta Control Pack volcado en ERP-FM-001 (§19)  
-- [x] SoD mínima publicada (§5)  
-- [x] Umbrales numéricos piloto ACME adoptados (ERP-CP-001 §3) — ajustables por enmienda  
-- [ ] Owner técnico asignado por servicio §7  
+\* Empaquetado micro vs modular: ADR posterior; **no compartir base de datos** entre CxP / CxC / contabilidad / nómina / compras.
 
-**Demo HTML (`erp-preview`) no sustituye este Freeze** — es especificación UX, no DoR de ingeniería.
+---
+
+## 8. Criterios de aceptación del congelamiento (DoR)
+
+El ERP MVP está **listo para OpenAPI / Angular / migraciones** si:
+
+- [x] Puerta A documentada (§2)  
+- [x] Puerta A con VoBo DG+CFO+Controller (2026-11-07)  
+- [x] Pantallas objeto DENTRO/FUERA publicadas (§3–§4)  
+- [x] Paquete de control ERP-CP-001 publicado  
+- [x] Delta del paquete volcado en ERP-FM-001 (§19)  
+- [x] Segregación mínima publicada (§5)  
+- [x] Umbrales piloto ACME adoptados (ERP-CP-001 §3) — ajustables por enmienda  
+- [ ] Responsable técnico asignado por servicio §7  
+
+La demo HTML (`erp-preview`) **no sustituye** este congelamiento: es especificación de experiencia, no DoR de ingeniería.
 
 ---
 
 ## 9. Enmiendas
 
-| Rev | Fecha | Cambio | Firmas |
-|-----|-------|--------|--------|
-| r0 | 2026-11-07 | Creación propuesta Freeze MVP | pendientes |
+| Rev | Fecha | Cambio | VoBo |
+|-----|-------|--------|------|
+| r0 | 2026-11-07 | Creación y aprobación del congelamiento MVP | Dueño de producto |
+| r0.1 | 2026-11-07 | Redacción completa en español para el equipo de desarrollo | — |
 
 ---
 
-## 10. Próximos documentos (post-firma)
+## 10. Siguientes documentos / trabajo (post-VoBo)
 
-1. OpenAPI + eventos por servicio IN (§7)  
-2. ERD/Flyway finance-procurement-inventory  
-3. Angular app shell + Object Pages Gate C  
-4. Config umbrales / series / tolerancias (no pantallas usuario)
+1. OpenAPI + eventos por servicio DENTRO (§7) — en español en descripciones; propiedades en inglés  
+2. Modelo de datos / Flyway compras-inventario-finanzas  
+3. Aplicación Angular: envoltorio + fichas de la Puerta C  
+4. Configuración de umbrales / series / tolerancias (no pantallas de usuario final)
 
 ---
 
