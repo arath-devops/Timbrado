@@ -13,6 +13,11 @@ python3 -m http.server 4174 --bind 127.0.0.1
 
 Login demo: `mhernandez` / cualquier password → Dashboard.
 
+### Portable (1 archivo)
+
+Abre `portable.html` directo en el navegador (doble clic) o descarga desde la rama `feat-ERP`.  
+Incluye sidebar, módulos y datos ACME en un solo HTML sin servidor.
+
 ## Estructura
 
 ```text
