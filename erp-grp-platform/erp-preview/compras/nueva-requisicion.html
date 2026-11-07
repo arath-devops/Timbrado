@@ -7,40 +7,51 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-crumbs([{label:'Compras',href:'index.html'},{label:'Nueva requisición'}])+
-pageHead('Nueva requisición', 'Campos obligatorios FM-001 §6.1',
-  `<button class="btn btn-secondary btn-sm" type="button" onclick="history.back()">Cancelar</button>
-   <button class="btn btn-ghost btn-sm" type="button" onclick="toast('Borrador simulado')">Guardar borrador</button>
-   <button class="btn btn-primary btn-sm" type="button" onclick="submitPR()">Enviar (SUBMITTED)</button>`)+
-`<div class="panel"><div class="panel-bd"><div class="form-grid">
-  <div class="field full"><label class="req">title</label><input class="control" id="title" placeholder="5–200 caracteres"/></div>
-  <div class="field"><label class="req">requester_id</label><input class="control" value="mhernandez" readonly/></div>
-  <div class="field"><label class="req">org_unit_id</label><select class="control">${D.orgUnits.map(o=>`<option value="${o.ou_code}">${o.ou_code} — ${o.ou_name}</option>`).join('')}</select></div>
-  <div class="field"><label>need_by_date</label><input class="control" type="date" value="2026-11-20"/></div>
-  <div class="field"><label>priority</label><select class="control"><option>LOW</option><option selected>MED</option><option>HIGH</option></select></div>
-  <div class="field full"><label class="req">justification</label><textarea class="control" id="just" placeholder="≥20 caracteres"></textarea><span class="hint">Motivo de compra</span></div>
-  <div class="field"><label>line_item_id</label><select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
-  <div class="field"><label class="req">line_description</label><input class="control" value="Tornillo hex M12x40"/></div>
-  <div class="field"><label class="req">line_qty</label><input class="control" type="number" value="5000"/></div>
-  <div class="field"><label class="req">line_uom</label><input class="control" value="PZA"/></div>
-  <div class="field"><label class="req">line_est_price</label><input class="control" type="number" value="2.1"/></div>
-  <div class="field"><label>suggested_vendor_id</label><select class="control"><option value="">—</option>${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select></div>
-  <div class="field"><label class="req">total_amount</label><input class="control" value="10500" readonly/><span class="hint">Σ líneas · >0 para submit</span></div>
-</div></div></div>
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  window.__prLines={rows:[{item:'RM-BOLT-M12',desc:'Tornillo hex M12x40',qty:5000,uom:'PZA',price:2.1,cost_center_id:'OU-PROD-2'}],
+    cols:[
+      {key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},
+      {key:'desc',label:L('line_description')},
+      {key:'qty',label:L('line_qty'),type:'number'},
+      {key:'uom',label:L('line_uom')},
+      {key:'price',label:L('line_est_price'),type:'number'},
+      {key:'cost_center_id',label:L('cost_center_id'),type:'select',options:D.orgUnits.map(o=>o.ou_code)}
+    ], blank:{item:'RM-BOLT-M12',desc:'',qty:1,uom:'PZA',price:0,cost_center_id:'OU-PROD-2'},
+    qtyKey:'qty', priceKey:'price',
+    onChange:(tot)=>{ const t=document.getElementById('pr-total'); if(t) t.value=tot; }};
+  return crumbs([{label:'Compras',href:'index.html'},{label:'Nueva requisición'}])+
+    pageHead('Nueva requisición','Campos obligatorios FM-001',
+      `<button class="btn btn-ghost btn-sm" onclick="toast('Borrador')">Guardar borrador</button>
+       <button class="btn btn-primary btn-sm" onclick="submitPR()">Enviar</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('title',`<input class="control" id="title" placeholder="5–200 caracteres"/>`,true,true)}
+      ${fieldL('requester_id',`<input class="control" value="${D.session.username}" readonly/>`,true)}
+      ${fieldL('org_unit_id',`<select class="control">${D.orgUnits.map(o=>`<option>${o.ou_code} — ${o.ou_name}</option>`).join('')}</select>`,true)}
+      ${fieldL('need_by_date',`<input class="control" type="date" value="2026-11-20"/>`)}
+      ${fieldL('priority',`<select class="control"><option>LOW</option><option selected>MED</option><option>HIGH</option></select>`)}
+      ${fieldL('justification',`<textarea class="control" id="just" placeholder="≥20 caracteres"></textarea>`,true,true)}
+      ${fieldL('total_amount',`<input class="control" id="pr-total" value="10500" readonly/>`,true)}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'pr-lines', cols:window.__prLines.cols, rows:window.__prLines.rows, editable:true, total:10500})}</div>`;
+})()
 ;
   
+bindLinesTable("pr-lines", window.__prLines);
 window.submitPR=()=>{
   const t=document.getElementById('title').value.trim();
   const j=document.getElementById('just').value.trim();
-  if(t.length<5||j.length<20){toast('Validación: title≥5 y justification≥20');return;}
-  toast('PR enviada · status SUBMITTED · Workflow PR_APPROVAL');
-  location.href='requisiciones.html';
+  if(t.length<5||j.length<20){toast('Validación: título ≥5 y justificación ≥20');return;}
+  toast('PR enviada · SUBMITTED'); location.href='requisiciones.html';
 };
 
 });

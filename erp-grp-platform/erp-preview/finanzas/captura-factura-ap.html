@@ -7,34 +7,50 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-crumbs([{label:'AP',href:'facturas-ap.html'},{label:'Captura'}])+
-pageHead('Captura factura proveedor', 'Unique (vendor, invoice_number) · periodo OPEN',
-  `<button class="btn btn-primary btn-sm" onclick="toast('AP invoice DRAFT/PENDING_APPROVAL simulado');location.href='facturas-ap.html'">Guardar</button>`)+
-`<div class="panel"><div class="panel-bd"><div class="form-grid">
-  <div class="field"><label class="req">vendor_id</label><select class="control">${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select></div>
-  <div class="field"><label class="req">invoice_number</label><input class="control" placeholder="único por vendor"/></div>
-  <div class="field"><label class="req">invoice_date</label><input class="control" type="date" value="2026-11-07"/></div>
-  <div class="field"><label class="req">posting_date</label><input class="control" type="date" value="2026-11-07"/></div>
-  <div class="field"><label class="req">currency</label><input class="control" value="MXN"/></div>
-  <div class="field"><label>po_id</label><select class="control"><option value="">—</option>${D.pos.map(p=>`<option>${p.id}</option>`).join('')}</select></div>
-  <div class="field"><label>gr_id</label><input class="control" placeholder="condicional 3-way"/></div>
-  <div class="field"><label class="req">line_item</label><input class="control"/></div>
-  <div class="field"><label>line_qty</label><input class="control" type="number" value="1"/></div>
-  <div class="field"><label class="req">line_unit_price</label><input class="control" type="number"/></div>
-  <div class="field"><label class="req">line_tax_code</label><input class="control" value="IVA16"/></div>
-  <div class="field"><label class="req">subtotal</label><input class="control" type="number"/></div>
-  <div class="field"><label class="req">tax_total</label><input class="control" type="number"/></div>
-  <div class="field"><label class="req">grand_total</label><input class="control" type="number"/></div>
-  <div class="field"><label class="req">due_date</label><input class="control" type="date"/></div>
-  <div class="field"><label>cfdi_uuid</label><input class="control" placeholder="condicional MX Pro"/><span class="hint">UUID v4</span></div>
-</div></div></div>
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  window.__apLines={rows:[{item:'RM-BOLT-M12',qty:1,price:100,tax:'IVA16',cost_center_id:'OU-PROD-2'}],
+    cols:[
+      {key:'item',label:L('line_item')},
+      {key:'qty',label:L('line_qty'),type:'number'},
+      {key:'price',label:L('line_unit_price'),type:'number'},
+      {key:'tax',label:L('line_tax_code')},
+      {key:'cost_center_id',label:L('cost_center_id'),type:'select',options:D.orgUnits.map(o=>o.ou_code)}
+    ], blank:{item:'',qty:1,price:0,tax:'IVA16',cost_center_id:'OU-FIN'},
+    qtyKey:'qty', priceKey:'price',
+    onChange:(tot)=>{
+      const sub=document.getElementById('ap-sub'); const tax=document.getElementById('ap-tax'); const g=document.getElementById('ap-grand');
+      if(sub) sub.value=tot; if(tax) tax.value=Math.round(tot*0.16); if(g) g.value=tot+Math.round(tot*0.16);
+    }};
+  return crumbs([{label:'CxP',href:'cxp.html'},{label:'Captura'}])+
+    pageHead('Captura factura proveedor','Totales calculados desde líneas',
+      `<button class="btn btn-primary btn-sm" onclick="toast('Factura AP guardada');location.href='facturas-ap.html'">Guardar</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('vendor_id',`<select class="control">${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select>`,true)}
+      ${fieldL('invoice_number',`<input class="control"/>`,true)}
+      ${fieldL('invoice_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('posting_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('currency',`<input class="control" value="MXN"/>`,true)}
+      ${fieldL('po_id',`<select class="control"><option value="">—</option>${D.pos.map(p=>`<option>${p.id}</option>`).join('')}</select>`)}
+      ${fieldL('gr_id',`<input class="control" placeholder="si 3-way"/>`)}
+      ${fieldL('subtotal',`<input class="control" id="ap-sub" type="number" readonly/>`,true)}
+      ${fieldL('tax_total',`<input class="control" id="ap-tax" type="number" readonly/>`,true)}
+      ${fieldL('grand_total',`<input class="control" id="ap-grand" type="number" readonly/>`,true)}
+      ${fieldL('due_date',`<input class="control" type="date"/>`,true)}
+      ${fieldL('cfdi_uuid',`<input class="control"/>`,false,false,'Fiscal MX')}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'ap-lines', cols:window.__apLines.cols, rows:window.__apLines.rows, editable:true, total:100})}</div>`;
+})()
 ;
-  
+  bindLinesTable("ap-lines", window.__apLines); window.__apLines.onChange(100);
 });
 </script></body></html>

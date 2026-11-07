@@ -11,17 +11,26 @@ python3 -m http.server 4174 --bind 127.0.0.1
 # http://127.0.0.1:4174/
 ```
 
-Login demo: `mhernandez` / cualquier password → Dashboard.
+En el login elige **empresa + rol** (DG, CFO, Contador, Comprador, Vendedor, Almacén, RRHH). Cualquier password.
+
+### P0 UX (ERP-UX-001)
+
+- Labels en español (+ hint técnico)
+- Switcher de empresa y rol (menú filtrado)
+- Grid de líneas + totales calculados
+- Object pages con tabs (Datos / Líneas / WF / Docs / Audit)
+- Match 3-way en CxP
+- OC desde PR + open qty
+- Crédito en pedidos / clientes
+- ATP en existencias + recepción en Inventarios
+- Dashboard por rol
 
 ### Portable (1 archivo)
 
-**No uses** `raw.githubusercontent.com` ni `htmlpreview.github.io` (muestran el código o rompen los clics).
-
-Abrir demo (MIME correcto):
+**No uses** `raw.githubusercontent.com` ni `htmlpreview.github.io`.
 
 https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-preview/portable.html
 
-O descarga `portable.html` y ábrelo con doble clic. Login: `mhernandez` / cualquier password.
 
 ## Estructura
 

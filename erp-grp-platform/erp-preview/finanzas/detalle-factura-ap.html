@@ -7,29 +7,50 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-(()=>{const id=new URLSearchParams(location.search).get('id')||'AP-88421';
-const i=D.apInvoices.find(x=>x.id===id)||D.apInvoices[0];
-return crumbs([{label:'AP',href:'facturas-ap.html'},{label:i.id}])+
-pageHead(i.id, i.invoice_number+' · '+D.money(i.grand_total),
-  `<a class="btn btn-primary btn-sm" href="programacion-pagos.html">Programar pago</a>`)+
-`<div class="panel"><div class="panel-bd form-grid">
-  <div class="field"><label>vendor_id</label><div>${i.vendor_id}</div></div>
-  <div class="field"><label>status</label><div>${D.badge(i.status)}</div></div>
-  <div class="field"><label>po_id / gr_id</label><div>${i.po_id||'—'} / ${i.gr_id||'—'}</div></div>
-  <div class="field"><label>match_status</label><div>${i.match_status}</div></div>
-  <div class="field"><label>subtotal</label><div>${D.money(i.subtotal)}</div></div>
-  <div class="field"><label>tax_total</label><div>${D.money(i.tax_total)}</div></div>
-  <div class="field"><label>due_date</label><div>${i.due_date}</div></div>
-  <div class="field"><label>currency</label><div>${i.currency}</div></div>
-</div></div>
-<p class="hint">WF: AP_INVOICE_APPROVAL · Docs: FACT,OC,REC · Audit: AP_INVOICE_*</p>`;})()
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const id=new URLSearchParams(location.search).get('id')||'AP-88421';
+  const i=D.apInvoices.find(x=>x.id===id)||D.apInvoices[0];
+  const datos=`<div class="form-grid">
+    ${fieldL('vendor_id',`<div>${i.vendor_id}</div>`)}
+    ${fieldL('invoice_number',`<div>${i.invoice_number}</div>`)}
+    ${fieldL('invoice_date',`<div>${i.invoice_date}</div>`)}
+    ${fieldL('posting_date',`<div>${i.posting_date}</div>`)}
+    ${fieldL('po_id',`<div>${i.po_id?`<a href="../compras/detalle-oc.html?id=${i.po_id}">${i.po_id}</a>`:'—'}</div>`)}
+    ${fieldL('gr_id',`<div>${i.gr_id||'—'}</div>`)}
+    ${fieldL('subtotal',`<div>${D.money(i.subtotal)}</div>`)}
+    ${fieldL('tax_total',`<div>${D.money(i.tax_total)}</div>`)}
+    ${fieldL('grand_total',`<div style="font-weight:700">${D.money(i.grand_total)}</div>`)}
+    ${fieldL('due_date',`<div>${i.due_date}</div>`)}
+    ${fieldL('match_status',`<div>${i.match_status}</div>`)}
+    ${fieldL('status',`<div>${statusChip(i.status)}</div>`)}
+  </div>`;
+  const lineHtml=linesTable({id:'ap-lines', cols:[
+    {key:'item',label:L('line_item')},{key:'qty',label:L('line_qty')},{key:'price',label:L('line_unit_price'),money:true},
+    {key:'tax',label:L('line_tax_code')},{key:'cost_center_id',label:L('cost_center_id')}
+  ], rows:i.lines||[], editable:false, total:i.grand_total});
+  const tabs=objectTabs([
+    {id:'datos',label:'Datos generales',html:matchPanel(i)+datos},
+    {id:'lineas',label:'Líneas',html:lineHtml},
+    {id:'wf',label:'Workflow',html:wfStub([{title:'DRAFT',done:true},{title:'PENDING_APPROVAL / POSTED',done:true,desc:'AP_INVOICE_APPROVAL'},{title:'PAID',done:i.status==='PAID'}])},
+    {id:'docs',label:'Documentos',html:docsStub(i.id)},
+    {id:'audit',label:'Auditoría',html:auditStub(i.id)}
+  ],'datos');
+  return crumbs([{label:'CxP',href:'cxp.html'},{label:i.id}])+
+    pageHead(i.id, i.invoice_number+' · '+D.money(i.grand_total),
+      `<a class="btn btn-primary btn-sm" href="programacion-pagos.html">Programar pago</a>`)+
+    `<div id="obj">${tabs}</div>`;
+})()
 ;
-  
+  bindObjectTabs("#obj");
 });
 </script></body></html>

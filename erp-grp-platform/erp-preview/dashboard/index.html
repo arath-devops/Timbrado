@@ -7,29 +7,49 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML =
-    crumbs([{label:'Inicio',href:'index.html'},{label:'Dashboard'}])+
-    pageHead('Dashboard ejecutivo', D.session.company + ' · ' + D.session.legal_entity,
-      `<a class="btn btn-secondary btn-sm" href="../administracion/bandeja.html">Bandeja (${D.tasks.length})</a>
-       <a class="btn btn-primary btn-sm" href="../compras/nueva-requisicion.html">Nueva requisición</a>`)+
-    `<div class="kpi-row">${D.kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d ${k.t}">${k.d}</div></div>`).join('')}</div>
-    <div class="grid-2">
-      <div class="panel"><div class="panel-hd"><h3>Tareas de aprobación</h3><a href="../administracion/bandeja.html">Ver todas</a></div>
-      <div class="panel-bd">${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.task_id}</strong> · ${t.ref}<div style="font-size:12px;color:var(--ink-3)">${t.title}</div></div>
-        <div style="text-align:right">${D.money(t.amount)}<div style="font-size:11px">${t.sla.includes('vencida')?'<span class="badge b-danger">'+t.sla+'</span>':t.sla}</div></div></div>`).join('')}</div></div>
-      <div class="panel"><div class="panel-hd"><h3>Alertas</h3></div><div class="panel-bd">
-        <div class="alert warn">Periodo 2026-11 OPEN — soft close en 12 días.</div>
-        <div class="alert">3 OC en PENDING_APPROVAL · 1 factura AP sin OC.</div>
-        <div class="alert danger">Proveedor V-1102 BLOCKED — no generar OC/pagos.</div>
-      </div></div>
-    </div>
-    <div class="panel"><div class="panel-hd"><h3>Accesos rápidos (SI-001 MVP)</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-      ${[['Compras','../compras/index.html'],['Ventas','../ventas/index.html'],['Inventarios','../inventarios/index.html'],['Contabilidad','../finanzas/contabilidad.html'],['CxP','../finanzas/cxp.html'],['Facturación','../finanzas/facturacion.html'],['CxC','../finanzas/cxc.html'],['Tesorería','../finanzas/tesoreria.html'],['RRHH','../rh/index.html'],['Nómina','../nomina/index.html'],['Activos','../activos/index.html'],['Proyectos','../proyectos/index.html'],['Administración','../administracion/index.html'],['Reportes','../reportes/index.html']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="${h}">${l}</a>`).join('')}
-    </div></div>`;
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const kpis=D.kpisForRole();
+  const s=D.session;
+  const isExec = s.role_id==='DG'||s.role_id==='CFO';
+  return crumbs([{label:'Inicio'},{label:'Dashboard'}])+
+  pageHead('Dashboard · '+s.role, s.company+' · '+s.legal_entity,
+    `<a class="btn btn-secondary btn-sm" href="../administracion/bandeja.html">Bandeja (${D.tasks.length})</a>`)+
+  `<div class="kpi-row">${kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d ${k.t}">${k.d}</div></div>`).join('')}</div>`+
+  (isExec
+    ? `<div class="grid-2">
+        <div class="panel"><div class="panel-hd"><h3>Inbox ejecutivo</h3></div><div class="panel-bd">
+          ${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.task_id}</strong> · ${t.ref}<div style="font-size:12px;color:var(--ink-3)">${t.title}<br/>Por qué: ${t.why||'—'}</div></div>
+          <div>${D.money(t.amount)}</div></div>`).join('')}
+        </div></div>
+        <div class="panel"><div class="panel-hd"><h3>Señales</h3></div><div class="panel-bd">
+          <div class="alert warn">Periodo 2026-11 OPEN</div>
+          <div class="alert danger">Cliente C-2030 con crédito bloqueado</div>
+          <div class="alert">CxP abierto ${D.money(253400)} · CxC ${D.money(401250)}</div>
+        </div></div>
+      </div>`
+    : `<div class="grid-2">
+        <div class="panel"><div class="panel-hd"><h3>Mis tareas</h3></div><div class="panel-bd">
+          ${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.ref}</strong><div style="font-size:12px;color:var(--ink-3)">${t.title}</div></div><div>${D.money(t.amount)}</div></div>`).join('')}
+        </div></div>
+        <div class="panel"><div class="panel-hd"><h3>Accesos del rol</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+          ${s.nav.slice(0,8).map(k=>`<span class="chip">${k}</span>`).join('')}
+        </div></div>
+      </div>`)+
+  `<div class="panel"><div class="panel-hd"><h3>Accesos rápidos</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+    ${[['CxP','../finanzas/cxp.html'],['Facturación','../finanzas/facturacion.html'],['CxC','../finanzas/cxc.html'],['Compras','../compras/index.html'],['Ventas','../ventas/index.html'],['Inventarios','../inventarios/index.html'],['Recepción (INV)','../inventarios/recepcion-inv.html']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="${h}">${l}</a>`).join('')}
+  </div></div>`;
+})()
+;
+  
 });
 </script></body></html>

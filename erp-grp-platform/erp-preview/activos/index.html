@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const D=ERPDemo;
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Finanzas'},{label:'Activos'}])+
-pageHead('Activo fijo', 'Alta · Depreciación (Professional)',
+pageHead('Activo fijo <span class=\"stub-tag\">Professional stub</span>', 'Alta · Depreciación (Professional)',
   `<a class="btn btn-primary btn-sm" href="alta.html">Alta de activo</a>
    <a class="btn btn-secondary btn-sm" href="depreciacion.html">Depreciación</a>`)+
 `<div class="table-wrap"><table class="data"><thead><tr><th>asset_code</th><th>asset_name</th><th>capitalization_date</th><th>acquisition_cost</th><th>useful_life_months</th><th>depreciation_method</th><th>status</th></tr></thead>

@@ -7,29 +7,50 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-crumbs([{label:'Finanzas',href:'index.html'},{label:'Asientos'}])+
-pageHead('Libro diario / asientos', 'balanced: ΣDebit=ΣCredit · periodo OPEN',
-  `<button class="btn btn-primary btn-sm" onclick="toast('Asiento DRAFT simulado')">Nuevo asiento</button>`)+
-`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>journal_date</th><th>period_id</th><th>currency</th><th>header_text</th><th>debit</th><th>credit</th><th>status</th></tr></thead>
-<tbody>${D.journals.map(j=>`<tr><td><strong>${j.id}</strong></td><td>${j.journal_date}</td><td>${j.period_id}</td><td>${j.currency}</td><td>${j.header_text}</td><td>${D.money(j.debit)}</td><td>${D.money(j.credit)}</td><td>${D.badge(j.status)}</td></tr>`).join('')}</tbody></table></div>
-<div class="panel" style="margin-top:12px"><div class="panel-hd"><h3>Captura (campos FM)</h3></div><div class="panel-bd"><div class="form-grid">
-  <div class="field"><label class="req">journal_date</label><input class="control" type="date" value="2026-11-07"/></div>
-  <div class="field"><label class="req">period_id</label><input class="control" value="2026-11"/></div>
-  <div class="field"><label class="req">currency</label><input class="control" value="MXN"/></div>
-  <div class="field full"><label class="req">header_text</label><input class="control" placeholder="3–200"/></div>
-  <div class="field"><label class="req">line_account</label><select class="control">${D.accounts.filter(a=>a.allow_manual_posting).map(a=>`<option>${a.account_code}</option>`).join('')}</select></div>
-  <div class="field"><label>line_debit</label><input class="control" type="number" value="1000"/></div>
-  <div class="field"><label>line_credit</label><input class="control" type="number" value="0"/></div>
-  <div class="field"><label>line_cost_center</label><input class="control" placeholder="OU/CC"/></div>
-  <div class="field"><label class="req">balanced</label><div><span class="badge b-ok">true</span> Abs(diff)&lt;0.01</div></div>
-</div></div></div>
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  window.__jeLines={rows:[
+    {account:'5100-020',debit:1000,credit:0,cc:'OU-MANT'},
+    {account:'2100-001',debit:0,credit:1000,cc:''}
+  ], cols:[
+    {key:'account',label:L('line_account'),type:'select',options:D.accounts.filter(a=>a.allow_manual_posting).map(a=>a.account_code)},
+    {key:'debit',label:L('line_debit'),type:'number'},
+    {key:'credit',label:L('line_credit'),type:'number'},
+    {key:'cc',label:L('line_cost_center')}
+  ], blank:{account:'5100-020',debit:0,credit:0,cc:''}};
+  return crumbs([{label:'Contabilidad',href:'contabilidad.html'},{label:'Asientos'}])+
+    pageHead('Libro diario / asientos','Σ Debe = Σ Haber · periodo OPEN',
+      `<button class="btn btn-primary btn-sm" onclick="saveJE()">Guardar asiento</button>`)+
+    `<div class="table-wrap" style="margin-bottom:12px"><table class="data"><thead><tr><th>id</th><th>${L('journal_date')}</th><th>${L('period_id')}</th><th>${L('header_text')}</th><th>Debe</th><th>Haber</th><th>${L('status')}</th></tr></thead>
+    <tbody>${D.journals.map(j=>`<tr><td><strong>${j.id}</strong></td><td>${j.journal_date}</td><td>${j.period_id}</td><td>${j.header_text}</td><td>${D.money(j.debit)}</td><td>${D.money(j.credit)}</td><td>${statusChip(j.status)}</td></tr>`).join('')}</tbody></table></div>
+    <div class="panel"><div class="panel-hd"><h3>Nuevo asiento</h3></div><div class="panel-bd"><div class="form-grid">
+      ${fieldL('journal_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('period_id',`<input class="control" value="2026-11"/>`,true)}
+      ${fieldL('currency',`<input class="control" value="MXN"/>`,true)}
+      ${fieldL('header_text',`<input class="control" placeholder="3–200"/>`,true,true)}
+      ${fieldL('balanced',`<div id="bal">${statusChip('MATCHED')} Abs(diff)&lt;0.01</div>`)}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'je-lines', cols:window.__jeLines.cols, rows:window.__jeLines.rows, editable:true})}</div>`;
+})()
 ;
   
+bindLinesTable("je-lines", window.__jeLines);
+window.saveJE=()=>{
+  const rows=window.__jeLines.rows;
+  const d=rows.reduce((s,r)=>s+(Number(r.debit)||0),0);
+  const c=rows.reduce((s,r)=>s+(Number(r.credit)||0),0);
+  if(Math.abs(d-c)>=0.01){ toast('Asiento descuadrado'); return; }
+  toast('Asiento DRAFT guardado');
+};
+
 });
 </script></body></html>

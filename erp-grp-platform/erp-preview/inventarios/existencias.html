@@ -7,20 +7,25 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
 crumbs([{label:'Inventarios',href:'index.html'},{label:'Existencias'}])+
-pageHead('Consulta de existencias', 'Filtros warehouse_id / item_id', '')+
-`<div class="toolbar">
-  <select class="control" style="max-width:160px"><option value="">warehouse_id</option><option>WH-P1</option><option>WH-FG</option></select>
-  <select class="control" style="max-width:180px"><option value="">item_id</option>${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select>
-</div>
-<div class="table-wrap"><table class="data"><thead><tr><th>item_code</th><th>warehouse_id</th><th>qty</th></tr></thead>
-<tbody>${D.stock.map(s=>`<tr><td>${s.item_code}</td><td>${s.warehouse_id}</td><td>${s.qty.toLocaleString('es-MX')}</td></tr>`).join('')}</tbody></table></div>
+pageHead('Consulta de existencias (ATP)',L('qty_on_hand')+' / '+L('qty_reserved')+' / '+L('qty_available'))+
+`<div class="table-wrap"><table class="data"><thead><tr>
+  <th>${L('line_item_id')}</th><th>${L('warehouse_id')}</th>
+  <th>${L('qty_on_hand')}</th><th>${L('qty_reserved')}</th><th>${L('qty_available')}</th>
+</tr></thead>
+<tbody>${D.stock.map(s=>`<tr><td><strong>${s.item_code}</strong></td><td>${s.warehouse_id}</td>
+  <td>${s.qty_on_hand.toLocaleString('es-MX')}</td><td>${s.qty_reserved.toLocaleString('es-MX')}</td>
+  <td><strong>${s.qty_available.toLocaleString('es-MX')}</strong></td></tr>`).join('')}</tbody></table></div>
 ;
   
 });

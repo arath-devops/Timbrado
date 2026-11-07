@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const D=ERPDemo;
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Finanzas'},{label:'Proyectos'}])+
-pageHead('Proyectos', 'Lista / plan · Timesheets',
+pageHead('Proyectos <span class="stub-tag">Professional stub</span>', 'Lista / plan · Timesheets',
   `<a class="btn btn-secondary btn-sm" href="timesheets.html">Timesheets</a>`)+
 `<div class="table-wrap"><table class="data"><thead><tr><th>project_code</th><th>project_name</th><th>customer_id</th><th>start_date</th><th>end_date</th><th>budget_amount</th><th>status</th></tr></thead>
 <tbody>${D.projects.map(p=>`<tr><td><strong>${p.project_code}</strong></td><td>${p.project_name}</td><td>${p.customer_id||'—'}</td><td>${p.start_date}</td><td>${p.end_date||'—'}</td><td>${D.money(p.budget_amount)}</td><td>${D.badge(p.status)}</td></tr>`).join('')}</tbody></table></div>

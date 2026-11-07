@@ -267,14 +267,16 @@ Escala: **P0** = bloquearía adopción interna de la demo / Freeze · **P1** = s
 
 La preview se considera **lista para walkthrough con DG+CFO** cuando:
 
-- [ ] Labels en español de negocio  
-- [ ] Switch de rol (mín. CFO, Contador, Comprador, Vendedor, Almacén)  
-- [ ] Al menos un documento completo con **N líneas** y totales calculados (OC + Factura AP + SO)  
-- [ ] Object page con tabs WF/Docs  
-- [ ] CxP muestra match 3-way  
-- [ ] SO bloquea/simula crédito insuficiente  
-- [ ] Existencias muestran available  
-- [ ] Menú MVP no mezcla stubs Professional sin aviso  
+- [x] Labels en español de negocio  
+- [x] Switch de rol (mín. CFO, Contador, Comprador, Vendedor, Almacén)  
+- [x] Al menos un documento completo con **N líneas** y totales calculados (OC + Factura AP + SO)  
+- [x] Object page con tabs WF/Docs  
+- [x] CxP muestra match 3-way  
+- [x] SO bloquea/simula crédito insuficiente  
+- [x] Existencias muestran available  
+- [x] Menú MVP no mezcla stubs Professional sin aviso  
+
+**Actualización:** P0 implementado en `erp-preview/` + `portable.html` (rama `feat-ERP`).
 
 ---
 

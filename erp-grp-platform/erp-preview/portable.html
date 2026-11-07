@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ACME ERP · Demo portable</title>
+<title>ACME ERP · Demo portable P0</title>
 <style>
 :root {
   --font: system-ui, 'Segoe UI', sans-serif;
@@ -366,7 +366,50 @@ table.data tr.clickable { cursor: pointer; }
 .empty { text-align: center; padding: 32px; color: var(--ink-3); }
 .footer-note { font-size: 11px; color: var(--ink-3); margin-top: 20px; text-align: center; }
 
-.login-wrap { display:grid; }
+.field label .tech {
+  font-weight: 400; font-size: 10px; color: var(--ink-3);
+  margin-left: 4px; font-family: var(--mono);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.lines-wrap { margin-top: 8px; }
+.lines-wrap .control { height: 28px; padding: 0 6px; font-size: 12px; }
+
+.match-panel {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px; margin-bottom: 12px; background: var(--surface-2);
+}
+.match-panel.ok { border-color: var(--ok); background: var(--ok-soft); }
+.match-panel.bad { border-color: var(--danger); background: var(--danger-soft); }
+.match-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.match-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+}
+@media (max-width: 720px) { .match-grid { grid-template-columns: 1fr; } }
+.match-grid .l { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+.match-grid .v { font-size: 16px; font-weight: 700; margin-top: 2px; }
+.match-flags { margin-top: 8px; font-size: 12px; color: var(--ink-2); }
+
+.switcher select {
+  max-width: 180px; height: 32px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); padding: 0 6px; font-size: 12px;
+}
+@media (max-width: 1100px) {
+  .switcher select { max-width: 120px; }
+  .user-meta { display: none; }
+}
+
+.journey {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  margin-bottom: 12px; font-size: 12px; color: var(--ink-3);
+}
+.journey strong { color: var(--brand-ink); }
+.stub-tag {
+  display: inline-flex; align-items: center; height: 18px; padding: 0 6px;
+  border-radius: 3px; background: var(--warn-soft); color: var(--warn);
+  font-size: 10px; font-weight: 700; margin-left: 6px;
+}
+
 </style>
 </head>
 <body>
@@ -374,60 +417,49 @@ table.data tr.clickable { cursor: pointer; }
   <form class="login-card" id="login-form">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <div class="brand-mark" style="width:36px;height:36px;border-radius:6px;background:#0a6ed1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px">ERP</div>
-      <div><strong>ACME Industrial</strong><div style="font-size:12px;color:var(--ink-3)">Demo portable · un solo archivo · no uses raw.githubusercontent</div></div>
+      <div><strong>ACME Industrial</strong><div style="font-size:12px;color:var(--ink-3)">Portable P0 · roles · CxP/CxC/Facturación</div></div>
     </div>
     <h1>Iniciar sesión</h1>
-    <p class="sub">Datos simulados · sin backend</p>
-    <div class="field"><label class="req">tenant_or_company</label>
-      <select class="control"><option>ACME Industrial S.A. de C.V.</option></select>
-    </div>
-    <div class="field"><label class="req">username</label>
-      <input class="control" value="mhernandez" name="username"/>
-    </div>
-    <div class="field"><label class="req">password</label>
-      <input class="control" type="password" value="demo1234"/>
-      <span class="hint">Cualquier password admite ingreso</span>
-    </div>
+    <p class="sub">Elija empresa y rol (menú filtrado)</p>
+    <div class="field"><label class="req">Empresa</label><select class="control" id="company"></select></div>
+    <div class="field"><label class="req">Rol demo</label><select class="control" id="role"></select></div>
+    <div class="field"><label class="req">Usuario</label><input class="control" id="username" readonly/></div>
+    <div class="field"><label class="req">Contraseña</label><input class="control" type="password" value="demo1234"/></div>
     <button class="btn btn-primary" style="width:100%;height:36px;margin-top:8px" type="submit">Entrar</button>
   </form>
 </div>
-
 <div class="app" id="app" style="display:none">
   <aside class="sidebar" id="sidebar"></aside>
   <header class="topbar" id="topbar"></header>
   <main class="main" id="main"><div id="content"></div></main>
 </div>
-
 <script>
-/* Mock data — campos alineados a ERP-FM-001 / pantallas ERP-SI-001 */
+/* Mock data — ERP-FM-001 + Control Pack stubs (crédito, ATP, líneas) */
 window.ERPDemo = {
-  session: {
-    username: 'mhernandez',
-    display_name: 'María Hernández',
-    short: 'MH',
-    email: 'maria.hernandez@acme-industrial.mx',
-    role: 'Controller / Finanzas',
-    company: 'ACME Industrial S.A. de C.V.',
-    legal_entity: 'ACME-MX-001',
-    locale: 'es-MX',
-    theme: 'light'
-  },
+  companies: [
+    { id: 'ACME-MX-001', name: 'ACME Industrial S.A. de C.V.' },
+    { id: 'ACME-MX-002', name: 'ACME Servicios Norte S.A. de C.V.' }
+  ],
+  roles: [
+    { id: 'DG', label: 'Director General', username: 'dgomez', display_name: 'Diego Gómez', short: 'DG', email: 'diego.gomez@acme-industrial.mx', nav: ['dashboard','bandeja','reportes','finanzas','cxp','cxc','facturacion','tesoreria','contabilidad','compras','ventas'] },
+    { id: 'CFO', label: 'CFO', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','bandeja','reportes','contabilidad','cxp','facturacion','cxc','tesoreria','finanzas','activos'] },
+    { id: 'GL', label: 'Contador', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','bandeja','contabilidad','cxp','cxc','facturacion','tesoreria','finanzas','reportes'] },
+    { id: 'BUY', label: 'Comprador', username: 'clopez', display_name: 'Carlos López', short: 'CL', email: 'carlos.lopez@acme-industrial.mx', nav: ['dashboard','bandeja','compras','inventarios','proveedores','reportes'] },
+    { id: 'SAL', label: 'Vendedor', username: 'avargas', display_name: 'Ana Vargas', short: 'AV', email: 'ana.vargas@acme-industrial.mx', nav: ['dashboard','ventas','facturacion','cxc','inventarios','reportes'] },
+    { id: 'INV', label: 'Encargado de Almacén', username: 'rsolis', display_name: 'Roberto Solís', short: 'RS', email: 'roberto.solis@acme-industrial.mx', nav: ['dashboard','inventarios','compras','reportes'] },
+    { id: 'HR', label: 'RRHH', username: 'lramos', display_name: 'Laura Ramos', short: 'LR', email: 'laura.ramos@acme-industrial.mx', nav: ['dashboard','rh','nomina','bandeja','reportes'] }
+  ],
+  session: null, /* set by applyRole */
   notifications: [
     { id: 1, title: 'PO-2026-0842 pendiente de aprobación', time: 'hace 18 min', unread: true, href: '../compras/detalle-oc.html?id=PO-2026-0842' },
-    { id: 2, title: 'Factura AP F-88421 lista para programar pago', time: 'hace 1 h', unread: true, href: '../finanzas/detalle-factura-ap.html?id=AP-88421' },
-    { id: 3, title: 'Periodo 2026-11 OPEN — cierre soft en 12 días', time: 'hace 3 h', unread: false, href: '../finanzas/periodos.html' },
-    { id: 4, title: 'GR-2026-0310 posted · PO-2026-0799', time: 'ayer', unread: false, href: '../compras/recepcion.html' }
+    { id: 2, title: 'Factura AP-88421 lista para programar pago', time: 'hace 1 h', unread: true, href: '../finanzas/detalle-factura-ap.html?id=AP-88421' },
+    { id: 3, title: 'Periodo 2026-11 OPEN — soft close en 12 días', time: 'hace 3 h', unread: false, href: '../finanzas/periodos.html' },
+    { id: 4, title: 'Cliente C-2015 cerca del límite de crédito', time: 'hace 4 h', unread: true, href: '../ventas/detalle-pedido.html?id=SO-2026-0544' }
   ],
   tasks: [
-    { task_id: 'T-9021', process: 'PO_APPROVAL', ref: 'PO-2026-0842', title: 'Aprobar OC Aceros del Norte', amount: 486200, status: 'OPEN', sla: 'vencida 2h' },
-    { task_id: 'T-9018', process: 'PR_APPROVAL', ref: 'PR-2026-1204', title: 'Requisición consumibles planta 2', amount: 38450, status: 'OPEN', sla: '14 h' },
-    { task_id: 'T-9012', process: 'AP_INVOICE_APPROVAL', ref: 'AP-88410', title: 'Factura sin OC > umbral', amount: 125000, status: 'OPEN', sla: '22 h' }
-  ],
-  kpis: [
-    { l: 'CxP abierto', v: '$4.82 MDP', d: '37 facturas', t: 'neutral' },
-    { l: 'CxC abierto', v: '$6.14 MDP', d: '28 facturas', t: 'up' },
-    { l: 'OC pendientes', v: '19', d: '3 en inbox', t: 'down' },
-    { l: 'Posición efectivo', v: '$2.91 MDP', d: '3 bancos', t: 'neutral' }
+    { task_id: 'T-9021', process: 'PO_APPROVAL', ref: 'PO-2026-0842', title: 'Aprobar OC Aceros del Norte', amount: 486200, status: 'OPEN', sla: 'vencida 2h', why: 'Importe > umbral $200k' },
+    { task_id: 'T-9018', process: 'PR_APPROVAL', ref: 'PR-2026-1204', title: 'Requisición consumibles planta 2', amount: 38450, status: 'OPEN', sla: '14 h', why: 'Área Prod-2' },
+    { task_id: 'T-9012', process: 'AP_INVOICE_APPROVAL', ref: 'AP-88410', title: 'Factura sin OC > umbral', amount: 125000, status: 'OPEN', sla: '22 h', why: 'Sin OC + > $100k' }
   ],
   vendors: [
     { vendor_code: 'V-1001', legal_name: 'Aceros del Norte S.A. de C.V.', tax_id: 'ANO850101XXX', email: 'cxp@acerosnorte.mx', payment_terms_default: 'NET30', currency: 'MXN', status: 'ACTIVE', bank_account: '012180001234567890' },
@@ -435,9 +467,9 @@ window.ERPDemo = {
     { vendor_code: 'V-1102', legal_name: 'TechParts Asia Ltd.', tax_id: 'TPA000000XXX', email: 'billing@techparts.asia', payment_terms_default: 'NET45', currency: 'USD', status: 'BLOCKED', bank_account: '—' }
   ],
   customers: [
-    { code: 'C-2001', name: 'Constructora Sierra Madre', tax_id: 'CSM780101AAA', status: 'ACTIVE', terms: 'NET30', currency: 'MXN' },
-    { code: 'C-2015', name: 'Grupo Comercial del Bajío', tax_id: 'GCB900101BBB', status: 'ACTIVE', terms: 'NET15', currency: 'MXN' },
-    { code: 'C-2030', name: 'Exportadora Pacífico', tax_id: 'EPA850101CCC', status: 'ACTIVE', terms: 'NET45', currency: 'USD' }
+    { code: 'C-2001', name: 'Constructora Sierra Madre', tax_id: 'CSM780101AAA', status: 'ACTIVE', terms: 'NET30', currency: 'MXN', credit_limit: 800000, credit_exposure: 312800, credit_block: false },
+    { code: 'C-2015', name: 'Grupo Comercial del Bajío', tax_id: 'GCB900101BBB', status: 'ACTIVE', terms: 'NET15', currency: 'MXN', credit_limit: 250000, credit_exposure: 230650, credit_block: false },
+    { code: 'C-2030', name: 'Exportadora Pacífico', tax_id: 'EPA850101CCC', status: 'ACTIVE', terms: 'NET45', currency: 'USD', credit_limit: 100000, credit_exposure: 98000, credit_block: true }
   ],
   items: [
     { item_code: 'RM-STEEL-12', item_name: 'Placa acero A36 1/2"', item_type: 'STOCK', uom: 'KG', costing_method: 'AVG', sales_price: 28.5, purchase_price: 22.0 },
@@ -446,24 +478,50 @@ window.ERPDemo = {
     { item_code: 'SV-MANT-01', item_name: 'Servicio mantenimiento CNC', item_type: 'SERVICE', uom: 'SERV', costing_method: null, sales_price: 12000, purchase_price: 9500 }
   ],
   stock: [
-    { item_code: 'RM-STEEL-12', warehouse_id: 'WH-P1', qty: 18420 },
-    { item_code: 'RM-BOLT-M12', warehouse_id: 'WH-P1', qty: 52000 },
-    { item_code: 'FG-FRAME-01', warehouse_id: 'WH-FG', qty: 86 }
+    { item_code: 'RM-STEEL-12', warehouse_id: 'WH-P1', qty_on_hand: 18420, qty_reserved: 2400, qty_available: 16020 },
+    { item_code: 'RM-BOLT-M12', warehouse_id: 'WH-P1', qty_on_hand: 52000, qty_reserved: 5000, qty_available: 47000 },
+    { item_code: 'FG-FRAME-01', warehouse_id: 'WH-FG', qty_on_hand: 86, qty_reserved: 40, qty_available: 46 }
   ],
   prs: [
-    { id: 'PR-2026-1204', title: 'Consumibles planta 2', requester_id: 'jperez', org_unit_id: 'OU-PROD-2', need_by_date: '2026-11-20', justification: 'Reposición de tornillería y consumibles de línea 2 para turno continuo.', priority: 'MED', status: 'SUBMITTED', total_amount: 38450 },
-    { id: 'PR-2026-1198', title: 'Servicio CNC trimestral', requester_id: 'mhernandez', org_unit_id: 'OU-MANT', need_by_date: '2026-11-28', justification: 'Mantenimiento preventivo contractual Q4 equipos CNC.', priority: 'HIGH', status: 'APPROVED', total_amount: 95000 },
-    { id: 'PR-2026-1180', title: 'Placa acero A36', requester_id: 'jperez', org_unit_id: 'OU-PROD-1', need_by_date: '2026-11-15', justification: 'Pedido de materia prima para OT-441.', priority: 'HIGH', status: 'CLOSED', total_amount: 410000 }
+    { id: 'PR-2026-1204', title: 'Consumibles planta 2', requester_id: 'jperez', org_unit_id: 'OU-PROD-2', need_by_date: '2026-11-20', justification: 'Reposición de tornillería y consumibles de línea 2 para turno continuo.', priority: 'MED', status: 'SUBMITTED', total_amount: 38450,
+      lines: [
+        { item: 'RM-BOLT-M12', desc: 'Tornillo hex M12x40', qty: 10000, uom: 'PZA', price: 2.1, cost_center_id: 'OU-PROD-2' },
+        { item: 'RM-STEEL-12', desc: 'Placa acero A36 (consumo)', qty: 500, uom: 'KG', price: 22, cost_center_id: 'OU-PROD-2' }
+      ] },
+    { id: 'PR-2026-1198', title: 'Servicio CNC trimestral', requester_id: 'mhernandez', org_unit_id: 'OU-MANT', need_by_date: '2026-11-28', justification: 'Mantenimiento preventivo contractual Q4 equipos CNC.', priority: 'HIGH', status: 'APPROVED', total_amount: 95000,
+      lines: [
+        { item: 'SV-MANT-01', desc: 'Servicio mantenimiento CNC', qty: 1, uom: 'SERV', price: 95000, cost_center_id: 'OU-MANT' }
+      ] },
+    { id: 'PR-2026-1180', title: 'Placa acero A36', requester_id: 'jperez', org_unit_id: 'OU-PROD-1', need_by_date: '2026-11-15', justification: 'Pedido de materia prima para OT-441.', priority: 'HIGH', status: 'CLOSED', total_amount: 410000,
+      lines: [
+        { item: 'RM-STEEL-12', desc: 'Placa acero A36 1/2"', qty: 16000, uom: 'KG', price: 22, cost_center_id: 'OU-PROD-1' }
+      ] }
   ],
   pos: [
-    { id: 'PO-2026-0842', vendor_id: 'V-1001', order_date: '2026-11-06', currency: 'MXN', payment_terms: 'NET30', delivery_address: 'Almacén Planta 1 · Av. Industrial 120', pr_id: 'PR-2026-1180', buyer_id: 'clopez', total_amount: 486200, status: 'PENDING_APPROVAL' },
-    { id: 'PO-2026-0799', vendor_id: 'V-1044', order_date: '2026-10-28', currency: 'MXN', payment_terms: 'NET15', delivery_address: 'Almacén Planta 2', pr_id: 'PR-2026-1170', buyer_id: 'clopez', total_amount: 128400, status: 'PARTIALLY_RECEIVED' },
-    { id: 'PO-2026-0771', vendor_id: 'V-1044', order_date: '2026-10-12', currency: 'MXN', payment_terms: 'NET15', delivery_address: 'Planta 1', pr_id: null, buyer_id: 'clopez', total_amount: 45200, status: 'RECEIVED' }
+    { id: 'PO-2026-0842', vendor_id: 'V-1001', order_date: '2026-11-06', currency: 'MXN', payment_terms: 'NET30', delivery_address: 'Almacén Planta 1 · Av. Industrial 120', pr_id: 'PR-2026-1180', buyer_id: 'clopez', total_amount: 486200, status: 'PENDING_APPROVAL',
+      lines: [
+        { line: 1, item: 'RM-STEEL-12', desc: 'Placa acero A36 1/2"', ordered_qty: 18000, received_qty: 0, billed_qty: 0, open_qty: 18000, uom: 'KG', price: 22, tax: 'IVA16', cost_center_id: 'OU-PROD-1' },
+        { line: 2, item: 'RM-BOLT-M12', desc: 'Tornillo hex M12x40', ordered_qty: 5000, received_qty: 0, billed_qty: 0, open_qty: 5000, uom: 'PZA', price: 2.1, tax: 'IVA16', cost_center_id: 'OU-PROD-1' }
+      ] },
+    { id: 'PO-2026-0799', vendor_id: 'V-1044', order_date: '2026-10-28', currency: 'MXN', payment_terms: 'NET15', delivery_address: 'Almacén Planta 2', pr_id: 'PR-2026-1170', buyer_id: 'clopez', total_amount: 128400, status: 'PARTIALLY_RECEIVED',
+      lines: [
+        { line: 1, item: 'RM-BOLT-M12', desc: 'Tornillo hex M12x40', ordered_qty: 50000, received_qty: 30000, billed_qty: 30000, open_qty: 20000, uom: 'PZA', price: 2.1, tax: 'IVA16', cost_center_id: 'OU-PROD-2' }
+      ] },
+    { id: 'PO-2026-0771', vendor_id: 'V-1044', order_date: '2026-10-12', currency: 'MXN', payment_terms: 'NET15', delivery_address: 'Planta 1', pr_id: null, buyer_id: 'clopez', total_amount: 45200, status: 'RECEIVED',
+      lines: [
+        { line: 1, item: 'SV-MANT-01', desc: 'Servicio puntual', ordered_qty: 1, received_qty: 1, billed_qty: 1, open_qty: 0, uom: 'SERV', price: 38966, tax: 'IVA16', cost_center_id: 'OU-MANT' }
+      ] }
   ],
   apInvoices: [
-    { id: 'AP-88421', vendor_id: 'V-1044', invoice_number: 'A-55210', invoice_date: '2026-11-04', posting_date: '2026-11-05', currency: 'MXN', po_id: 'PO-2026-0799', gr_id: 'GR-2026-0310', subtotal: 110690, tax_total: 17710, grand_total: 128400, due_date: '2026-11-19', status: 'POSTED', match_status: 'MATCHED' },
-    { id: 'AP-88410', vendor_id: 'V-1001', invoice_number: 'F-10088', invoice_date: '2026-11-03', posting_date: '2026-11-03', currency: 'MXN', po_id: null, gr_id: null, subtotal: 107758, tax_total: 17242, grand_total: 125000, due_date: '2026-12-03', status: 'PENDING_APPROVAL', match_status: 'NOT_REQUIRED' },
-    { id: 'AP-88390', vendor_id: 'V-1044', invoice_number: 'A-55102', invoice_date: '2026-10-20', posting_date: '2026-10-21', currency: 'MXN', po_id: 'PO-2026-0771', gr_id: 'GR-2026-0288', subtotal: 38966, tax_total: 6234, grand_total: 45200, due_date: '2026-11-04', status: 'PAID', match_status: 'MATCHED' }
+    { id: 'AP-88421', vendor_id: 'V-1044', invoice_number: 'A-55210', invoice_date: '2026-11-04', posting_date: '2026-11-05', currency: 'MXN', po_id: 'PO-2026-0799', gr_id: 'GR-2026-0310', subtotal: 110690, tax_total: 17710, grand_total: 128400, due_date: '2026-11-19', status: 'POSTED', match_status: 'MATCHED',
+      lines: [{ item: 'RM-BOLT-M12', qty: 30000, price: 2.1, tax: 'IVA16', cost_center_id: 'OU-PROD-2' }],
+      match: { po_amount: 128400, gr_amount: 128400, inv_amount: 128400, qty_ok: true, amt_ok: true, tolerance_pct: 2 } },
+    { id: 'AP-88410', vendor_id: 'V-1001', invoice_number: 'F-10088', invoice_date: '2026-11-03', posting_date: '2026-11-03', currency: 'MXN', po_id: null, gr_id: null, subtotal: 107758, tax_total: 17242, grand_total: 125000, due_date: '2026-12-03', status: 'PENDING_APPROVAL', match_status: 'NOT_REQUIRED',
+      lines: [{ item: 'Servicio especial', qty: 1, price: 107758, tax: 'IVA16', cost_center_id: 'OU-FIN' }],
+      match: null },
+    { id: 'AP-88390', vendor_id: 'V-1044', invoice_number: 'A-55102', invoice_date: '2026-10-20', posting_date: '2026-10-21', currency: 'MXN', po_id: 'PO-2026-0771', gr_id: 'GR-2026-0288', subtotal: 38966, tax_total: 6234, grand_total: 45200, due_date: '2026-11-04', status: 'PAID', match_status: 'MATCHED',
+      lines: [{ item: 'SV-MANT-01', qty: 1, price: 38966, tax: 'IVA16', cost_center_id: 'OU-MANT' }],
+      match: { po_amount: 45200, gr_amount: 45200, inv_amount: 45200, qty_ok: true, amt_ok: true, tolerance_pct: 2 } }
   ],
   arInvoices: [
     { id: 'AR-44102', customer_id: 'C-2001', invoice_date: '2026-11-02', sales_order_id: 'SO-2026-0551', payment_terms: 'NET30', grand_total: 312800, status: 'ISSUED', open_amount: 312800 },
@@ -471,9 +529,12 @@ window.ERPDemo = {
     { id: 'AR-44050', customer_id: 'C-2001', invoice_date: '2026-10-10', sales_order_id: 'SO-2026-0501', payment_terms: 'NET30', grand_total: 95600, status: 'PAID', open_amount: 0 }
   ],
   salesOrders: [
-    { id: 'SO-2026-0551', customer_id: 'C-2001', order_date: '2026-10-30', requested_date: '2026-11-12', currency: 'MXN', total_amount: 312800, status: 'DELIVERED' },
-    { id: 'SO-2026-0544', customer_id: 'C-2015', order_date: '2026-11-05', requested_date: '2026-11-18', currency: 'MXN', total_amount: 142200, status: 'CONFIRMED' },
-    { id: 'SO-2026-0530', customer_id: 'C-2015', order_date: '2026-10-18', requested_date: '2026-10-28', currency: 'MXN', total_amount: 188450, status: 'INVOICED' }
+    { id: 'SO-2026-0551', customer_id: 'C-2001', order_date: '2026-10-30', requested_date: '2026-11-12', currency: 'MXN', total_amount: 312800, status: 'DELIVERED', credit_ok: true,
+      lines: [{ item: 'FG-FRAME-01', qty: 37, price: 8450, discount: 0 }] },
+    { id: 'SO-2026-0544', customer_id: 'C-2015', order_date: '2026-11-05', requested_date: '2026-11-18', currency: 'MXN', total_amount: 142200, status: 'CONFIRMED', credit_ok: true,
+      lines: [{ item: 'FG-FRAME-01', qty: 16, price: 8450, discount: 0 }, { item: 'RM-BOLT-M12', qty: 1000, price: 4.2, discount: 0 }] },
+    { id: 'SO-2026-0599', customer_id: 'C-2030', order_date: '2026-11-07', requested_date: '2026-11-25', currency: 'USD', total_amount: 25000, status: 'DRAFT', credit_ok: false,
+      lines: [{ item: 'FG-FRAME-01', qty: 3, price: 450, discount: 0 }] }
   ],
   accounts: [
     { account_code: '1100-001', account_name: 'Bancos MN', account_type: 'ASSET', allow_manual_posting: true, is_recon_account: false },
@@ -489,8 +550,10 @@ window.ERPDemo = {
     { fiscal_year: 2026, period_id: '2026-11', status: 'OPEN', start_date: '2026-11-01', end_date: '2026-11-30' }
   ],
   journals: [
-    { id: 'JE-2026-1188', journal_date: '2026-11-05', period_id: '2026-11', currency: 'MXN', header_text: 'Provisión mantenimiento CNC', status: 'POSTED', debit: 95000, credit: 95000 },
-    { id: 'JE-2026-1170', journal_date: '2026-11-03', period_id: '2026-11', currency: 'MXN', header_text: 'Depreciación maquinaria', status: 'DRAFT', debit: 42800, credit: 42800 }
+    { id: 'JE-2026-1188', journal_date: '2026-11-05', period_id: '2026-11', currency: 'MXN', header_text: 'Provisión mantenimiento CNC', status: 'POSTED', debit: 95000, credit: 95000,
+      lines: [{ account: '5100-020', debit: 95000, credit: 0, cc: 'OU-MANT' }, { account: '2100-001', debit: 0, credit: 95000, cc: '' }] },
+    { id: 'JE-2026-1170', journal_date: '2026-11-03', period_id: '2026-11', currency: 'MXN', header_text: 'Depreciación maquinaria', status: 'DRAFT', debit: 42800, credit: 42800,
+      lines: [{ account: '5200-001', debit: 42800, credit: 0, cc: 'OU-PROD-1' }, { account: '1500-002', debit: 0, credit: 42800, cc: '' }] }
   ],
   banks: [
     { bank_name: 'BBVA México', account_number: '•••• 7821', currency: 'MXN', gl_cash_account: '1100-001', balance: 1840000 },
@@ -513,7 +576,8 @@ window.ERPDemo = {
     { ou_code: 'OU-FIN', ou_name: 'Finanzas', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'mhernandez' },
     { ou_code: 'OU-COM', ou_name: 'Compras', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'clopez' },
     { ou_code: 'OU-PROD-1', ou_name: 'Producción Planta 1', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'jperez' },
-    { ou_code: 'OU-PROD-2', ou_name: 'Producción Planta 2', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'jperez' }
+    { ou_code: 'OU-PROD-2', ou_name: 'Producción Planta 2', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'jperez' },
+    { ou_code: 'OU-MANT', ou_name: 'Mantenimiento', ou_type: 'DEPT', parent_ou_id: 'ACME', manager_user_id: 'mhernandez' }
   ],
   catalogs: [
     { catalog_code: 'DOC_TYPE', item_code: 'FACT', item_name: 'Factura', active: true },
@@ -531,810 +595,779 @@ window.ERPDemo = {
     { asset_code: 'FA-CNC-03', asset_name: 'Centro mecanizado CNC Haas', capitalization_date: '2021-04-18', acquisition_cost: 1850000, useful_life_months: 120, depreciation_method: 'SL', status: 'ACTIVE' },
     { asset_code: 'FA-FORK-02', asset_name: 'Montacargas 3.5t', capitalization_date: '2023-01-10', acquisition_cost: 420000, useful_life_months: 84, depreciation_method: 'SL', status: 'ACTIVE' }
   ],
+
   money(n) {
     return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n || 0);
   },
   badge(status) {
-    const map = {
-      ACTIVE: 'ok', OPEN: 'info', POSTED: 'ok', APPROVED: 'ok', MATCHED: 'ok', PAID: 'ok', ISSUED: 'info',
-      CONFIRMED: 'info', DELIVERED: 'ok', RECEIVED: 'ok', CLOSED: 'neu',
-      SUBMITTED: 'warn', PENDING_APPROVAL: 'warn', PARTIALLY_RECEIVED: 'warn', PARTIALLY_PAID: 'warn', DRAFT: 'neu',
-      REJECTED: 'danger', BLOCKED: 'danger', CANCELLED: 'danger', VOID: 'danger', HARD_CLOSE: 'neu', SOFT_CLOSE: 'warn',
-      INVOICED: 'ok', AVAILABLE: 'ok'
+    return (window.statusChip ? statusChip(status) : `<span class="badge b-neu">${status}</span>`);
+  },
+  applyRole(roleId, companyId) {
+    const role = this.roles.find((r) => r.id === roleId) || this.roles[2];
+    const co = this.companies.find((c) => c.id === companyId) || this.companies[0];
+    this.session = {
+      role_id: role.id,
+      role: role.label,
+      username: role.username,
+      display_name: role.display_name,
+      short: role.short,
+      email: role.email,
+      company: co.name,
+      legal_entity: co.id,
+      company_id: co.id,
+      nav: role.nav,
+      locale: 'es-MX',
+      theme: localStorage.getItem('erp-preview-theme') || 'light'
     };
-    const t = map[status] || 'neu';
-    return `<span class="badge b-${t}">${status}</span>`;
+    sessionStorage.setItem('erp-demo-role', role.id);
+    sessionStorage.setItem('erp-demo-company', co.id);
+    return this.session;
+  },
+  restoreSession() {
+    const rid = sessionStorage.getItem('erp-demo-role') || 'GL';
+    const cid = sessionStorage.getItem('erp-demo-company') || 'ACME-MX-001';
+    return this.applyRole(rid, cid);
+  },
+  kpisForRole() {
+    const s = this.session || this.restoreSession();
+    if (s.role_id === 'DG' || s.role_id === 'CFO') {
+      return [
+        { l: 'CxP abierto', v: this.money(253400), d: '2 facturas demo', t: 'neutral' },
+        { l: 'CxC abierto', v: this.money(401250), d: 'cartera', t: 'up' },
+        { l: 'Posición efectivo', v: this.money(2760000), d: 'MXN', t: 'neutral' },
+        { l: 'Tareas inbox', v: String(this.tasks.length), d: 'aprobaciones', t: 'down' }
+      ];
+    }
+    if (s.role_id === 'BUY') {
+      return [
+        { l: 'OC pend. aprobación', v: '1', d: 'PO-2026-0842', t: 'down' },
+        { l: 'PR abiertas', v: '1', d: 'SUBMITTED', t: 'warn' },
+        { l: 'Recibo parcial', v: '1', d: 'PO-2026-0799', t: 'warn' },
+        { l: 'Proveedores ACTIVE', v: '2', d: '1 BLOCKED', t: 'neutral' }
+      ];
+    }
+    if (s.role_id === 'SAL') {
+      return [
+        { l: 'Pedidos abiertos', v: '1', d: 'CONFIRMED', t: 'info' },
+        { l: 'Crédito en riesgo', v: '1', d: 'C-2030 bloqueado', t: 'down' },
+        { l: 'ATP marcos', v: '46', d: 'WH-FG available', t: 'neutral' },
+        { l: 'Por facturar', v: this.money(142200), d: 'SO-0544', t: 'up' }
+      ];
+    }
+    if (s.role_id === 'INV') {
+      return [
+        { l: 'SKUs con reserva', v: '3', d: 'ver ATP', t: 'info' },
+        { l: 'OC por recibir', v: '2', d: 'open qty > 0', t: 'warn' },
+        { l: 'Available marcos', v: '46', d: 'FG-FRAME-01', t: 'neutral' },
+        { l: 'Almacenes', v: '2', d: 'WH-P1 / WH-FG', t: 'neutral' }
+      ];
+    }
+    if (s.role_id === 'HR') {
+      return [
+        { l: 'Empleados ACTIVE', v: String(this.employees.length), d: 'directorio', t: 'neutral' },
+        { l: 'Ausencias', v: '0', d: 'pendientes', t: 'ok' },
+        { l: 'Corrida nómina', v: 'PAY-11A', d: 'APPROVED stub', t: 'info' },
+        { l: 'Aviso', v: 'Stub', d: 'Professional', t: 'warn' }
+      ];
+    }
+    return [
+      { l: 'CxP abierto', v: this.money(253400), d: 'AP', t: 'neutral' },
+      { l: 'CxC abierto', v: this.money(401250), d: 'AR', t: 'up' },
+      { l: 'Periodo', v: '2026-11', d: 'OPEN', t: 'info' },
+      { l: 'Asientos draft', v: '1', d: 'JE-1170', t: 'warn' }
+    ];
   }
 };
 
+ERPDemo.restoreSession();
 
-const BASE = '';
-function money(n){ return ERPDemo.money(n); }
-function badge(s){ return ERPDemo.badge(s); }
-function crumbs(items){
-  return `<nav class="crumbs">${items.map((c,i)=> i<items.length-1
-    ? `<a href="#${c.href}">${c.label}</a><span class="sep">/</span>`
-    : `<span>${c.label}</span>`).join('')}</nav>`;
-}
-function pageHead(title, sub, actions=''){
-  return `<div class="page-hd"><div><h1>${title}</h1><p>${sub||''}</p></div><div class="page-actions">${actions||''}</div></div>`;
-}
-function table(headers, rows){
-  return `<div class="table-wrap"><table class="data"><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
-}
-function formGrid(fields){ return `<div class="panel"><div class="panel-bd"><div class="form-grid">${fields}</div></div></div>`; }
-function field(label, ctrl, req=false, full=false){
-  return `<div class="field${full?' full':''}"><label${req?' class="req"':''}>${label}</label>${ctrl}</div>`;
-}
+/* Labels de negocio (ES) — claves = campos ERP-FM-001 */
+window.ERPLabels = {
+  vendor_id: 'Proveedor',
+  vendor_code: 'Código proveedor',
+  legal_name: 'Razón social',
+  tax_id: 'RFC / Tax ID',
+  customer_id: 'Cliente',
+  invoice_number: 'Folio factura',
+  invoice_date: 'Fecha factura',
+  posting_date: 'Fecha contable',
+  order_date: 'Fecha pedido',
+  requested_date: 'Fecha requerida',
+  need_by_date: 'Se necesita para',
+  due_date: 'Vencimiento',
+  currency: 'Moneda',
+  payment_terms: 'Condiciones de pago',
+  payment_terms_default: 'Condiciones (default)',
+  delivery_address: 'Dirección de entrega',
+  pr_id: 'Requisición',
+  po_id: 'Orden de compra',
+  gr_id: 'Recepción (GR)',
+  buyer_id: 'Comprador',
+  requester_id: 'Solicitante',
+  org_unit_id: 'Centro / área',
+  justification: 'Justificación',
+  priority: 'Prioridad',
+  title: 'Título',
+  status: 'Estado',
+  total_amount: 'Importe total',
+  subtotal: 'Subtotal',
+  tax_total: 'Impuestos',
+  grand_total: 'Total',
+  open_amount: 'Saldo abierto',
+  match_status: 'Estatus match',
+  line_item_id: 'Artículo',
+  line_item: 'Artículo / concepto',
+  line_description: 'Descripción',
+  line_qty: 'Cantidad',
+  line_uom: 'UdM',
+  line_est_price: 'Precio estimado',
+  line_price: 'Precio',
+  line_unit_price: 'Precio unitario',
+  line_tax_code: 'Impuesto',
+  line_discount_pct: 'Descuento %',
+  tax_code: 'Código impuesto',
+  suggested_vendor_id: 'Proveedor sugerido',
+  warehouse_id: 'Almacén',
+  warehouse_dest_id: 'Almacén destino',
+  receipt_date: 'Fecha recepción',
+  receipt_type: 'Tipo recepción',
+  line_qty_received: 'Cant. recibida',
+  line_po_line_id: 'Línea OC',
+  qty: 'Cantidad',
+  qty_on_hand: 'Existencia',
+  qty_reserved: 'Reservado',
+  qty_available: 'Disponible',
+  move_type: 'Tipo movimiento',
+  reason_code: 'Motivo',
+  sales_order_id: 'Pedido de venta',
+  line_qty_deliver: 'Cant. a entregar',
+  delivery_date: 'Fecha entrega',
+  price_list_id: 'Lista de precios',
+  cfdi_uuid: 'UUID CFDI',
+  cfdi_usage: 'Uso CFDI',
+  bank_account_id: 'Cuenta bancaria',
+  payment_date: 'Fecha pago',
+  payment_amount: 'Importe pago',
+  payment_method: 'Forma de pago',
+  account_code: 'Cuenta',
+  account_name: 'Nombre cuenta',
+  account_type: 'Tipo',
+  journal_date: 'Fecha asiento',
+  period_id: 'Periodo',
+  header_text: 'Concepto',
+  line_account: 'Cuenta contable',
+  line_debit: 'Debe',
+  line_credit: 'Haber',
+  line_cost_center: 'Centro de costo',
+  balanced: 'Cuadrado',
+  credit_limit: 'Límite de crédito',
+  credit_exposure: 'Exposición',
+  credit_block: 'Bloqueo crédito',
+  cost_center_id: 'Centro de costo',
+  open_qty: 'Cant. abierta',
+  ordered_qty: 'Pedida',
+  received_qty: 'Recibida',
+  billed_qty: 'Facturada',
+  employee_number: 'No. empleado',
+  full_name: 'Nombre',
+  hire_date: 'Fecha alta',
+  position_id: 'Puesto',
+  salary_base: 'Sueldo base',
+  username: 'Usuario',
+  email: 'Correo',
+  display_name: 'Nombre visible',
+  locale: 'Idioma',
+  theme: 'Tema',
+  company: 'Empresa',
+  legal_entity: 'Entidad legal',
+  tenant_or_company: 'Empresa / tenant',
+  password: 'Contraseña'
+};
 
-const VIEWS = {
-  login(){
-    document.getElementById('app').style.display='none';
-    document.getElementById('login-root').style.display='grid';
-    return '';
-  },
-  dashboard(){
-    const D=ERPDemo;
-    return crumbs([{label:'Inicio',href:'dashboard'},{label:'Dashboard'}])+
-      pageHead('Dashboard ejecutivo', D.session.company,
-        `<a class="btn btn-secondary btn-sm" href="#bandeja">Bandeja (${D.tasks.length})</a>
-         <a class="btn btn-primary btn-sm" href="#nueva-pr">Nueva requisición</a>`)+
-      `<div class="kpi-row">${D.kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d ${k.t}">${k.d}</div></div>`).join('')}</div>
-      <div class="grid-2">
-        <div class="panel"><div class="panel-hd"><h3>Tareas de aprobación</h3></div><div class="panel-bd">
-          ${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.task_id}</strong> · ${t.ref}<div style="font-size:12px;color:var(--ink-3)">${t.title}</div></div>
-          <div style="text-align:right">${money(t.amount)}</div></div>`).join('')}
-        </div></div>
-        <div class="panel"><div class="panel-hd"><h3>Alertas</h3></div><div class="panel-bd">
-          <div class="alert warn">Periodo 2026-11 OPEN — soft close en 12 días.</div>
-          <div class="alert">3 OC en PENDING_APPROVAL · 1 factura AP sin OC.</div>
-          <div class="alert danger">Proveedor V-1102 BLOCKED.</div>
-        </div></div>
+window.ERPStatusES = {
+  ACTIVE: 'Activo', OPEN: 'Abierto', POSTED: 'Contabilizado', APPROVED: 'Aprobado',
+  MATCHED: 'Cuadrado', PAID: 'Pagado', ISSUED: 'Emitida', CONFIRMED: 'Confirmado',
+  DELIVERED: 'Entregado', RECEIVED: 'Recibido', CLOSED: 'Cerrado', SUBMITTED: 'Enviada',
+  PENDING_APPROVAL: 'Pend. aprobación', PARTIALLY_RECEIVED: 'Recibo parcial',
+  PARTIALLY_PAID: 'Pago parcial', DRAFT: 'Borrador', REJECTED: 'Rechazado',
+  BLOCKED: 'Bloqueado', CANCELLED: 'Cancelado', VOID: 'Anulado',
+  HARD_CLOSE: 'Cierre duro', SOFT_CLOSE: 'Cierre suave', INVOICED: 'Facturado',
+  AVAILABLE: 'Disponible', NOT_REQUIRED: 'No aplica', CREDIT_BLOCKED: 'Crédito bloqueado'
+};
+
+window.L = function (key) {
+  return ERPLabels[key] || key;
+};
+
+window.statusChip = function (status) {
+  const map = {
+    ACTIVE: 'ok', OPEN: 'info', POSTED: 'ok', APPROVED: 'ok', MATCHED: 'ok', PAID: 'ok', ISSUED: 'info',
+    CONFIRMED: 'info', DELIVERED: 'ok', RECEIVED: 'ok', CLOSED: 'neu', SUBMITTED: 'warn',
+    PENDING_APPROVAL: 'warn', PARTIALLY_RECEIVED: 'warn', PARTIALLY_PAID: 'warn', DRAFT: 'neu',
+    REJECTED: 'danger', BLOCKED: 'danger', CANCELLED: 'danger', VOID: 'danger', HARD_CLOSE: 'neu',
+    SOFT_CLOSE: 'warn', INVOICED: 'ok', AVAILABLE: 'ok', CREDIT_BLOCKED: 'danger', NOT_REQUIRED: 'neu'
+  };
+  const t = map[status] || 'neu';
+  const label = ERPStatusES[status] || status;
+  return `<span class="badge b-${t}" title="${status}">${label}</span>`;
+};
+
+/* Componentes UI preview — líneas, tabs, match 3-way, crédito */
+(function () {
+  window.linesTable = function (opts) {
+    const cols = opts.cols; // [{key,label,type,width}]
+    const rows = opts.rows || [];
+    const editable = !!opts.editable;
+    const id = opts.id || 'lines';
+    const head = cols.map((c) => `<th>${c.label || L(c.key)}</th>`).join('') + (editable ? '<th></th>' : '');
+    const body = rows.map((r, i) => `<tr data-i="${i}">${cols.map((c) => {
+      const v = r[c.key] ?? '';
+      if (!editable) return `<td>${c.money ? ERPDemo.money(v) : v}</td>`;
+      if (c.type === 'select' && c.options) {
+        return `<td><select class="control line-input" data-k="${c.key}">${c.options.map((o) =>
+          `<option value="${o}" ${String(o) === String(v) ? 'selected' : ''}>${o}</option>`).join('')}</select></td>`;
+      }
+      return `<td><input class="control line-input" data-k="${c.key}" type="${c.type || 'text'}" value="${v}"/></td>`;
+    }).join('')}${editable ? `<td><button type="button" class="btn btn-ghost btn-sm" data-rm="${i}">✕</button></td>` : ''}</tr>`).join('');
+
+    return `<div class="lines-wrap" id="${id}">
+      <div class="toolbar"><strong>Líneas</strong>
+        ${editable ? `<button type="button" class="btn btn-secondary btn-sm" data-add="${id}">+ Línea</button>` : ''}
+        <span class="spacer"></span>
+        <span class="chip" id="${id}-total">Total: ${ERPDemo.money(opts.total || sumLines(rows, opts.qtyKey || 'qty', opts.priceKey || 'price'))}</span>
       </div>
-      <div class="panel"><div class="panel-hd"><h3>Módulos</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        ${[['Compras','compras'],['Ventas','ventas'],['Inventarios','inventarios'],['Contabilidad','contabilidad'],['CxP','cxp'],['Facturación','facturacion'],['CxC','cxc'],['Tesorería','tesoreria'],['RRHH','rh'],['Nómina','nomina'],['Activos','activos'],['Proyectos','proyectos'],['Admin','admin'],['Reportes','reportes']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="#${h}">${l}</a>`).join('')}
+      <div class="table-wrap"><table class="data" id="${id}-table"><thead><tr>${head}</tr></thead><tbody>${body || '<tr><td colspan="99" class="empty">Sin líneas</td></tr>'}</tbody></table></div>
+    </div>`;
+  };
+
+  function sumLines(rows, qk, pk) {
+    return (rows || []).reduce((s, r) => s + (Number(r[qk]) || 0) * (Number(r[pk]) || 0), 0);
+  }
+
+  window.bindLinesTable = function (id, state) {
+    const root = document.getElementById(id);
+    if (!root) return;
+    root.addEventListener('click', (e) => {
+      if (e.target.dataset.add === id) {
+        state.rows.push(Object.assign({}, state.blank || {}));
+        rerender();
+      }
+      if (e.target.dataset.rm != null) {
+        state.rows.splice(Number(e.target.dataset.rm), 1);
+        rerender();
+      }
+    });
+    root.addEventListener('input', (e) => {
+      if (!e.target.classList.contains('line-input')) return;
+      const tr = e.target.closest('tr');
+      const i = Number(tr.dataset.i);
+      state.rows[i][e.target.dataset.k] = e.target.type === 'number' ? Number(e.target.value) : e.target.value;
+      const tot = sumLines(state.rows, state.qtyKey || 'qty', state.priceKey || 'price');
+      const el = document.getElementById(id + '-total');
+      if (el) el.textContent = 'Total: ' + ERPDemo.money(tot);
+      if (state.onChange) state.onChange(tot, state.rows);
+    });
+    function rerender() {
+      const parent = root.parentNode;
+      const html = linesTable({
+        id, cols: state.cols, rows: state.rows, editable: true,
+        qtyKey: state.qtyKey, priceKey: state.priceKey,
+        total: sumLines(state.rows, state.qtyKey || 'qty', state.priceKey || 'price')
+      });
+      root.outerHTML = html;
+      bindLinesTable(id, state);
+    }
+  };
+
+  window.objectTabs = function (tabs, active) {
+    // tabs: [{id,label,html}]
+    const act = active || tabs[0].id;
+    return `<div class="tabs" role="tablist">${tabs.map((t) =>
+      `<button type="button" class="tab ${t.id === act ? 'active' : ''}" data-tab="${t.id}">${t.label}</button>`
+    ).join('')}</div>
+    <div class="tab-panels">${tabs.map((t) =>
+      `<div class="tab-panel ${t.id === act ? 'active' : ''}" data-panel="${t.id}">${t.html}</div>`
+    ).join('')}</div>`;
+  };
+
+  window.bindObjectTabs = function (root) {
+    const el = typeof root === 'string' ? document.querySelector(root) : root;
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tab]');
+      if (!btn) return;
+      const id = btn.dataset.tab;
+      el.querySelectorAll('.tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === id));
+      el.querySelectorAll('.tab-panel').forEach((p) => p.classList.toggle('active', p.dataset.panel === id));
+    });
+  };
+
+  window.matchPanel = function (inv) {
+    if (!inv || !inv.match) {
+      return `<div class="alert">Match 3-way no aplica (factura sin OC) · status ${inv ? inv.match_status : '—'}</div>`;
+    }
+    const m = inv.match;
+    const ok = m.qty_ok && m.amt_ok;
+    return `<div class="match-panel ${ok ? 'ok' : 'bad'}">
+      <div class="match-hd"><strong>Match 3-way</strong> ${ok ? statusChip('MATCHED') : '<span class="badge b-danger">Descuadre</span>'}
+        <span class="hint">tolerancia ±${m.tolerance_pct}%</span></div>
+      <div class="match-grid">
+        <div><div class="l">OC (${inv.po_id || '—'})</div><div class="v">${ERPDemo.money(m.po_amount)}</div></div>
+        <div><div class="l">Recepción (${inv.gr_id || '—'})</div><div class="v">${ERPDemo.money(m.gr_amount)}</div></div>
+        <div><div class="l">Factura (${inv.id})</div><div class="v">${ERPDemo.money(m.inv_amount)}</div></div>
+      </div>
+      <div class="match-flags">Cantidad: ${m.qty_ok ? '✓' : '✗'} · Importe: ${m.amt_ok ? '✓' : '✗'}</div>
+    </div>`;
+  };
+
+  window.creditBanner = function (customer, orderAmount) {
+    if (!customer) return '';
+    const headroom = (customer.credit_limit || 0) - (customer.credit_exposure || 0);
+    const wouldBlock = customer.credit_block || (orderAmount != null && orderAmount > headroom);
+    if (customer.credit_block) {
+      return `<div class="alert danger"><strong>Crédito bloqueado</strong> · ${customer.code} ${customer.name}
+        · Límite ${ERPDemo.money(customer.credit_limit)} · Exposición ${ERPDemo.money(customer.credit_exposure)}
+        · No confirmar pedido / facturar.</div>`;
+    }
+    if (wouldBlock) {
+      return `<div class="alert danger"><strong>Excede crédito disponible</strong>
+        · Disponible ${ERPDemo.money(headroom)} · Pedido ${ERPDemo.money(orderAmount)}
+        · Requiere aprobación crédito (simulado).</div>`;
+    }
+    return `<div class="alert">Crédito OK · Límite ${ERPDemo.money(customer.credit_limit)}
+      · Exposición ${ERPDemo.money(customer.credit_exposure)}
+      · Disponible ${ERPDemo.money(headroom)}</div>`;
+  };
+
+  window.fieldL = function (key, controlHtml, req, full, hint) {
+    return `<div class="field${full ? ' full' : ''}">
+      <label${req ? ' class="req"' : ''}>${L(key)} <span class="tech" title="${key}">${key}</span></label>
+      ${controlHtml}${hint ? `<span class="hint">${hint}</span>` : ''}
+    </div>`;
+  };
+
+  window.auditStub = function (ref) {
+    return `<div class="table-wrap"><table class="data"><thead><tr><th>Cuándo</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr></thead>
+      <tbody>
+        <tr><td>2026-11-06 16:02</td><td>clopez</td><td>UPDATE</td><td class="mono">${ref} → PENDING_APPROVAL</td></tr>
+        <tr><td>2026-11-06 15:40</td><td>clopez</td><td>CREATE</td><td class="mono">${ref}</td></tr>
+      </tbody></table></div>`;
+  };
+
+  window.docsStub = function (ref) {
+    return `<div class="table-wrap"><table class="data"><thead><tr><th>Documento</th><th>Tipo</th><th>Versión</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td>DOC-${ref}-1</td><td>PDF</td><td>1</td><td>${statusChip('AVAILABLE')}</td></tr>
+      </tbody></table></div>
+      <a class="btn btn-secondary btn-sm" href="../administracion/subir.html" style="margin-top:8px">Subir evidencia</a>`;
+  };
+
+  window.wfStub = function (steps) {
+    return `<div class="timeline">${(steps || []).map((s) =>
+      `<div class="tl ${s.done ? 'done' : ''}"><h4>${s.title}</h4><p>${s.desc || ''}</p><time>${s.when || ''}</time></div>`
+    ).join('')}</div>`;
+  };
+})();
+
+
+/* ===== portable shell / router P0 ===== */
+(function(){
+  const NAV=[
+    {sec:'Inicio',items:[{k:'dashboard',h:'dashboard',l:'Dashboard',i:'▣'}]},
+    {sec:'Operación',items:[
+      {k:'compras',h:'compras',l:'Compras',i:'◇'},
+      {k:'ventas',h:'ventas',l:'Ventas',i:'▤'},
+      {k:'inventarios',h:'inventarios',l:'Inventarios',i:'▦'}]},
+    {sec:'Finanzas',items:[
+      {k:'contabilidad',h:'contabilidad',l:'Contabilidad (GL)',i:'◈'},
+      {k:'cxp',h:'cxp',l:'CxP · Cuentas por pagar',i:'⇩'},
+      {k:'facturacion',h:'facturacion',l:'Facturación',i:'▤'},
+      {k:'cxc',h:'cxc',l:'CxC · Cuentas por cobrar',i:'⇧'},
+      {k:'tesoreria',h:'tesoreria',l:'Tesorería',i:'₩'},
+      {k:'finanzas',h:'finanzas',l:'Finanzas (hub)',i:'◇'},
+      {k:'activos',h:'activos',l:'Activos · stub',i:'▣'}]},
+    {sec:'Personas',items:[
+      {k:'rh',h:'rh',l:'RRHH',i:'♟'},
+      {k:'nomina',h:'nomina',l:'Nómina · stub',i:'₮'}]},
+    {sec:'Plataforma',items:[
+      {k:'bandeja',h:'bandeja',l:'Bandeja',i:'⟳',b:3},
+      {k:'reportes',h:'reportes',l:'Reportes',i:'▥'}]}
+  ];
+
+  function go(r){ location.hash = r; }
+  document.addEventListener('click', (e)=>{
+    const a=e.target.closest('[data-go], a[href^="#"]');
+    if(!a) return;
+    const route=a.getAttribute('data-go')||(a.getAttribute('href')||'').replace(/^#/,'');
+    if(!route) return;
+    e.preventDefault(); go(route);
+  }, true);
+
+  window.toast=(msg)=>{
+    let host=document.getElementById('toast-host');
+    if(!host){host=document.createElement('div');host.id='toast-host';host.className='toast-host';document.body.appendChild(host);}
+    const el=document.createElement('div');el.className='toast';el.textContent=msg;host.appendChild(el);
+    setTimeout(()=>el.remove(),2800);
+  };
+  window.crumbs=(items)=>`<nav class="crumbs">${items.map((c,i)=>i<items.length-1?`<a href="#${c.href}">${c.label}</a><span class="sep">/</span>`:`<span>${c.label}</span>`).join('')}</nav>`;
+  window.pageHead=(title,sub,actions='')=>`<div class="page-hd"><div><h1>${title}</h1><p>${sub||''}</p></div><div class="page-actions">${actions||''}</div></div>`;
+
+  function buildShell(route){
+    const s=ERPDemo.session;
+    const allow=new Set(s.nav||[]);
+    const nav=NAV.map(sec=>({sec:sec.sec,items:sec.items.filter(it=>allow.has(it.k))})).filter(sec=>sec.items.length);
+    document.getElementById('sidebar').innerHTML=`
+      <div class="brand"><div class="brand-mark">ERP</div><div class="brand-text">ACME Industrial<span>Portable · P0 UX</span></div></div>
+      <nav class="nav">${nav.map(sec=>`<div class="nav-sec">${sec.sec}</div>${sec.items.map(it=>`
+        <a class="${route===it.h?'active':''}" href="#${it.h}"><span class="ico">${it.i}</span><span class="nav-label">${it.l}</span>${it.b?`<span class="badge">${it.b}</span>`:''}</a>`).join('')}`).join('')}</nav>`;
+    document.getElementById('topbar').innerHTML=`
+      <button class="icon-btn" id="btn-side" type="button">☰</button>
+      <div class="search"><span class="si">⌕</span><input id="q" placeholder="Buscar OC, CxP, pedido…"/></div>
+      <div class="top-actions">
+        <label class="switcher"><select id="co-switch">${ERPDemo.companies.map(c=>`<option value="${c.id}" ${c.id===s.company_id?'selected':''}>${c.name}</option>`).join('')}</select></label>
+        <label class="switcher"><select id="role-switch">${ERPDemo.roles.map(r=>`<option value="${r.id}" ${r.id===s.role_id?'selected':''}>${r.label}</option>`).join('')}</select></label>
+        <button class="icon-btn" id="btn-theme" type="button">◐</button>
+        <button class="icon-btn dot-alert" type="button" onclick="go('bandeja')">🔔</button>
+        <button class="user-chip" type="button" onclick="go('perfil')"><div class="avatar">${s.short}</div><div class="user-meta"><strong>${s.display_name}</strong><span>${s.role}</span></div></button>
+        <button class="icon-btn" id="btn-out" type="button">⎋</button>
+      </div>`;
+    document.getElementById('btn-side').onclick=()=>{
+      const app=document.getElementById('app');
+      if(matchMedia('(max-width:960px)').matches) app.classList.toggle('mobile-open'); else app.classList.toggle('collapsed');
+    };
+    document.getElementById('btn-theme').onclick=()=>{
+      const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+      document.documentElement.setAttribute('data-theme',next);
+      localStorage.setItem('erp-preview-theme',next);
+    };
+    document.getElementById('btn-out').onclick=()=>{ sessionStorage.clear(); location.hash='login'; };
+    document.getElementById('role-switch').onchange=(e)=>{ ERPDemo.applyRole(e.target.value, document.getElementById('co-switch').value); toast('Rol: '+ERPDemo.session.role); go('dashboard'); };
+    document.getElementById('co-switch').onchange=(e)=>{ ERPDemo.applyRole(document.getElementById('role-switch').value, e.target.value); toast('Empresa cambiada'); route(); };
+  }
+
+  const V={};
+  V.login=()=>'';
+  V.dashboard=()=>{
+    const D=ERPDemo, s=D.session, kpis=D.kpisForRole();
+    return crumbs([{label:'Inicio',href:'dashboard'},{label:'Dashboard'}])+
+      pageHead('Dashboard · '+s.role, s.company,
+        `<a class="btn btn-secondary btn-sm" href="#bandeja">Bandeja (${D.tasks.length})</a>`)+
+      `<div class="kpi-row">${kpis.map(k=>`<div class="kpi"><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="d ${k.t}">${k.d}</div></div>`).join('')}</div>
+      <div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+        ${[['CxP','cxp'],['Facturación','facturacion'],['CxC','cxc'],['Compras','compras'],['Ventas','ventas'],['Inventarios','inventarios'],['Recepción','recepcion']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="#${h}">${l}</a>`).join('')}
+      </div></div>
+      <div class="panel"><div class="panel-hd"><h3>Inbox</h3></div><div class="panel-bd">
+        ${D.tasks.map(t=>`<div class="list-row"><div style="flex:1"><strong>${t.ref}</strong> · ${t.title}<div style="font-size:12px;color:var(--ink-3)">${t.why||''}</div></div><div>${D.money(t.amount)}</div></div>`).join('')}
       </div></div>`;
-  },
-  compras(){
+  };
+  V.compras=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Compras'}])+pageHead('Compras (P2P)','PR · OC · Recepción · Proveedores',
+    return crumbs([{label:'Compras'}])+pageHead('Compras','PR · OC · Recepción',
       `<a class="btn btn-primary btn-sm" href="#nueva-pr">Nueva PR</a><a class="btn btn-secondary btn-sm" href="#nueva-oc">Nueva OC</a>`)+
-      `<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+      `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
         <a class="btn btn-secondary btn-sm" href="#requisiciones">Requisiciones</a>
         <a class="btn btn-secondary btn-sm" href="#ordenes">Órdenes</a>
         <a class="btn btn-secondary btn-sm" href="#recepcion">Recepción</a>
         <a class="btn btn-secondary btn-sm" href="#proveedores">Proveedores</a>
-      </div></div>`+
-      table(['id','vendor_id','order_date','total_amount','status'],
-        D.pos.map(p=>`<tr class="clickable" onclick="location.hash='detalle-oc/${p.id}'"><td><strong>${p.id}</strong></td><td>${p.vendor_id}</td><td>${p.order_date}</td><td>${money(p.total_amount)}</td><td>${badge(p.status)}</td></tr>`).join(''));
-  },
-  requisiciones(){
+      </div></div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('vendor_id')}</th><th>${L('total_amount')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.pos.map(p=>`<tr class="clickable" onclick="go('detalle-oc/${p.id}')"><td><strong>${p.id}</strong></td><td>${p.vendor_id}</td><td>${D.money(p.total_amount)}</td><td>${statusChip(p.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.requisiciones=()=>{
     const D=ERPDemo;
     return crumbs([{label:'Compras',href:'compras'},{label:'Requisiciones'}])+
-      pageHead('Mis requisiciones','',`<a class="btn btn-primary btn-sm" href="#nueva-pr">Nueva</a>`)+
-      table(['id','title','requester_id','org_unit_id','need_by_date','priority','total_amount','status'],
-        D.prs.map(p=>`<tr class="clickable" onclick="location.hash='detalle-pr/${p.id}'"><td><strong>${p.id}</strong></td><td>${p.title}</td><td>${p.requester_id}</td><td>${p.org_unit_id}</td><td>${p.need_by_date||'—'}</td><td>${p.priority||'—'}</td><td>${money(p.total_amount)}</td><td>${badge(p.status)}</td></tr>`).join(''));
-  },
-  'nueva-pr'(){
+      pageHead('Requisiciones','',`<a class="btn btn-primary btn-sm" href="#nueva-pr">Nueva</a>`)+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('title')}</th><th>${L('total_amount')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.prs.map(p=>`<tr class="clickable" onclick="go('detalle-pr/${p.id}')"><td><strong>${p.id}</strong></td><td>${p.title}</td><td>${D.money(p.total_amount)}</td><td>${statusChip(p.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.ordenes=()=>V.compras();
+  V['detalle-oc']=(id)=>{
+    const D=ERPDemo; const p=D.pos.find(x=>x.id===id)||D.pos[0];
+    const v=D.vendors.find(x=>x.vendor_code===p.vendor_id);
+    const datos=`<div class="form-grid">${fieldL('vendor_id',`<div>${p.vendor_id} — ${v?v.legal_name:''}</div>`)}${fieldL('total_amount',`<div>${D.money(p.total_amount)}</div>`)}${fieldL('pr_id',`<div>${p.pr_id||'—'}</div>`)}${fieldL('delivery_address',`<div>${p.delivery_address}</div>`,false,true)}</div>`;
+    const lines=linesTable({id:'pol',cols:[{key:'line',label:'#'},{key:'item',label:L('line_item_id')},{key:'ordered_qty',label:L('ordered_qty')},{key:'received_qty',label:L('received_qty')},{key:'open_qty',label:L('open_qty')},{key:'price',label:L('line_price'),money:true}],rows:p.lines||[],editable:false,total:p.total_amount,qtyKey:'ordered_qty',priceKey:'price'});
+    const tabs=objectTabs([{id:'datos',label:'Datos generales',html:datos},{id:'lineas',label:'Líneas',html:lines},{id:'wf',label:'Workflow',html:wfStub([{title:'Pend. aprobación',done:true,desc:'PO_APPROVAL'},{title:'Recibida',done:false}])},{id:'docs',label:'Documentos',html:docsStub(p.id)},{id:'audit',label:'Auditoría',html:auditStub(p.id)}],'lineas');
+    return crumbs([{label:'Compras',href:'compras'},{label:p.id}])+pageHead(p.id, statusChip(p.status)+' · '+D.money(p.total_amount),
+      `<a class="btn btn-secondary btn-sm" href="#recepcion">Recepción</a><a class="btn btn-primary btn-sm" href="#bandeja">Aprobar</a>`)+`<div id="obj">${tabs}</div>`;
+  };
+  V['detalle-pr']=(id)=>{
+    const D=ERPDemo; const p=D.prs.find(x=>x.id===id)||D.prs[0];
+    const can=p.status==='APPROVED';
+    const tabs=objectTabs([
+      {id:'datos',label:'Datos generales',html:`<div class="form-grid">${fieldL('justification',`<div>${p.justification}</div>`,false,true)}${fieldL('total_amount',`<div>${D.money(p.total_amount)}</div>`)}</div>`},
+      {id:'lineas',label:'Líneas',html:linesTable({id:'prl',cols:[{key:'item',label:'Artículo'},{key:'qty',label:'Cant'},{key:'price',label:'Precio',money:true}],rows:p.lines||[],editable:false,total:p.total_amount})},
+      {id:'wf',label:'Workflow',html:wfStub([{title:'SUBMITTED',done:true},{title:'APPROVED',done:can||p.status==='CLOSED'}])},
+      {id:'docs',label:'Documentos',html:docsStub(p.id)},
+      {id:'audit',label:'Auditoría',html:auditStub(p.id)}
+    ],'datos');
+    return crumbs([{label:'Requisiciones',href:'requisiciones'},{label:p.id}])+
+      pageHead(p.title, statusChip(p.status), can?`<a class="btn btn-primary btn-sm" href="#nueva-oc">Crear OC desde PR</a>`:`<button class="btn btn-secondary btn-sm" disabled>Crear OC desde PR</button>`)+
+      `<div id="obj">${tabs}</div>`;
+  };
+  V['nueva-pr']=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Compras',href:'compras'},{label:'Nueva requisición'}])+
-      pageHead('Nueva requisición','Campos FM-001 §6.1',
-        `<button class="btn btn-primary btn-sm" onclick="toast('PR SUBMITTED (simulado)');location.hash='requisiciones'">Enviar</button>`)+
-      formGrid(
-        field('title','<input class="control" placeholder="5–200"/>',true,true)+
-        field('requester_id','<input class="control" value="mhernandez" readonly/>',true)+
-        field('org_unit_id',`<select class="control">${D.orgUnits.map(o=>`<option>${o.ou_code}</option>`).join('')}</select>`,true)+
-        field('need_by_date','<input class="control" type="date" value="2026-11-20"/>')+
-        field('priority','<select class="control"><option>LOW</option><option selected>MED</option><option>HIGH</option></select>')+
-        field('justification','<textarea class="control" placeholder="≥20 caracteres"></textarea>',true,true)+
-        field('line_item_id',`<select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select>`)+
-        field('line_description','<input class="control" value="Tornillo hex M12x40"/>',true)+
-        field('line_qty','<input class="control" type="number" value="5000"/>',true)+
-        field('line_uom','<input class="control" value="PZA"/>',true)+
-        field('line_est_price','<input class="control" type="number" value="2.1"/>',true)+
-        field('total_amount','<input class="control" value="10500" readonly/>',true)
-      );
-  },
-  ordenes(){
+    window.__prLines={rows:[{item:'RM-BOLT-M12',desc:'Tornillo',qty:5000,price:2.1,cost_center_id:'OU-PROD-2'}],
+      cols:[{key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},{key:'desc',label:L('line_description')},{key:'qty',label:L('line_qty'),type:'number'},{key:'price',label:L('line_est_price'),type:'number'},{key:'cost_center_id',label:L('cost_center_id')}],
+      blank:{item:'RM-BOLT-M12',desc:'',qty:1,price:0,cost_center_id:'OU-PROD-2'},qtyKey:'qty',priceKey:'price',
+      onChange:(tot)=>{const t=document.getElementById('pr-total'); if(t) t.value=tot;}};
+    return crumbs([{label:'Compras',href:'compras'},{label:'Nueva PR'}])+
+      pageHead('Nueva requisición','',`<button class="btn btn-primary btn-sm" onclick="toast('PR SUBMITTED');go('requisiciones')">Enviar</button>`)+
+      `<div class="panel"><div class="panel-bd"><div class="form-grid">
+        ${fieldL('title',`<input class="control" id="title"/>`,true,true)}
+        ${fieldL('justification',`<textarea class="control" id="just"></textarea>`,true,true)}
+        ${fieldL('total_amount',`<input class="control" id="pr-total" value="10500" readonly/>`,true)}
+      </div></div></div>
+      <div id="lh">${linesTable({id:'pr-lines',cols:window.__prLines.cols,rows:window.__prLines.rows,editable:true,total:10500})}</div>`;
+  };
+  V['nueva-oc']=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Compras',href:'compras'},{label:'Órdenes'}])+
-      pageHead('Lista OC','',`<a class="btn btn-primary btn-sm" href="#nueva-oc">Crear OC</a>`)+
-      table(['id','vendor_id','order_date','currency','payment_terms','buyer_id','total_amount','status'],
-        D.pos.map(p=>`<tr class="clickable" onclick="location.hash='detalle-oc/${p.id}'"><td><strong>${p.id}</strong></td><td>${p.vendor_id}</td><td>${p.order_date}</td><td>${p.currency}</td><td>${p.payment_terms}</td><td>${p.buyer_id}</td><td>${money(p.total_amount)}</td><td>${badge(p.status)}</td></tr>`).join(''));
-  },
-  'nueva-oc'(){
-    const D=ERPDemo;
+    const pr=D.prs.find(x=>x.status==='APPROVED');
+    window.__ocLines={rows:(pr?pr.lines:[{item:'RM-STEEL-12',desc:'Placa',qty:1000,price:22}]).map(l=>({item:l.item,desc:l.desc,qty:l.qty,price:l.price,tax:'IVA16'})),
+      cols:[{key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},{key:'desc',label:L('line_description')},{key:'qty',label:L('line_qty'),type:'number'},{key:'price',label:L('line_price'),type:'number'},{key:'tax',label:L('line_tax_code')}],
+      blank:{item:'RM-BOLT-M12',desc:'',qty:1,price:0,tax:'IVA16'},qtyKey:'qty',priceKey:'price',
+      onChange:(tot)=>{const t=document.getElementById('oc-total'); if(t) t.value=tot;}};
     return crumbs([{label:'Compras',href:'compras'},{label:'Nueva OC'}])+
-      pageHead('Crear OC','vendor ACTIVE',`<button class="btn btn-primary btn-sm" onclick="toast('OC DRAFT');location.hash='ordenes'">Guardar</button>`)+
-      `<div class="alert warn">V-1102 BLOCKED no puede usarse.</div>`+
-      formGrid(
-        field('vendor_id',`<select class="control">${D.vendors.map(v=>`<option>${v.vendor_code} (${v.status})</option>`).join('')}</select>`,true)+
-        field('order_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('currency','<select class="control"><option>MXN</option><option>USD</option></select>',true)+
-        field('payment_terms','<select class="control"><option>NET15</option><option selected>NET30</option></select>',true)+
-        field('delivery_address','<input class="control" value="Almacén Planta 1"/>',true,true)+
-        field('buyer_id','<input class="control" value="clopez"/>',true)+
-        field('line_item_id',`<select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select>`,true)+
-        field('line_qty','<input class="control" type="number" value="1000"/>',true)+
-        field('line_price','<input class="control" type="number" value="22"/>',true)+
-        field('line_tax_code','<input class="control" value="IVA16"/>',true)+
-        field('total_amount','<input class="control" value="25520" readonly/>',true)
-      );
-  },
-  recepcion(){
+      pageHead('Crear OC', pr?('Desde '+pr.id):'',`<button class="btn btn-primary btn-sm" onclick="toast('OC DRAFT');go('ordenes')">Guardar</button>`)+
+      `<div class="alert warn">V-1102 BLOCKED no usable.</div>
+      <div class="panel"><div class="panel-bd"><div class="form-grid">
+        ${fieldL('vendor_id',`<select class="control">${D.vendors.map(v=>`<option>${v.vendor_code} (${ERPStatusES[v.status]})</option>`).join('')}</select>`,true)}
+        ${fieldL('pr_id',`<input class="control" value="${pr?pr.id:''}" readonly/>`)}
+        ${fieldL('total_amount',`<input class="control" id="oc-total" value="${pr?pr.total_amount:22000}" readonly/>`,true)}
+      </div></div></div>
+      <div id="lh">${linesTable({id:'oc-lines',cols:window.__ocLines.cols,rows:window.__ocLines.rows,editable:true,total:pr?pr.total_amount:22000})}</div>`;
+  };
+  V.recepcion=()=>{
+    const D=ERPDemo; const p=D.pos.find(x=>x.status.includes('PARTIAL')||x.open)||D.pos[1];
+    return crumbs([{label:'Inventarios',href:'inventarios'},{label:'Recepción'}])+
+      pageHead('Recepción de mercancías','Vista almacén + compras',
+        `<button class="btn btn-primary btn-sm" onclick="toast('GR POSTED')">Postear</button>`)+
+      `<div class="journey"><strong>P2P:</strong> PR → OC → <strong>Recepción</strong> → CxP</div>
+      ${linesTable({id:'gr',cols:[{key:'line',label:'#'},{key:'item',label:'Artículo'},{key:'open_qty',label:L('open_qty')},{key:'ordered_qty',label:L('ordered_qty')}],rows:p.lines||[],editable:false})}`;
+  };
+  V.proveedores=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Compras',href:'compras'},{label:'Recepción'}])+
-      pageHead('Recepción','qty ≤ open',`<button class="btn btn-primary btn-sm" onclick="toast('GR POSTED')">Postear</button>`)+
-      formGrid(
-        field('po_id',`<select class="control">${D.pos.map(p=>`<option>${p.id}</option>`).join('')}</select>`,true)+
-        field('receipt_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('warehouse_id','<select class="control"><option>WH-P1</option><option>WH-FG</option></select>')+
-        field('receipt_type','<select class="control"><option>PARTIAL</option><option>FULL</option></select>',true)+
-        field('line_qty_received','<input class="control" type="number" value="500"/>',true)
-      );
-  },
-  proveedores(){
+    return crumbs([{label:'Compras',href:'compras'},{label:'Proveedores'}])+pageHead('Proveedores','')+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>${L('vendor_code')}</th><th>${L('legal_name')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.vendors.map(v=>`<tr><td>${v.vendor_code}</td><td>${v.legal_name}</td><td>${statusChip(v.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.finanzas=()=>{
+    return crumbs([{label:'Finanzas'}])+pageHead('Finanzas','Contabilidad · CxP · Facturación · CxC · Tesorería')+
+      `<div class="grid-3">${[['Contabilidad','contabilidad'],['CxP','cxp'],['Facturación','facturacion'],['CxC','cxc'],['Tesorería','tesoreria'],['Asientos','asientos']].map(([t,h])=>`<a class="panel" href="#${h}"><div class="panel-bd"><strong>${t}</strong></div></a>`).join('')}</div>`;
+  };
+  V.contabilidad=()=>crumbs([{label:'Finanzas',href:'finanzas'},{label:'Contabilidad'}])+pageHead('Contabilidad (GL)','')+
+    `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-secondary btn-sm" href="#asientos">Asientos</a>
+      <a class="btn btn-secondary btn-sm" href="#plan-cuentas">Plan de cuentas</a>
+    </div></div>`;
+  V['plan-cuentas']=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Compras',href:'compras'},{label:'Proveedores'}])+
-      pageHead('Proveedores','BLOCKED impide OC/AP')+
-      table(['vendor_code','legal_name','tax_id','email','payment_terms','currency','status'],
-        D.vendors.map(v=>`<tr><td><strong>${v.vendor_code}</strong></td><td>${v.legal_name}</td><td class="mono">${v.tax_id}</td><td>${v.email}</td><td>${v.payment_terms_default}</td><td>${v.currency}</td><td>${badge(v.status)}</td></tr>`).join(''));
-  },
-
-  contabilidad(){
+    return crumbs([{label:'Contabilidad',href:'contabilidad'},{label:'COA'}])+pageHead('Plan de cuentas','')+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th></tr></thead>
+      <tbody>${D.accounts.map(a=>`<tr><td>${a.account_code}</td><td>${a.account_name}</td><td>${a.account_type}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.asientos=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Contabilidad GL'}])+
-      pageHead('Contabilidad (GL)','COA · periodos · asientos · mayor',
-        `<a class="btn btn-primary btn-sm" href="#asientos">Asientos</a>`)+
-      `<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        <a class="btn btn-secondary btn-sm" href="#plan-cuentas">Plan de cuentas</a>
-        <a class="btn btn-secondary btn-sm" href="#periodos">Periodos</a>
-        <a class="btn btn-secondary btn-sm" href="#asientos">Libro diario</a>
-      </div></div>
-      <div class="kpi-row">
-        <div class="kpi"><div class="l">Periodo</div><div class="v">2026-11</div><div class="d">${badge('OPEN')}</div></div>
-        <div class="kpi"><div class="l">Cuentas</div><div class="v">${D.accounts.length}</div></div>
-        <div class="kpi"><div class="l">Asientos</div><div class="v">${D.journals.length}</div></div>
-      </div>`;
-  },
-  cxp(){
+    window.__jeLines={rows:[{account:'5100-020',debit:1000,credit:0},{account:'2100-001',debit:0,credit:1000}],
+      cols:[{key:'account',label:L('line_account'),type:'select',options:D.accounts.filter(a=>a.allow_manual_posting).map(a=>a.account_code)},{key:'debit',label:L('line_debit'),type:'number'},{key:'credit',label:L('line_credit'),type:'number'}],
+      blank:{account:'5100-020',debit:0,credit:0}};
+    return crumbs([{label:'Contabilidad',href:'contabilidad'},{label:'Asientos'}])+
+      pageHead('Asientos','',`<button class="btn btn-primary btn-sm" onclick="const r=__jeLines.rows;const d=r.reduce((s,x)=>s+Number(x.debit||0),0);const c=r.reduce((s,x)=>s+Number(x.credit||0),0);toast(Math.abs(d-c)<0.01?'Asiento OK':'Descuadrado')">Guardar</button>`)+
+      `<div id="lh">${linesTable({id:'je-lines',cols:window.__jeLines.cols,rows:window.__jeLines.rows,editable:true})}</div>`;
+  };
+  V.cxp=()=>{
     const D=ERPDemo;
     return crumbs([{label:'Finanzas',href:'finanzas'},{label:'CxP'}])+
-      pageHead('Cuentas por pagar (CxP)','Facturas proveedor · match · pagos · aging',
-        `<a class="btn btn-primary btn-sm" href="#captura-ap">Capturar factura</a>
-         <a class="btn btn-secondary btn-sm" href="#pagos-ap">Programar pagos</a>`)+
-      `<div class="kpi-row">
-        <div class="kpi"><div class="l">Abierto</div><div class="v">${money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
-        <div class="kpi"><div class="l">Facturas</div><div class="v">${D.apInvoices.length}</div></div>
-        <div class="kpi"><div class="l">Pend. aprobación</div><div class="v">${D.apInvoices.filter(i=>i.status==='PENDING_APPROVAL').length}</div></div>
-      </div>
-      <div class="panel"><div class="panel-hd"><h3>Procesos CxP</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        <a class="btn btn-secondary btn-sm" href="#facturas-ap">Lista facturas proveedor</a>
-        <a class="btn btn-secondary btn-sm" href="#captura-ap">Captura factura</a>
-        <a class="btn btn-secondary btn-sm" href="#pagos-ap">Programación de pagos</a>
-        <a class="btn btn-secondary btn-sm" href="#aging-ap">Aging AP</a>
-        <a class="btn btn-secondary btn-sm" href="#proveedores">Proveedores</a>
-        <a class="btn btn-secondary btn-sm" href="#ordenes-pago">Órdenes de pago</a>
-      </div></div>`+
-      table(['id','vendor_id','invoice_number','grand_total','due_date','match_status','status'],
-        D.apInvoices.map(i=>`<tr class="clickable" onclick="location.hash='detalle-ap/${i.id}'"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${i.invoice_number}</td><td>${money(i.grand_total)}</td><td>${i.due_date}</td><td>${i.match_status}</td><td>${badge(i.status)}</td></tr>`).join(''));
-  },
-  facturacion(){
+      pageHead('Cuentas por pagar','',`<a class="btn btn-primary btn-sm" href="#captura-ap">Capturar factura</a>`)+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('vendor_id')}</th><th>${L('grand_total')}</th><th>Match</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.apInvoices.map(i=>`<tr class="clickable" onclick="go('detalle-ap/${i.id}')"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${D.money(i.grand_total)}</td><td>${i.match_status}</td><td>${statusChip(i.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V['detalle-ap']=(id)=>{
+    const D=ERPDemo; const i=D.apInvoices.find(x=>x.id===id)||D.apInvoices[0];
+    const tabs=objectTabs([
+      {id:'datos',label:'Datos generales',html:matchPanel(i)+`<div class="form-grid">${fieldL('vendor_id',`<div>${i.vendor_id}</div>`)}${fieldL('grand_total',`<div>${D.money(i.grand_total)}</div>`)}${fieldL('po_id',`<div>${i.po_id||'—'}</div>`)}${fieldL('gr_id',`<div>${i.gr_id||'—'}</div>`)}</div>`},
+      {id:'lineas',label:'Líneas',html:linesTable({id:'apl',cols:[{key:'item',label:'Concepto'},{key:'qty',label:'Cant'},{key:'price',label:'Precio',money:true}],rows:i.lines||[],editable:false,total:i.grand_total})},
+      {id:'wf',label:'Workflow',html:wfStub([{title:'POSTED',done:true}])},
+      {id:'docs',label:'Documentos',html:docsStub(i.id)},
+      {id:'audit',label:'Auditoría',html:auditStub(i.id)}
+    ],'datos');
+    return crumbs([{label:'CxP',href:'cxp'},{label:i.id}])+pageHead(i.id, D.money(i.grand_total), `<a class="btn btn-primary btn-sm" href="#pagos-ap">Programar pago</a>`)+`<div id="obj">${tabs}</div>`;
+  };
+  V['captura-ap']=()=>{
+    const D=ERPDemo;
+    window.__apLines={rows:[{item:'RM-BOLT-M12',qty:1,price:100,tax:'IVA16'}],
+      cols:[{key:'item',label:L('line_item')},{key:'qty',label:L('line_qty'),type:'number'},{key:'price',label:L('line_unit_price'),type:'number'},{key:'tax',label:L('line_tax_code')}],
+      blank:{item:'',qty:1,price:0,tax:'IVA16'},qtyKey:'qty',priceKey:'price',
+      onChange:(tot)=>{const g=document.getElementById('ap-grand'); if(g) g.value=tot+Math.round(tot*0.16);}};
+    return crumbs([{label:'CxP',href:'cxp'},{label:'Captura'}])+
+      pageHead('Captura factura AP','Totales desde líneas',`<button class="btn btn-primary btn-sm" onclick="toast('AP guardada');go('cxp')">Guardar</button>`)+
+      `<div class="panel"><div class="panel-bd"><div class="form-grid">
+        ${fieldL('vendor_id',`<select class="control">${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select>`,true)}
+        ${fieldL('invoice_number',`<input class="control"/>`,true)}
+        ${fieldL('grand_total',`<input class="control" id="ap-grand" readonly/>`,true)}
+      </div></div></div>
+      <div id="lh">${linesTable({id:'ap-lines',cols:window.__apLines.cols,rows:window.__apLines.rows,editable:true,total:100})}</div>`;
+  };
+  V['pagos-ap']=()=>crumbs([{label:'CxP',href:'cxp'},{label:'Pagos'}])+pageHead('Programación de pagos','')+`<button class="btn btn-primary btn-sm" onclick="toast('Propuesta DRAFT')">Crear propuesta</button>`;
+  V.facturacion=()=>{
     const D=ERPDemo;
     return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Facturación'}])+
-      pageHead('Facturación / Billing','Emisión de factura · CFDI · enlace a pedidos',
-        `<a class="btn btn-primary btn-sm" href="#billing">Emitir factura</a>
-         <a class="btn btn-secondary btn-sm" href="#ventas">Pedidos</a>`)+
-      `<div class="alert">customer_id, invoice_date, sales_order_id, payment_terms, líneas, tax_code, grand_total, cfdi_usage.</div>
-      <div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        <a class="btn btn-secondary btn-sm" href="#billing">Emisión de factura / CFDI</a>
-        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Facturas emitidas</a>
-        <a class="btn btn-secondary btn-sm" href="#entregas">Entregas</a>
-        <a class="btn btn-secondary btn-sm" href="#cxc">Continuar a CxC</a>
-      </div></div>`+
-      table(['id','customer_id','sales_order_id','invoice_date','grand_total','status'],
-        D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.sales_order_id}</td><td>${i.invoice_date}</td><td>${money(i.grand_total)}</td><td>${badge(i.status)}</td></tr>`).join(''));
-  },
-  cxc(){
+      pageHead('Facturación','',`<a class="btn btn-primary btn-sm" href="#billing">Emitir</a>`)+
+      `<div class="journey"><strong>O2C:</strong> Pedido → Entrega → <strong>Facturación</strong> → CxC</div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('customer_id')}</th><th>${L('grand_total')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.arInvoices.map(i=>`<tr><td>${i.id}</td><td>${i.customer_id}</td><td>${D.money(i.grand_total)}</td><td>${statusChip(i.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.billing=()=>crumbs([{label:'Facturación',href:'facturacion'},{label:'Emitir'}])+pageHead('Emitir factura','',`<button class="btn btn-primary btn-sm" onclick="toast('AR ISSUED');go('facturacion')">Emitir</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">${fieldL('customer_id',`<select class="control">${ERPDemo.customers.map(c=>`<option>${c.code}</option>`).join('')}</select>`,true)}${fieldL('sales_order_id',`<select class="control">${ERPDemo.salesOrders.map(s=>`<option>${s.id}</option>`).join('')}</select>`)}</div></div></div>`;
+  V.cxc=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'CxC'}])+
-      pageHead('Cuentas por cobrar (CxC)','Facturas cliente · cobros · aging · edo. cuenta',
-        `<a class="btn btn-primary btn-sm" href="#cobros">Registrar cobro</a>
-         <a class="btn btn-secondary btn-sm" href="#facturacion">Facturación</a>`)+
-      `<div class="kpi-row">
-        <div class="kpi"><div class="l">Saldo abierto</div><div class="v">${money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
-        <div class="kpi"><div class="l">Facturas</div><div class="v">${D.arInvoices.length}</div></div>
-        <div class="kpi"><div class="l">Clientes</div><div class="v">${D.customers.length}</div></div>
-      </div>
-      <div class="panel"><div class="panel-hd"><h3>Procesos CxC</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Lista facturas cliente</a>
-        <a class="btn btn-secondary btn-sm" href="#cobros">Registro de cobros</a>
-        <a class="btn btn-secondary btn-sm" href="#facturas-ar">Aging / cartera</a>
-        <a class="btn btn-secondary btn-sm" href="#facturacion">Facturación</a>
-      </div></div>`+
-      table(['id','customer_id','invoice_date','grand_total','open_amount','status'],
-        D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.invoice_date}</td><td>${money(i.grand_total)}</td><td>${money(i.open_amount)}</td><td>${badge(i.status)}</td></tr>`).join(''));
-  },
-  tesoreria(){
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'CxC'}])+pageHead('Cuentas por cobrar','',`<a class="btn btn-primary btn-sm" href="#cobros">Cobro</a>`)+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('customer_id')}</th><th>${L('open_amount')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.arInvoices.map(i=>`<tr><td>${i.id}</td><td>${i.customer_id}</td><td>${D.money(i.open_amount)}</td><td>${statusChip(i.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.cobros=()=>crumbs([{label:'CxC',href:'cxc'},{label:'Cobros'}])+pageHead('Registro de cobros','',`<button class="btn btn-primary btn-sm" onclick="toast('Cobro posteado')">Postear</button>`);
+  V.tesoreria=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Tesorería'}])+
-      pageHead('Tesorería','Bancos · posición · órdenes de pago · conciliación',
-        `<a class="btn btn-primary btn-sm" href="#ordenes-pago">Orden de pago</a>
-         <a class="btn btn-secondary btn-sm" href="#conciliacion">Conciliar</a>`)+
-      `<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-        <a class="btn btn-secondary btn-sm" href="#bancos">Cuentas bancarias</a>
-        <a class="btn btn-secondary btn-sm" href="#ordenes-pago">Órdenes de pago</a>
-        <a class="btn btn-secondary btn-sm" href="#conciliacion">Conciliación</a>
-        <a class="btn btn-secondary btn-sm" href="#cxp">Desde CxP</a>
-      </div></div>`+
-      table(['bank_name','account_number','currency','balance'],
-        D.banks.map(b=>`<tr><td><strong>${b.bank_name}</strong></td><td class="mono">${b.account_number}</td><td>${b.currency}</td><td>${b.currency==='MXN'?money(b.balance):('$'+b.balance.toLocaleString())}</td></tr>`).join(''));
-  },
-  finanzas(){
+    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Tesorería'}])+pageHead('Tesorería','')+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>Banco</th><th>Moneda</th><th>Saldo</th></tr></thead>
+      <tbody>${D.banks.map(b=>`<tr><td>${b.bank_name}</td><td>${b.currency}</td><td>${b.currency==='MXN'?D.money(b.balance):b.balance}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.ventas=()=>{
     const D=ERPDemo;
-    return crumbs([{label:'Finanzas'}])+pageHead('Finanzas','Contabilidad · CxP · Facturación · CxC · Tesorería')+
-      `<div class="grid-3">${[
-        ['Contabilidad (GL)','contabilidad','COA, periodos, asientos'],
-        ['CxP · Cuentas por pagar','cxp','Facturas proveedor, pagos, aging'],
-        ['Facturación','facturacion','Emisión factura / CFDI'],
-        ['CxC · Cuentas por cobrar','cxc','Facturas cliente, cobros'],
-        ['Tesorería','tesoreria','Bancos, pagos, conciliación'],
-        ['Asientos','asientos','Libro diario']
-      ].map(([t,h,d])=>`<a class="panel" href="#${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}</div>
-      <div class="kpi-row" style="margin-top:8px">
-        <div class="kpi"><div class="l">CxP abierto</div><div class="v">${money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
-        <div class="kpi"><div class="l">CxC abierto</div><div class="v">${money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
-      </div>`;
-  },
-  'plan-cuentas'(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Plan de cuentas'}])+pageHead('Plan de cuentas','')+
-      table(['account_code','account_name','account_type','allow_manual_posting','is_recon_account'],
-        D.accounts.map(a=>`<tr><td class="mono"><strong>${a.account_code}</strong></td><td>${a.account_name}</td><td>${a.account_type}</td><td>${a.allow_manual_posting}</td><td>${a.is_recon_account}</td></tr>`).join(''));
-  },
-  periodos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Periodos'}])+pageHead('Periodos contables','')+
-      table(['fiscal_year','period_id','start_date','end_date','status'],
-        D.periods.map(p=>`<tr><td>${p.fiscal_year}</td><td><strong>${p.period_id}</strong></td><td>${p.start_date}</td><td>${p.end_date}</td><td>${badge(p.status)}</td></tr>`).join(''));
-  },
-  asientos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Asientos'}])+pageHead('Libro diario','ΣDebit=ΣCredit')+
-      table(['id','journal_date','period_id','header_text','debit','credit','status'],
-        D.journals.map(j=>`<tr><td><strong>${j.id}</strong></td><td>${j.journal_date}</td><td>${j.period_id}</td><td>${j.header_text}</td><td>${money(j.debit)}</td><td>${money(j.credit)}</td><td>${badge(j.status)}</td></tr>`).join(''));
-  },
-  'facturas-ap'(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'AP'}])+
-      pageHead('Facturas proveedor','',`<a class="btn btn-primary btn-sm" href="#captura-ap">Captura</a><a class="btn btn-secondary btn-sm" href="#pagos-ap">Pagos</a>`)+
-      table(['id','vendor_id','invoice_number','invoice_date','po_id','grand_total','due_date','match_status','status'],
-        D.apInvoices.map(i=>`<tr class="clickable" onclick="location.hash='detalle-ap/${i.id}'"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${i.invoice_number}</td><td>${i.invoice_date}</td><td>${i.po_id||'—'}</td><td>${money(i.grand_total)}</td><td>${i.due_date}</td><td>${i.match_status}</td><td>${badge(i.status)}</td></tr>`).join(''));
-  },
-  'captura-ap'(){
-    const D=ERPDemo;
-    return crumbs([{label:'AP',href:'facturas-ap'},{label:'Captura'}])+
-      pageHead('Captura factura AP','',`<button class="btn btn-primary btn-sm" onclick="toast('AP DRAFT');location.hash='facturas-ap'">Guardar</button>`)+
-      formGrid(
-        field('vendor_id',`<select class="control">${D.vendors.map(v=>`<option>${v.vendor_code}</option>`).join('')}</select>`,true)+
-        field('invoice_number','<input class="control"/>',true)+
-        field('invoice_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('posting_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('currency','<input class="control" value="MXN"/>',true)+
-        field('po_id',`<select class="control"><option value="">—</option>${D.pos.map(p=>`<option>${p.id}</option>`).join('')}</select>`)+
-        field('subtotal','<input class="control" type="number"/>',true)+
-        field('tax_total','<input class="control" type="number"/>',true)+
-        field('grand_total','<input class="control" type="number"/>',true)+
-        field('due_date','<input class="control" type="date"/>',true)+
-        field('cfdi_uuid','<input class="control" placeholder="condicional MX"/>')
-      );
-  },
-  'pagos-ap'(){
-    const D=ERPDemo;
-    return crumbs([{label:'AP',href:'facturas-ap'},{label:'Programación de pagos'}])+
-      pageHead('Programación de pagos','',`<button class="btn btn-primary btn-sm" onclick="toast('Payment proposal DRAFT')">Crear</button>`)+
-      formGrid(
-        field('invoice_ids', D.apInvoices.filter(i=>i.status==='POSTED').map(i=>`<label style="display:flex;gap:8px;margin:4px 0"><input type="checkbox" checked/> ${i.id} · ${money(i.grand_total)}</label>`).join(''),true,true)+
-        field('payment_date','<input class="control" type="date" value="2026-11-10"/>',true)+
-        field('bank_account_id',`<select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select>`,true)+
-        field('payment_amount','<input class="control" type="number" value="128400"/>',true)+
-        field('payment_method','<select class="control"><option>TRANSFER</option><option>CHECK</option></select>',true)
-      );
-  },
-  'aging-ap'(){
-    return crumbs([{label:'AP',href:'facturas-ap'},{label:'Aging'}])+pageHead('Aging AP','as_of_date')+
-      field('as_of_date','<input class="control" type="date" value="2026-11-07" style="max-width:220px"/>',true)+
-      table(['vendor_id','0-30','31-60','Total'],
-        `<tr><td>V-1044</td><td>${money(128400)}</td><td>$0</td><td>${money(128400)}</td></tr>
-         <tr><td>V-1001</td><td>${money(125000)}</td><td>$0</td><td>${money(125000)}</td></tr>`);
-  },
-  'facturas-ar'(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'AR'}])+
-      pageHead('Facturas cliente','',`<a class="btn btn-primary btn-sm" href="#billing">Emitir</a><a class="btn btn-secondary btn-sm" href="#cobros">Cobros</a>`)+
-      table(['id','customer_id','invoice_date','sales_order_id','grand_total','open_amount','status'],
-        D.arInvoices.map(i=>`<tr><td><strong>${i.id}</strong></td><td>${i.customer_id}</td><td>${i.invoice_date}</td><td>${i.sales_order_id}</td><td>${money(i.grand_total)}</td><td>${money(i.open_amount)}</td><td>${badge(i.status)}</td></tr>`).join(''));
-  },
-  billing(){
-    const D=ERPDemo;
-    return crumbs([{label:'AR',href:'facturas-ar'},{label:'Emisión'}])+
-      pageHead('Emisión de factura','',`<button class="btn btn-primary btn-sm" onclick="toast('AR ISSUED');location.hash='facturas-ar'">Emitir</button>`)+
-      formGrid(
-        field('customer_id',`<select class="control">${D.customers.map(c=>`<option>${c.code}</option>`).join('')}</select>`,true)+
-        field('invoice_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('sales_order_id',`<select class="control">${D.salesOrders.map(s=>`<option>${s.id}</option>`).join('')}</select>`)+
-        field('payment_terms','<input class="control" value="NET30"/>',true)+
-        field('line_product',`<select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select>`,true)+
-        field('line_qty','<input class="control" type="number" value="10"/>',true)+
-        field('line_price','<input class="control" type="number" value="8450"/>',true)+
-        field('tax_code','<input class="control" value="IVA16"/>',true)+
-        field('grand_total','<input class="control" value="98020" readonly/>',true)
-      );
-  },
-  cobros(){
-    const D=ERPDemo;
-    return crumbs([{label:'AR',href:'facturas-ar'},{label:'Cobros'}])+
-      pageHead('Registro de cobros','',`<button class="btn btn-primary btn-sm" onclick="toast('AR_RECEIPT_POSTED')">Postear</button>`)+
-      formGrid(
-        field('customer_id',`<select class="control">${D.customers.map(c=>`<option>${c.code}</option>`).join('')}</select>`,true)+
-        field('receipt_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('amount','<input class="control" type="number" value="88450"/>',true)+
-        field('bank_account_id',`<select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select>`,true)+
-        field('application_invoice_id',`<select class="control">${D.arInvoices.filter(i=>i.open_amount>0).map(i=>`<option>${i.id}</option>`).join('')}</select>`,true)+
-        field('application_amount','<input class="control" type="number" value="88450"/>',true)
-      );
-  },
-  bancos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Finanzas',href:'finanzas'},{label:'Tesorería'}])+
-      pageHead('Cuentas bancarias','',`<a class="btn btn-secondary btn-sm" href="#ordenes-pago">Órdenes de pago</a><a class="btn btn-secondary btn-sm" href="#conciliacion">Conciliación</a>`)+
-      table(['bank_name','account_number','currency','gl_cash_account','balance'],
-        D.banks.map(b=>`<tr><td><strong>${b.bank_name}</strong></td><td class="mono">${b.account_number}</td><td>${b.currency}</td><td>${b.gl_cash_account}</td><td>${b.currency==='MXN'?money(b.balance):('$'+b.balance.toLocaleString())}</td></tr>`).join(''));
-  },
-  'ordenes-pago'(){
-    const D=ERPDemo;
-    return crumbs([{label:'Tesorería',href:'bancos'},{label:'Órdenes de pago'}])+
-      pageHead('Órdenes de pago','',`<button class="btn btn-primary btn-sm" onclick="toast('PAYMENT SENT')">Ejecutar</button>`)+
-      formGrid(
-        field('source_type','<select class="control"><option>AP</option><option>PAYROLL</option></select>',true)+
-        field('source_id',`<select class="control">${D.apInvoices.filter(i=>i.status==='POSTED').map(i=>`<option>${i.id}</option>`).join('')}</select>`,true)+
-        field('payee_id','<input class="control" value="V-1044"/>',true)+
-        field('amount','<input class="control" type="number" value="128400"/>',true)+
-        field('execution_date','<input class="control" type="date" value="2026-11-10"/>',true)
-      );
-  },
-  conciliacion(){
-    const D=ERPDemo;
-    return crumbs([{label:'Tesorería',href:'bancos'},{label:'Conciliación'}])+
-      pageHead('Conciliación bancaria','',`<button class="btn btn-primary btn-sm" onclick="toast('RECON MATCHED')">Conciliar</button>`)+
-      formGrid(
-        field('bank_account_id',`<select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select>`,true)+
-        field('statement_date','<input class="control" type="date" value="2026-11-06"/>',true)+
-        field('statement_balance','<input class="control" type="number" value="1840000"/>',true)+
-        field('matched_tx_ids','<input class="control"/>',false,true)
-      );
-  },
-  ventas(){
-    const D=ERPDemo;
-    return crumbs([{label:'Ventas'}])+pageHead('Ventas','O2C',`<a class="btn btn-primary btn-sm" href="#nuevo-so">Crear pedido</a>`)+
-      `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-secondary btn-sm" href="#pedidos">Pedidos</a>
-        <a class="btn btn-secondary btn-sm" href="#entregas">Entregas</a>
-        <a class="btn btn-secondary btn-sm" href="#billing">Billing</a>
-      </div></div>`+
-      table(['id','customer_id','order_date','requested_date','total_amount','status'],
-        D.salesOrders.map(s=>`<tr class="clickable" onclick="location.hash='detalle-so/${s.id}'"><td><strong>${s.id}</strong></td><td>${s.customer_id}</td><td>${s.order_date}</td><td>${s.requested_date||'—'}</td><td>${money(s.total_amount)}</td><td>${badge(s.status)}</td></tr>`).join(''));
-  },
-  pedidos(){ return VIEWS.ventas(); },
-  'nuevo-so'(){
-    const D=ERPDemo;
-    return crumbs([{label:'Ventas',href:'ventas'},{label:'Nuevo pedido'}])+
-      pageHead('Crear pedido','',`<button class="btn btn-primary btn-sm" onclick="toast('SO CONFIRMED');location.hash='ventas'">Guardar</button>`)+
-      formGrid(
-        field('customer_id',`<select class="control">${D.customers.map(c=>`<option>${c.code}</option>`).join('')}</select>`,true)+
-        field('order_date','<input class="control" type="date" value="2026-11-07"/>',true)+
-        field('requested_date','<input class="control" type="date" value="2026-11-18"/>')+
-        field('currency','<input class="control" value="MXN"/>',true)+
-        field('line_item_id',`<select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select>`,true)+
-        field('line_qty','<input class="control" type="number" value="5"/>',true)+
-        field('line_price','<input class="control" type="number" value="8450"/>',true)+
-        field('line_discount_pct','<input class="control" type="number" value="0"/>')+
-        field('total_amount','<input class="control" value="42250" readonly/>',true)
-      );
-  },
-  entregas(){
-    const D=ERPDemo;
-    return crumbs([{label:'Ventas',href:'ventas'},{label:'Entregas'}])+
-      pageHead('Entregas','',`<button class="btn btn-primary btn-sm" onclick="toast('DELIVERY_POSTED')">Postear</button>`)+
-      formGrid(
-        field('sales_order_id',`<select class="control">${D.salesOrders.map(s=>`<option>${s.id}</option>`).join('')}</select>`,true)+
-        field('warehouse_id','<select class="control"><option>WH-FG</option><option>WH-P1</option></select>',true)+
-        field('line_qty_deliver','<input class="control" type="number" value="5"/>',true)+
-        field('delivery_date','<input class="control" type="date" value="2026-11-07"/>',true)
-      );
-  },
-  inventarios(){
-    const D=ERPDemo;
-    return crumbs([{label:'Inventarios'}])+pageHead('Inventarios','')+
-      `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
-        <a class="btn btn-secondary btn-sm" href="#articulos">Artículos</a>
-        <a class="btn btn-secondary btn-sm" href="#existencias">Existencias</a>
-        <a class="btn btn-secondary btn-sm" href="#movimientos">Movimientos</a>
-      </div></div>`+
-      table(['item_code','warehouse_id','qty'], D.stock.map(s=>`<tr><td><strong>${s.item_code}</strong></td><td>${s.warehouse_id}</td><td>${s.qty.toLocaleString('es-MX')}</td></tr>`).join(''));
-  },
-  articulos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Inventarios',href:'inventarios'},{label:'Artículos'}])+pageHead('Maestro de artículos','')+
-      table(['item_code','item_name','item_type','uom','costing_method','sales_price','purchase_price'],
-        D.items.map(i=>`<tr><td class="mono"><strong>${i.item_code}</strong></td><td>${i.item_name}</td><td>${i.item_type}</td><td>${i.uom}</td><td>${i.costing_method||'—'}</td><td>${i.sales_price}</td><td>${i.purchase_price}</td></tr>`).join(''));
-  },
-  existencias(){ return VIEWS.inventarios(); },
-  movimientos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Inventarios',href:'inventarios'},{label:'Movimientos'}])+
-      pageHead('Movimientos','',`<button class="btn btn-primary btn-sm" onclick="toast('INV_MOVE_POSTED')">Postear</button>`)+
-      formGrid(
-        field('move_type','<select class="control"><option>IN</option><option>OUT</option><option>TRANSFER</option><option>ADJUST</option></select>',true)+
-        field('item_id',`<select class="control">${D.items.filter(i=>i.item_type==='STOCK').map(i=>`<option>${i.item_code}</option>`).join('')}</select>`,true)+
-        field('qty','<input class="control" type="number" value="10"/>',true)+
-        field('warehouse_id','<select class="control"><option>WH-P1</option><option>WH-FG</option></select>',true)+
-        field('reason_code','<input class="control" placeholder="si ADJUST"/>')
-      );
-  },
-  rh(){
-    const D=ERPDemo;
-    return crumbs([{label:'RRHH'}])+pageHead('Recursos humanos','',`<a class="btn btn-secondary btn-sm" href="#ausencias">Ausencias</a>`)+
-      table(['employee_number','full_name','hire_date','org_unit_id','position_id','salary_base','status'],
-        D.employees.map(e=>`<tr><td><strong>${e.employee_number}</strong></td><td>${e.full_name}</td><td>${e.hire_date}</td><td>${e.org_unit_id}</td><td>${e.position_id}</td><td>${money(e.salary_base)}</td><td>${badge(e.status)}</td></tr>`).join(''));
-  },
-  ausencias(){
-    return crumbs([{label:'RRHH',href:'rh'},{label:'Ausencias'}])+
-      pageHead('Ausencias','',`<button class="btn btn-primary btn-sm" onclick="toast('Ausencia enviada')">Enviar</button>`)+
-      formGrid(
-        field('leave_type','<select class="control"><option>VACATION</option><option>SICK</option></select>',true)+
-        field('from_date','<input class="control" type="date" value="2026-12-01"/>',true)+
-        field('to_date','<input class="control" type="date" value="2026-12-05"/>',true)
-      );
-  },
-  nomina(){
-    return crumbs([{label:'Nómina'}])+pageHead('Nómina','',`<a class="btn btn-primary btn-sm" href="#corrida">Corrida</a><a class="btn btn-secondary btn-sm" href="#dispersion">Dispersión</a>`)+
-      `<div class="alert">WF PAYROLL_APPROVAL · DRAFT→CALCULATED→APPROVED→PAID</div>
-       <div class="panel"><div class="panel-bd">Última corrida: PAY-2026-11A · ${badge('APPROVED')}</div></div>`;
-  },
-  corrida(){
-    return crumbs([{label:'Nómina',href:'nomina'},{label:'Corrida'}])+
-      pageHead('Corrida de nómina','',`<button class="btn btn-primary btn-sm" onclick="toast('CALCULATED')">Calcular</button>`)+
-      formGrid(
-        field('pay_period','<input class="control" value="2026-11-Q1"/>',true)+
-        field('payroll_group','<input class="control" value="MENSUAL-MX"/>',true)+
-        field('run_date','<input class="control" type="date" value="2026-11-28"/>',true)
-      );
-  },
-  dispersion(){
-    const D=ERPDemo;
-    return crumbs([{label:'Nómina',href:'nomina'},{label:'Dispersión'}])+
-      pageHead('Dispersión','',`<button class="btn btn-primary btn-sm" onclick="toast('Dispersión enviada')">Dispersar</button>`)+
-      formGrid(
-        field('payroll_run_id','<input class="control" value="PAY-2026-11A"/>',true)+
-        field('bank_account_id',`<select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select>`,true)
-      );
-  },
-  activos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Activos'}])+pageHead('Activo fijo','',`<a class="btn btn-primary btn-sm" href="#alta-activo">Alta</a><a class="btn btn-secondary btn-sm" href="#depreciacion">Depreciación</a>`)+
-      table(['asset_code','asset_name','capitalization_date','acquisition_cost','useful_life_months','depreciation_method','status'],
-        D.assets.map(a=>`<tr><td><strong>${a.asset_code}</strong></td><td>${a.asset_name}</td><td>${a.capitalization_date}</td><td>${money(a.acquisition_cost)}</td><td>${a.useful_life_months}</td><td>${a.depreciation_method}</td><td>${badge(a.status)}</td></tr>`).join(''));
-  },
-  'alta-activo'(){
-    return crumbs([{label:'Activos',href:'activos'},{label:'Alta'}])+
-      pageHead('Alta de activo','',`<button class="btn btn-primary btn-sm" onclick="toast('ASSET CAPITALIZED')">Capitalizar</button>`)+
-      formGrid(
-        field('asset_code','<input class="control"/>',true)+field('asset_name','<input class="control"/>',true)+
-        field('capitalization_date','<input class="control" type="date"/>',true)+
-        field('acquisition_cost','<input class="control" type="number"/>',true)+
-        field('useful_life_months','<input class="control" type="number" value="60"/>',true)+
-        field('depreciation_method','<select class="control"><option>SL</option><option>DB</option></select>',true)+
-        field('asset_account','<input class="control" value="1500-001"/>',true)+
-        field('accum_dep_account','<input class="control" value="1500-002"/>',true)+
-        field('expense_account','<input class="control" value="5200-001"/>',true)
-      );
-  },
-  depreciacion(){
-    return crumbs([{label:'Activos',href:'activos'},{label:'Depreciación'}])+
-      pageHead('Depreciación','',`<button class="btn btn-primary btn-sm" onclick="toast('Depreciación posteada')">Ejecutar</button>`)+
-      formGrid(field('period_id','<input class="control" value="2026-11"/>',true)+field('book_id','<input class="control" value="CORP"/>',true));
-  },
-  proyectos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Proyectos'}])+pageHead('Proyectos','',`<a class="btn btn-secondary btn-sm" href="#timesheets">Timesheets</a>`)+
-      table(['project_code','project_name','customer_id','start_date','end_date','budget_amount','status'],
-        D.projects.map(p=>`<tr><td><strong>${p.project_code}</strong></td><td>${p.project_name}</td><td>${p.customer_id||'—'}</td><td>${p.start_date}</td><td>${p.end_date||'—'}</td><td>${money(p.budget_amount)}</td><td>${badge(p.status)}</td></tr>`).join(''));
-  },
-  timesheets(){
-    const D=ERPDemo;
-    return crumbs([{label:'Proyectos',href:'proyectos'},{label:'Timesheets'}])+
-      pageHead('Timesheets','',`<button class="btn btn-primary btn-sm" onclick="toast('Timesheet guardado')">Guardar</button>`)+
-      formGrid(
-        field('project_id',`<select class="control">${D.projects.map(p=>`<option>${p.project_code}</option>`).join('')}</select>`,true)+
-        field('work_date','<input class="control" type="date" value="2026-11-06"/>',true)+
-        field('hours','<input class="control" type="number" step="0.25" value="8"/>',true)+
-        field('task_id','<input class="control"/>')
-      );
-  },
-  admin(){
-    return crumbs([{label:'Administración'}])+pageHead('Administración','')+
-      `<div class="grid-3">${[
-        ['Usuarios','usuarios'],['Roles','roles'],['Organización','organizacion'],
-        ['Catálogos','catalogos'],['Bandeja','bandeja'],['Documentos','documentos'],
-        ['Notificaciones','notificaciones'],['Mi perfil','perfil'],['Auditoría','auditoria']
-      ].map(([t,h])=>`<a class="panel" href="#${h}"><div class="panel-bd"><strong>${t}</strong></div></a>`).join('')}</div>`;
-  },
-  bandeja(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Bandeja'}])+pageHead('Bandeja de aprobación','')+
-      D.tasks.map(t=>`<div class="panel"><div class="panel-bd">
-        <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px">
-          <div><strong>${t.task_id}</strong> · ${t.process} · ${t.ref}<div style="font-size:13px;margin-top:4px">${t.title}</div></div>
-          <div>${money(t.amount)}</div>
-        </div>
-        <div class="field"><label>comment</label><textarea class="control" id="c-${t.task_id}"></textarea></div>
-        <div class="page-actions">
-          <button class="btn btn-danger btn-sm" onclick="decide('${t.task_id}','REJECT')">Rechazar</button>
-          <button class="btn btn-primary btn-sm" onclick="decide('${t.task_id}','APPROVE')">Aprobar</button>
-        </div>
-      </div></div>`).join('');
-  },
-  usuarios(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Usuarios'}])+pageHead('Usuarios','')+
-      table(['username','full_name','email','org_unit_id','role_codes','status'],
-        D.users.map(u=>`<tr><td><strong>${u.username}</strong></td><td>${u.full_name}</td><td>${u.email}</td><td>${u.org_unit_id}</td><td>${u.role_codes}</td><td>${badge(u.status)}</td></tr>`).join(''));
-  },
-  roles(){
-    return crumbs([{label:'Admin',href:'admin'},{label:'Roles'}])+pageHead('Roles y permisos','')+
-      formGrid(field('role_code','<input class="control" value="BUY"/>',true)+field('role_name','<input class="control" value="Comprador"/>',true)+
-        field('permission_codes','<div><span class="badge b-neu">proc.po.create</span> <span class="badge b-neu">proc.receipt</span></div>',true,true));
-  },
-  organizacion(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Organización'}])+pageHead('Estructura organizacional','')+
-      table(['ou_code','ou_name','ou_type','parent_ou_id','manager_user_id'],
-        D.orgUnits.map(o=>`<tr><td><strong>${o.ou_code}</strong></td><td>${o.ou_name}</td><td>${o.ou_type}</td><td>${o.parent_ou_id||'—'}</td><td>${o.manager_user_id||'—'}</td></tr>`).join(''));
-  },
-  catalogos(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Catálogos'}])+pageHead('Catálogos maestros','')+
-      table(['catalog_code','item_code','item_name','active'],
-        D.catalogs.map(c=>`<tr><td>${c.catalog_code}</td><td><strong>${c.item_code}</strong></td><td>${c.item_name}</td><td>${c.active}</td></tr>`).join(''));
-  },
-  documentos(){
-    return crumbs([{label:'Admin',href:'admin'},{label:'Documentos'}])+pageHead('Expediente','case CF-PO-2026-0842')+
-      table(['document_id','doc_type','name','version_no','status'],
-        `<tr><td>DOC-9912</td><td>COT</td><td>Cotización Aceros.pdf</td><td>2</td><td>${badge('AVAILABLE')}</td></tr>
-         <tr><td>DOC-9901</td><td>OC</td><td>OC-2026-0842.pdf</td><td>1</td><td>${badge('AVAILABLE')}</td></tr>`);
-  },
-  notificaciones(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Notificaciones'}])+pageHead('Notificaciones','')+
-      `<div class="panel"><div class="panel-bd">${D.notifications.map(n=>`<div class="list-row"><div style="flex:1">${n.unread?'<span class="badge b-info">UNREAD</span>':'<span class="badge b-neu">READ</span>'} <strong>${n.title}</strong></div><span style="font-size:12px;color:var(--ink-3)">${n.time}</span></div>`).join('')}</div></div>`;
-  },
-  perfil(){
-    const D=ERPDemo;
-    return crumbs([{label:'Admin',href:'admin'},{label:'Perfil'}])+
-      pageHead('Mi perfil','',`<button class="btn btn-primary btn-sm" onclick="toast('PROFILE_UPDATE')">Guardar</button>`)+
-      formGrid(
-        field('display_name',`<input class="control" value="${D.session.display_name}"/>`,true)+
-        field('email',`<input class="control" value="${D.session.email}"/>`,true)+
-        field('locale','<select class="control"><option>es-MX</option><option>en-US</option></select>')+
-        field('theme','<select class="control"><option>light</option><option>dark</option></select>')
-      );
-  },
-  auditoria(){
-    return crumbs([{label:'Admin',href:'admin'},{label:'Auditoría'}])+pageHead('Consulta de auditoría','')+
-      formGrid(
-        field('entity_type','<select class="control"><option>PurchaseOrder</option><option>VendorInvoice</option></select>',true)+
-        field('entity_id','<input class="control" value="PO-2026-0842"/>',true)
-      )+
-      table(['when','user','action','before','after'],
-        `<tr><td>2026-11-06 16:02</td><td>clopez</td><td>UPDATE</td><td class="mono">{"status":"DRAFT"}</td><td class="mono">{"status":"PENDING_APPROVAL"}</td></tr>`);
-  },
-  reportes(){
-    return crumbs([{label:'Reportes'}])+pageHead('Reportes estándar','')+
-      `<div class="grid-2">
-        <div class="panel"><div class="panel-hd"><h3>Finanzas</h3></div><div class="panel-bd" style="display:grid;gap:8px">
-          <a class="btn btn-secondary btn-sm" href="#aging-ap">Aging AP</a>
-          <a class="btn btn-secondary btn-sm" href="#facturas-ar">Aging / AR</a>
-          <a class="btn btn-secondary btn-sm" href="#bancos">Posición efectivo</a>
-          <a class="btn btn-secondary btn-sm" href="#plan-cuentas">Balanza / COA</a>
-        </div></div>
-        <div class="panel"><div class="panel-hd"><h3>Operación</h3></div><div class="panel-bd" style="display:grid;gap:8px">
-          <a class="btn btn-secondary btn-sm" href="#ordenes">OC por status</a>
-          <a class="btn btn-secondary btn-sm" href="#ventas">Pedidos</a>
-          <a class="btn btn-secondary btn-sm" href="#existencias">Existencias</a>
-          <button class="btn btn-secondary btn-sm" onclick="toast('Export XLSX simulado')">Export</button>
-        </div></div>
-      </div>`;
-  }
-};
-
-// dynamic detail routes
-function renderDetail(kind, id){
-  const D=ERPDemo;
-  if(kind==='detalle-oc'){
-    const p=D.pos.find(x=>x.id===id)||D.pos[0];
-    return crumbs([{label:'Órdenes',href:'ordenes'},{label:p.id}])+
-      pageHead(p.id, money(p.total_amount), `<a class="btn btn-primary btn-sm" href="#bandeja">Aprobar</a>`)+
-      `<div class="panel"><div class="panel-bd form-grid">
-        <div class="field"><label>vendor_id</label><div>${p.vendor_id}</div></div>
-        <div class="field"><label>status</label><div>${badge(p.status)}</div></div>
-        <div class="field"><label>order_date</label><div>${p.order_date}</div></div>
-        <div class="field"><label>payment_terms</label><div>${p.payment_terms}</div></div>
-        <div class="field full"><label>delivery_address</label><div>${p.delivery_address}</div></div>
-      </div></div>`;
-  }
-  if(kind==='detalle-pr'){
-    const p=D.prs.find(x=>x.id===id)||D.prs[0];
-    return crumbs([{label:'Requisiciones',href:'requisiciones'},{label:p.id}])+
-      pageHead(p.title, p.id)+
-      `<div class="panel"><div class="panel-bd form-grid">
-        <div class="field"><label>status</label><div>${badge(p.status)}</div></div>
-        <div class="field"><label>total_amount</label><div>${money(p.total_amount)}</div></div>
-        <div class="field full"><label>justification</label><div>${p.justification}</div></div>
-      </div></div>`;
-  }
-  if(kind==='detalle-ap'){
-    const i=D.apInvoices.find(x=>x.id===id)||D.apInvoices[0];
-    return crumbs([{label:'AP',href:'facturas-ap'},{label:i.id}])+
-      pageHead(i.id, money(i.grand_total), `<a class="btn btn-primary btn-sm" href="#pagos-ap">Programar pago</a>`)+
-      `<div class="panel"><div class="panel-bd form-grid">
-        <div class="field"><label>vendor_id</label><div>${i.vendor_id}</div></div>
-        <div class="field"><label>status</label><div>${badge(i.status)}</div></div>
-        <div class="field"><label>match_status</label><div>${i.match_status}</div></div>
-        <div class="field"><label>due_date</label><div>${i.due_date}</div></div>
-      </div></div>`;
-  }
-  if(kind==='detalle-so'){
-    const s=D.salesOrders.find(x=>x.id===id)||D.salesOrders[0];
+    return crumbs([{label:'Ventas'}])+pageHead('Ventas','',`<a class="btn btn-primary btn-sm" href="#nuevo-so">Nuevo pedido</a>`)+
+      `<div class="journey"><strong>O2C:</strong> <strong>Pedido</strong> → Entrega → Facturación → CxC</div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('customer_id')}</th><th>${L('total_amount')}</th><th>Crédito</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.salesOrders.map(s=>`<tr class="clickable" onclick="go('detalle-so/${s.id}')"><td>${s.id}</td><td>${s.customer_id}</td><td>${D.money(s.total_amount)}</td><td>${s.credit_ok===false?statusChip('CREDIT_BLOCKED'):'OK'}</td><td>${statusChip(s.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V['detalle-so']=(id)=>{
+    const D=ERPDemo; const s=D.salesOrders.find(x=>x.id===id)||D.salesOrders[0];
+    const c=D.customers.find(x=>x.code===s.customer_id);
+    const stock=D.stock.find(x=>x.item_code==='FG-FRAME-01');
+    const tabs=objectTabs([
+      {id:'datos',label:'Datos generales',html:creditBanner(c,s.total_amount)+`<div class="form-grid">${fieldL('customer_id',`<div>${s.customer_id}</div>`)}${fieldL('credit_limit',`<div>${D.money(c.credit_limit)}</div>`)}${fieldL('total_amount',`<div>${D.money(s.total_amount)}</div>`)}</div>`+(stock?`<div class="alert">ATP FG-FRAME-01 available <strong>${stock.qty_available}</strong></div>`:'')},
+      {id:'lineas',label:'Líneas',html:linesTable({id:'sol',cols:[{key:'item',label:'Artículo'},{key:'qty',label:'Cant'},{key:'price',label:'Precio',money:true}],rows:s.lines||[],editable:false,total:s.total_amount})},
+      {id:'wf',label:'Workflow',html:wfStub([{title:s.status,done:true}])},
+      {id:'docs',label:'Documentos',html:docsStub(s.id)},
+      {id:'audit',label:'Auditoría',html:auditStub(s.id)}
+    ],'datos');
+    const block=s.credit_ok===false||(c&&c.credit_block);
     return crumbs([{label:'Ventas',href:'ventas'},{label:s.id}])+
-      pageHead(s.id, money(s.total_amount), `<a class="btn btn-primary btn-sm" href="#billing">Facturar</a>`)+
-      `<div class="panel"><div class="panel-bd form-grid">
-        <div class="field"><label>customer_id</label><div>${s.customer_id}</div></div>
-        <div class="field"><label>status</label><div>${badge(s.status)}</div></div>
-      </div></div>`;
+      pageHead(s.id, D.money(s.total_amount), block?`<button class="btn btn-danger btn-sm" onclick="toast('Bloqueado por crédito')">Facturar</button>`:`<a class="btn btn-primary btn-sm" href="#billing">Facturar</a>`)+
+      `<div id="obj">${tabs}</div>`;
+  };
+  V['nuevo-so']=()=>{
+    const D=ERPDemo;
+    window.__soLines={rows:[{item:'FG-FRAME-01',qty:5,price:8450}],cols:[{key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},{key:'qty',label:L('line_qty'),type:'number'},{key:'price',label:L('line_price'),type:'number'}],blank:{item:'FG-FRAME-01',qty:1,price:8450},qtyKey:'qty',priceKey:'price',
+      onChange:(tot)=>{const t=document.getElementById('so-total'); if(t)t.value=tot; refreshCredit();}};
+    window.refreshCredit=()=>{
+      const c=D.customers.find(x=>x.code===document.getElementById('so-cust').value);
+      document.getElementById('credit-host').innerHTML=creditBanner(c, Number(document.getElementById('so-total').value)||0);
+    };
+    window.confirmSO=()=>{
+      const c=D.customers.find(x=>x.code===document.getElementById('so-cust').value);
+      const tot=Number(document.getElementById('so-total').value)||0;
+      const head=(c.credit_limit||0)-(c.credit_exposure||0);
+      if(c.credit_block||tot>head){toast('No confirmado: crédito');return;}
+      toast('SO CONFIRMED'); go('ventas');
+    };
+    return crumbs([{label:'Ventas',href:'ventas'},{label:'Nuevo'}])+
+      pageHead('Nuevo pedido','',`<button class="btn btn-primary btn-sm" onclick="confirmSO()">Confirmar</button>`)+
+      `<div id="credit-host"></div>
+      <div class="panel"><div class="panel-bd"><div class="form-grid">
+        ${fieldL('customer_id',`<select class="control" id="so-cust" onchange="refreshCredit()">${D.customers.map(c=>`<option value="${c.code}">${c.code}</option>`).join('')}</select>`,true)}
+        ${fieldL('total_amount',`<input class="control" id="so-total" value="42250" readonly/>`,true)}
+      </div></div></div>
+      <div id="lh">${linesTable({id:'so-lines',cols:window.__soLines.cols,rows:window.__soLines.rows,editable:true,total:42250})}</div>`;
+  };
+  V.inventarios=()=>{
+    const D=ERPDemo;
+    return crumbs([{label:'Inventarios'}])+pageHead('Inventarios','ATP')+
+      `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn btn-primary btn-sm" href="#recepcion">Recepción</a>
+        <a class="btn btn-secondary btn-sm" href="#existencias">Existencias ATP</a>
+      </div></div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Artículo</th><th>Almacén</th><th>${L('qty_on_hand')}</th><th>${L('qty_reserved')}</th><th>${L('qty_available')}</th></tr></thead>
+      <tbody>${D.stock.map(s=>`<tr><td>${s.item_code}</td><td>${s.warehouse_id}</td><td>${s.qty_on_hand}</td><td>${s.qty_reserved}</td><td><strong>${s.qty_available}</strong></td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.existencias=()=>V.inventarios();
+  V.rh=()=>{
+    const D=ERPDemo;
+    return crumbs([{label:'RRHH'}])+pageHead('RRHH','')+
+      `<div class="table-wrap"><table class="data"><thead><tr><th>${L('employee_number')}</th><th>${L('full_name')}</th><th>${L('status')}</th></tr></thead>
+      <tbody>${D.employees.map(e=>`<tr><td>${e.employee_number}</td><td>${e.full_name}</td><td>${statusChip(e.status)}</td></tr>`).join('')}</tbody></table></div>`;
+  };
+  V.nomina=()=>crumbs([{label:'Nómina'}])+pageHead('Nómina <span class="stub-tag">Professional stub</span>','Placeholder XR — no operable MVP');
+  V.activos=()=>crumbs([{label:'Activos'}])+pageHead('Activos <span class="stub-tag">Professional stub</span>','')+
+    `<div class="table-wrap"><table class="data"><thead><tr><th>Código</th><th>Nombre</th><th>Costo</th></tr></thead><tbody>${ERPDemo.assets.map(a=>`<tr><td>${a.asset_code}</td><td>${a.asset_name}</td><td>${ERPDemo.money(a.acquisition_cost)}</td></tr>`).join('')}</tbody></table></div>`;
+  V.bandeja=()=>{
+    const D=ERPDemo;
+    return crumbs([{label:'Bandeja'}])+pageHead('Bandeja de aprobación','')+
+      D.tasks.map(t=>`<div class="panel"><div class="panel-bd"><strong>${t.task_id}</strong> · ${t.ref}<div>${t.title}</div><div style="font-size:12px;color:var(--ink-3)">Por qué: ${t.why}</div>
+        <div class="page-actions" style="margin-top:8px"><button class="btn btn-danger btn-sm" onclick="toast('REJECT')">Rechazar</button>
+        <button class="btn btn-primary btn-sm" onclick="toast('APPROVE')">Aprobar</button></div></div></div>`).join('');
+  };
+  V.reportes=()=>crumbs([{label:'Reportes'}])+pageHead('Reportes','')+
+    `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn btn-secondary btn-sm" href="#cxp">Aging CxP</a>
+      <a class="btn btn-secondary btn-sm" href="#cxc">Cartera CxC</a>
+      <a class="btn btn-secondary btn-sm" href="#tesoreria">Efectivo</a>
+    </div></div>`;
+  V.perfil=()=>crumbs([{label:'Perfil'}])+pageHead('Mi perfil', ERPDemo.session.display_name)+
+    `<div class="panel"><div class="panel-bd">${fieldL('email',`<div>${ERPDemo.session.email}</div>`)}${fieldL('company',`<div>${ERPDemo.session.company}</div>`)}</div></div>`;
+
+  function afterRender(name){
+    const obj=document.getElementById('obj'); if(obj) bindObjectTabs(obj);
+    if(name==='nueva-pr') bindLinesTable('pr-lines', window.__prLines);
+    if(name==='nueva-oc') bindLinesTable('oc-lines', window.__ocLines);
+    if(name==='captura-ap'){ bindLinesTable('ap-lines', window.__apLines); window.__apLines.onChange(100); }
+    if(name==='asientos') bindLinesTable('je-lines', window.__jeLines);
+    if(name==='nuevo-so'){ bindLinesTable('so-lines', window.__soLines); refreshCredit(); }
   }
-  return pageHead('No encontrado','');
-}
 
-window.decide=(id,decision)=>{
-  const c=document.getElementById('c-'+id)?.value?.trim()||'';
-  if(decision==='REJECT'&&c.length<5){toast('comment obligatorio en REJECT');return;}
-  toast(id+' · '+decision);
-};
-window.toast=(msg)=>{
-  let host=document.getElementById('toast-host');
-  if(!host){host=document.createElement('div');host.id='toast-host';host.className='toast-host';document.body.appendChild(host);}
-  const el=document.createElement('div');el.className='toast';el.textContent=msg;host.appendChild(el);
-  setTimeout(()=>el.remove(),2800);
-};
+  function route(){
+    const raw=location.hash.slice(1)||'login';
+    const [name,id]=raw.split('/');
+    if(name!=='login' && !sessionStorage.getItem('erp-demo-auth')){ location.hash='login'; return; }
+    if(name==='login'){
+      document.getElementById('app').style.display='none';
+      document.getElementById('login-root').style.display='grid';
+      return;
+    }
+    document.getElementById('login-root').style.display='none';
+    document.getElementById('app').style.display='grid';
+    ERPDemo.restoreSession();
+    buildShell(name);
+    let html;
+    if(name.startsWith('detalle') && V[name]) html=V[name](id);
+    else if(V[name]) html=typeof V[name]==='function' ? V[name](id) : V[name];
+    else html=pageHead('No encontrado', name)+`<a class="btn btn-secondary" href="#dashboard">Dashboard</a>`;
+    document.getElementById('content').innerHTML=html+`<p class="footer-note">ERP Portable P0 · labels ES · roles · líneas · match · ATP · crédito</p>`;
+    afterRender(name);
+  }
 
-
-function go(route){
-  if(!route) return;
-  if(route.charAt(0)==='#') route=route.slice(1);
-  location.hash = route;
-}
-document.addEventListener('click', function(e){
-  const a = e.target.closest('[data-go], a[href^="#"]');
-  if(!a) return;
-  const route = a.getAttribute('data-go') || (a.getAttribute('href')||'').replace(/^#/,'');
-  if(!route) return;
-  e.preventDefault();
-  e.stopPropagation();
-  go(route);
-}, true);
-
-const NAV=[
-  {sec:'Inicio',items:[{h:'dashboard',l:'Dashboard',i:'▣'}]},
-  {sec:'Operación',items:[{h:'compras',l:'Compras',i:'◇'},{h:'ventas',l:'Ventas',i:'▤'},{h:'inventarios',l:'Inventarios',i:'▦'}]},
-  {sec:'Finanzas',items:[
-    {h:'contabilidad',l:'Contabilidad (GL)',i:'◈',m:['contabilidad','plan-cuentas','periodos','asientos']},
-    {h:'cxp',l:'CxP · Cuentas por pagar',i:'⇩',m:['cxp','facturas-ap','captura-ap','pagos-ap','aging-ap','detalle-ap']},
-    {h:'facturacion',l:'Facturación',i:'▤',m:['facturacion','billing']},
-    {h:'cxc',l:'CxC · Cuentas por cobrar',i:'⇧',m:['cxc','facturas-ar','cobros','aging-ar']},
-    {h:'tesoreria',l:'Tesorería',i:'₩',m:['tesoreria','bancos','ordenes-pago','conciliacion']},
-    {h:'finanzas',l:'Finanzas (hub)',i:'◇',m:['finanzas']},
-    {h:'activos',l:'Activos',i:'▣'},
-    {h:'proyectos',l:'Proyectos',i:'◎'}
-  ]},
-  {sec:'Personas',items:[{h:'rh',l:'RRHH',i:'♟'},{h:'nomina',l:'Nómina',i:'₮'}]},
-  {sec:'Plataforma',items:[{h:'bandeja',l:'Bandeja',i:'⟳',b:3},{h:'admin',l:'Administración',i:'⬡'},{h:'reportes',l:'Reportes',i:'▥'}]}
-];
-
-function buildShell(){
-  const s=ERPDemo.session;
-  const route=(location.hash.slice(1)||'dashboard').split('/')[0];
-  document.getElementById('sidebar').innerHTML=`
-    <div class="brand"><div class="brand-mark">ERP</div><div class="brand-text">ACME Industrial<span>Portable · datos demo</span></div></div>
-    <nav class="nav">${NAV.map(sec=>`<div class="nav-sec">${sec.sec}</div>${sec.items.map(it=>`
-      <a class="${route===it.h||(route.startsWith(it.h.split('-')[0])&&it.h==='finanzas'&&false)?'':''} ${['dashboard','compras','ventas','inventarios','finanzas','activos','proyectos','rh','nomina','bandeja','admin','reportes'].includes(route)&&route===it.h?'active':''}" href="#${it.h}">
-        <span class="ico">${it.i}</span><span class="nav-label">${it.l}</span>${it.b?`<span class="badge">${it.b}</span>`:''}
-      </a>`).join('')}`).join('')}</nav>`;
-  // better active: match top-level module
-  document.querySelectorAll('#sidebar .nav a').forEach(a=>{
-    const h=a.getAttribute('href').slice(1);
-    const item=NAV.flatMap(s=>s.items).find(it=>it.h===h);
-    const keys=(item&&item.m)||[h];
-    a.classList.toggle('active', keys.includes(route) || route===h);
+  window.addEventListener('hashchange', route);
+  document.addEventListener('DOMContentLoaded', ()=>{
+    if(/raw\.githubusercontent\.com/i.test(location.host)){
+      document.body.innerHTML='<div style="font:16px system-ui;padding:32px;max-width:560px;margin:auto"><h1>Use raw.githack</h1><p><a href="https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-preview/portable.html">Abrir demo</a></p></div>';
+      return;
+    }
+    const co=document.getElementById('company');
+    const role=document.getElementById('role');
+    const user=document.getElementById('username');
+    ERPDemo.companies.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.name; co.appendChild(o); });
+    ERPDemo.roles.forEach(r=>{ const o=document.createElement('option'); o.value=r.id; o.textContent=r.label; role.appendChild(o); });
+    role.value='GL';
+    const sync=()=>{ user.value=(ERPDemo.roles.find(r=>r.id===role.value)||{}).username||''; };
+    role.onchange=sync; sync();
+    document.getElementById('login-form').onsubmit=(e)=>{
+      e.preventDefault();
+      sessionStorage.setItem('erp-demo-auth','1');
+      ERPDemo.applyRole(role.value, co.value);
+      location.hash='dashboard';
+    };
+    if(!location.hash) location.hash=sessionStorage.getItem('erp-demo-auth')?'dashboard':'login';
+    else route();
   });
-  document.getElementById('topbar').innerHTML=`
-    <button class="icon-btn" id="btn-side" type="button">☰</button>
-    <div class="search"><span class="si">⌕</span><input id="q" placeholder="Buscar PO, AP, SO…"/></div>
-    <div class="top-actions">
-      <button class="icon-btn" id="btn-theme" type="button">◐</button>
-      <button class="icon-btn dot-alert" type="button" onclick="location.hash='notificaciones'">🔔</button>
-      <button class="user-chip" type="button" onclick="location.hash='perfil'">
-        <div class="avatar">${s.short}</div>
-        <div class="user-meta"><strong>${s.display_name}</strong><span>${s.role}</span></div>
-      </button>
-      <button class="icon-btn" id="btn-out" type="button">⎋</button>
-    </div>`;
-  document.getElementById('btn-side').onclick=()=>{
-    const app=document.getElementById('app');
-    if(matchMedia('(max-width:960px)').matches) app.classList.toggle('mobile-open');
-    else app.classList.toggle('collapsed');
-  };
-  document.getElementById('btn-theme').onclick=()=>{
-    const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',next);
-  };
-  document.getElementById('btn-out').onclick=()=>{
-    sessionStorage.removeItem('erp-portable-auth');
-    location.hash='login';
-  };
-}
-
-function route(){
-  const raw=location.hash.slice(1)||'login';
-  const [name,id]=raw.split('/');
-  if(name!=='login' && !sessionStorage.getItem('erp-portable-auth')){
-    location.hash='login'; return;
-  }
-  if(name==='login'){
-    document.getElementById('app').style.display='none';
-    document.getElementById('login-root').style.display='grid';
-    return;
-  }
-  document.getElementById('login-root').style.display='none';
-  document.getElementById('app').style.display='grid';
-  buildShell();
-  let html;
-  if(id && name.startsWith('detalle')) html=renderDetail(name,id);
-  else if(VIEWS[name]) html=VIEWS[name]();
-  else html=pageHead('Pantalla no encontrada', name)+`<a class="btn btn-secondary" href="#dashboard">Dashboard</a>`;
-  document.getElementById('content').innerHTML=html+`<p class="footer-note">ERP Portable · ERP-SI-001 / ERP-FM-001 · sin backend · datos ACME simulados</p>`;
-}
-
-window.addEventListener('hashchange', route);
-document.addEventListener('DOMContentLoaded', ()=>{
-  // raw.githubusercontent sirve text/plain → se ve el código fuente
-  if (/raw\.githubusercontent\.com/i.test(location.host)) {
-    document.body.innerHTML = '<div style="font:16px system-ui;padding:32px;max-width:560px;margin:auto">'
-      + '<h1>Este enlace muestra el código, no la demo</h1>'
-      + '<p>Abre uno de estos:</p><ol>'
-      + '<li><a href="https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-preview/portable.html">raw.githack.com (recomendado)</a></li>'
-      + '<li>Descarga el archivo y ábrelo con doble clic en tu navegador</li>'
-      + '</ol></div>';
-    return;
-  }
-  document.getElementById('login-form').onsubmit=(e)=>{
-    e.preventDefault();
-    sessionStorage.setItem('erp-portable-auth','1');
-    location.hash='dashboard';
-  };
-  if(!location.hash) location.hash = sessionStorage.getItem('erp-portable-auth') ? 'dashboard' : 'login';
-  else route();
-});
+})();
 
 </script>
 </body>

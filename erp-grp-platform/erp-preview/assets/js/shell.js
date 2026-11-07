@@ -2,43 +2,50 @@
   const DEPTH = document.body.getAttribute('data-depth') || '..';
   const A = (p) => `${DEPTH}/${p}`.replace(/\/+/g, '/');
 
+  /* nav keys map to role.nav filters */
   const NAV = [
     { sec: 'Inicio', items: [
-      { href: 'dashboard/index.html', label: 'Dashboard', ico: '▣' }
+      { key: 'dashboard', href: 'dashboard/index.html', label: 'Dashboard', ico: '▣' }
     ]},
     { sec: 'Operación', items: [
-      { href: 'compras/index.html', label: 'Compras', ico: '◇' },
-      { href: 'ventas/index.html', label: 'Ventas', ico: '▤' },
-      { href: 'inventarios/index.html', label: 'Inventarios', ico: '▦' }
+      { key: 'compras', href: 'compras/index.html', label: 'Compras', ico: '◇', match: ['compras','requisiciones','ordenes','recepcion','proveedores','detalle-oc','detalle-pr','nueva'] },
+      { key: 'ventas', href: 'ventas/index.html', label: 'Ventas', ico: '▤', match: ['ventas','pedidos','entregas','detalle-pedido','nuevo-pedido'] },
+      { key: 'inventarios', href: 'inventarios/index.html', label: 'Inventarios', ico: '▦', match: ['inventarios','articulos','existencias','movimientos','recepcion-inv'] }
     ]},
     { sec: 'Finanzas', items: [
-      { href: 'finanzas/contabilidad.html', label: 'Contabilidad (GL)', ico: '◈', match: ['plan-cuentas','periodos','asientos','mayor','contabilidad'] },
-      { href: 'finanzas/cxp.html', label: 'CxP · Cuentas por pagar', ico: '⇩', match: ['cxp','facturas-ap','captura-factura-ap','detalle-factura-ap','programacion-pagos','aging-ap'] },
-      { href: 'finanzas/facturacion.html', label: 'Facturación', ico: '▤', match: ['facturacion','emitir-factura'] },
-      { href: 'finanzas/cxc.html', label: 'CxC · Cuentas por cobrar', ico: '⇧', match: ['cxc','facturas-ar','cobros','aging-ar','estado-cuenta'] },
-      { href: 'finanzas/tesoreria.html', label: 'Tesorería', ico: '₩', match: ['tesoreria','bancos','ordenes-pago','conciliacion'] },
-      { href: 'finanzas/index.html', label: 'Finanzas (hub)', ico: '◇', match: ['finanzas/index'] },
-      { href: 'activos/index.html', label: 'Activos', ico: '▣' },
-      { href: 'proyectos/index.html', label: 'Proyectos', ico: '◎' }
+      { key: 'contabilidad', href: 'finanzas/contabilidad.html', label: 'Contabilidad (GL)', ico: '◈', match: ['plan-cuentas','periodos','asientos','mayor','contabilidad'] },
+      { key: 'cxp', href: 'finanzas/cxp.html', label: 'CxP · Cuentas por pagar', ico: '⇩', match: ['cxp','facturas-ap','captura-factura-ap','detalle-factura-ap','programacion-pagos','aging-ap'] },
+      { key: 'facturacion', href: 'finanzas/facturacion.html', label: 'Facturación', ico: '▤', match: ['facturacion','emitir-factura'] },
+      { key: 'cxc', href: 'finanzas/cxc.html', label: 'CxC · Cuentas por cobrar', ico: '⇧', match: ['cxc','facturas-ar','cobros','aging-ar','estado-cuenta'] },
+      { key: 'tesoreria', href: 'finanzas/tesoreria.html', label: 'Tesorería', ico: '₩', match: ['tesoreria','bancos','ordenes-pago','conciliacion'] },
+      { key: 'finanzas', href: 'finanzas/index.html', label: 'Finanzas (hub)', ico: '◇', match: ['finanzas/index'] },
+      { key: 'activos', href: 'activos/index.html', label: 'Activos', ico: '▣', stub: true }
     ]},
     { sec: 'Personas', items: [
-      { href: 'rh/index.html', label: 'RRHH', ico: '♟' },
-      { href: 'nomina/index.html', label: 'Nómina', ico: '₮' }
+      { key: 'rh', href: 'rh/index.html', label: 'RRHH', ico: '♟' },
+      { key: 'nomina', href: 'nomina/index.html', label: 'Nómina', ico: '₮', stub: true }
     ]},
     { sec: 'Plataforma', items: [
-      { href: 'administracion/bandeja.html', label: 'Bandeja aprobación', ico: '⟳', badge: 3 },
-      { href: 'administracion/index.html', label: 'Administración', ico: '⬡' },
-      { href: 'reportes/index.html', label: 'Reportes', ico: '▥' }
+      { key: 'bandeja', href: 'administracion/bandeja.html', label: 'Bandeja aprobación', ico: '⟳', badge: 3 },
+      { key: 'admin', href: 'administracion/index.html', label: 'Administración', ico: '⬡', match: ['administracion'] },
+      { key: 'reportes', href: 'reportes/index.html', label: 'Reportes', ico: '▥' }
     ]}
   ];
 
   function pathMatch(it) {
     const loc = location.pathname.replace(/\\/g, '/');
-    const href = typeof it === 'string' ? it : it.href;
-    const leaf = href.split('/').slice(-2).join('/');
-    if (loc.endsWith(href) || loc.includes('/' + leaf)) return true;
-    const keys = (it && it.match) || [];
-    return keys.some((k) => loc.includes('/' + k) || loc.endsWith(k + '.html'));
+    const leaf = it.href.split('/').slice(-2).join('/');
+    if (loc.endsWith(it.href) || loc.includes('/' + leaf)) return true;
+    return (it.match || []).some((k) => loc.includes('/' + k) || loc.endsWith(k + '.html'));
+  }
+
+  function filteredNav(session) {
+    const allow = new Set(session.nav || []);
+    // always allow admin if ADM-like; DG/CFO get finanzas keys already
+    return NAV.map((sec) => ({
+      sec: sec.sec,
+      items: sec.items.filter((it) => allow.has(it.key) || (it.key === 'proveedores' && allow.has('compras')))
+    })).filter((sec) => sec.items.length);
   }
 
   function injectShell() {
@@ -46,22 +53,23 @@
       location.href = A('index.html');
       return;
     }
-    const s = ERPDemo.session;
+    const s = ERPDemo.restoreSession();
     const app = document.getElementById('app');
     if (!app) return;
 
+    const nav = filteredNav(s);
     const sidebar = document.createElement('aside');
     sidebar.className = 'sidebar';
     sidebar.innerHTML = `
       <div class="brand">
         <div class="brand-mark">ERP</div>
-        <div class="brand-text">ACME Industrial<span>ERP Preview · demo</span></div>
+        <div class="brand-text">ACME Industrial<span>Preview · P0 UX</span></div>
       </div>
-      <nav class="nav">${NAV.map((sec) => `
+      <nav class="nav">${nav.map((sec) => `
         <div class="nav-sec">${sec.sec}</div>
         ${sec.items.map((it) => `
           <a class="${pathMatch(it) ? 'active' : ''}" href="${A(it.href)}">
-            <span class="ico">${it.ico}</span><span class="nav-label">${it.label}</span>
+            <span class="ico">${it.ico}</span><span class="nav-label">${it.label}${it.stub ? ' · stub' : ''}</span>
             ${it.badge ? `<span class="badge">${it.badge}</span>` : ''}
           </a>`).join('')}
       `).join('')}</nav>`;
@@ -71,9 +79,19 @@
     top.innerHTML = `
       <button class="icon-btn" id="btn-side" type="button" title="Menú">☰</button>
       <div class="search"><span class="si">⌕</span>
-        <input placeholder="Buscar folio PO, AP, SO, proveedor…" id="q"/>
+        <input placeholder="Buscar folio OC, factura, pedido…" id="q"/>
       </div>
       <div class="top-actions">
+        <label class="switcher" title="Empresa">
+          <select id="co-switch">${ERPDemo.companies.map((c) =>
+            `<option value="${c.id}" ${c.id === s.company_id ? 'selected' : ''}>${c.name}</option>`).join('')}
+          </select>
+        </label>
+        <label class="switcher" title="Rol demo">
+          <select id="role-switch">${ERPDemo.roles.map((r) =>
+            `<option value="${r.id}" ${r.id === s.role_id ? 'selected' : ''}>${r.label}</option>`).join('')}
+          </select>
+        </label>
         <button class="icon-btn" id="btn-theme" type="button" title="Tema">◐</button>
         <button class="icon-btn dot-alert" type="button" title="Notificaciones"
           onclick="location.href='${A('administracion/notificaciones.html')}'">🔔</button>
@@ -84,7 +102,6 @@
         <button class="icon-btn" type="button" title="Salir" id="btn-out">⎋</button>
       </div>`;
 
-    const main = document.getElementById('main');
     app.prepend(top);
     app.prepend(sidebar);
 
@@ -93,8 +110,7 @@
       else app.classList.toggle('collapsed');
     };
     document.getElementById('btn-theme').onclick = () => {
-      const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      const next = cur === 'dark' ? 'light' : 'dark';
+      const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('erp-preview-theme', next);
     };
@@ -102,13 +118,24 @@
       sessionStorage.clear();
       location.href = A('index.html');
     };
+    document.getElementById('role-switch').onchange = (e) => {
+      ERPDemo.applyRole(e.target.value, document.getElementById('co-switch').value);
+      toast('Rol: ' + ERPDemo.session.role);
+      location.href = A('dashboard/index.html');
+    };
+    document.getElementById('co-switch').onchange = (e) => {
+      ERPDemo.applyRole(document.getElementById('role-switch').value, e.target.value);
+      toast('Empresa: ' + ERPDemo.session.company);
+      location.reload();
+    };
     document.getElementById('q').onkeydown = (e) => {
       if (e.key !== 'Enter') return;
       const v = e.target.value.toLowerCase();
       if (v.includes('po') || v.includes('oc') || v.includes('pr')) location.href = A('compras/index.html');
-      else if (v.includes('ap') || v.includes('factura')) location.href = A('finanzas/facturas-ap.html');
+      else if (v.includes('ap') || v.includes('cxp')) location.href = A('finanzas/cxp.html');
+      else if (v.includes('ar') || v.includes('cxc')) location.href = A('finanzas/cxc.html');
       else if (v.includes('so') || v.includes('pedido')) location.href = A('ventas/index.html');
-      else toast('Búsqueda demo: pruebe PO, AP o SO');
+      else toast('Pruebe OC, CxP, CxC o pedido');
     };
 
     const theme = localStorage.getItem('erp-preview-theme');
@@ -141,6 +168,10 @@
   window.pageHead = function (title, sub, actionsHtml) {
     return `<div class="page-hd"><div><h1>${title}</h1><p>${sub || ''}</p></div>
       <div class="page-actions">${actionsHtml || ''}</div></div>`;
+  };
+
+  window.scriptStack = function () {
+    /* helper comment: pages should load data → i18n → components → shell */
   };
 
   document.addEventListener('DOMContentLoaded', injectShell);

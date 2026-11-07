@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Recepción almacén · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const poId=new URLSearchParams(location.search).get('po')||'PO-2026-0799';
+  const p=D.pos.find(x=>x.id===poId)||D.pos[1];
+  const open=(p.lines||[]).filter(l=>l.open_qty>0);
+  return crumbs([{label:'Inventarios',href:'index.html'},{label:'Recepción'}])+
+    pageHead('Recepción de mercancías','Vista almacén · mismas reglas FM §6.3',
+      `<button class="btn btn-primary btn-sm" onclick="toast('GR POSTED · open qty actualizado (simulado)')">Postear recepción</button>`)+
+    `<div class="journey"><strong>P2P:</strong> PR → OC → <strong>Recepción</strong> → CxP</div>
+    <div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('po_id',`<select class="control" onchange="location.href='recepcion-inv.html?po='+this.value">${D.pos.map(x=>`<option value="${x.id}" ${x.id===p.id?'selected':''}>${x.id} (${ERPStatusES[x.status]||x.status})</option>`).join('')}</select>`,true)}
+      ${fieldL('receipt_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('warehouse_id',`<select class="control"><option>WH-P1</option><option>WH-P2</option><option>WH-FG</option></select>`,true)}
+      ${fieldL('receipt_type',`<select class="control"><option>PARTIAL</option><option>FULL</option></select>`,true)}
+    </div></div></div>
+    ${linesTable({id:'gr-lines', cols:[
+      {key:'line',label:'#'},{key:'item',label:L('line_item_id')},{key:'open_qty',label:L('open_qty')},
+      {key:'recv',label:L('line_qty_received')},{key:'uom',label:L('line_uom')}
+    ], rows:open.map(l=>({line:l.line,item:l.item,open_qty:l.open_qty,recv:Math.min(l.open_qty,500),uom:l.uom})), editable:false})}
+    <p class="hint">Cant. recibida ≤ open × (1+tolerancia). Misma pantalla también en Compras.</p>`;
+})()
+;
+  
+});
+</script></body></html>

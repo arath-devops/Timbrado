@@ -7,23 +7,32 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-crumbs([{label:'Compras',href:'index.html'},{label:'Recepción'}])+
-pageHead('Recepción de mercancías / servicios', 'FM-001 §6.3 · qty ≤ open*(1+tol)',
-  `<button class="btn btn-primary btn-sm" onclick="toast('GR POSTED · Auditoría GR_POSTED');">Postear recepción</button>`)+
-`<div class="panel"><div class="panel-bd"><div class="form-grid">
-  <div class="field"><label class="req">po_id</label><select class="control">${D.pos.map(p=>`<option>${p.id} (${p.status})</option>`).join('')}</select></div>
-  <div class="field"><label class="req">receipt_date</label><input class="control" type="date" value="2026-11-07"/></div>
-  <div class="field"><label>warehouse_id</label><select class="control"><option>WH-P1</option><option>WH-P2</option><option>WH-FG</option></select><span class="hint">Obligatorio si item STOCK</span></div>
-  <div class="field"><label class="req">receipt_type</label><select class="control"><option>PARTIAL</option><option>FULL</option></select></div>
-  <div class="field"><label class="req">line_po_line_id</label><input class="control" value="1"/></div>
-  <div class="field"><label class="req">line_qty_received</label><input class="control" type="number" value="500"/></div>
-</div></div></div>
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const poId=new URLSearchParams(location.search).get('po')||'PO-2026-0799';
+  const p=D.pos.find(x=>x.id===poId)||D.pos[1];
+  return crumbs([{label:'Compras',href:'index.html'},{label:'Recepción'}])+
+    pageHead('Recepción (Compras)','También disponible en Inventarios',
+      `<a class="btn btn-secondary btn-sm" href="../inventarios/recepcion-inv.html?po=${p.id}">Vista almacén</a>
+       <button class="btn btn-primary btn-sm" onclick="toast('GR POSTED')">Postear</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('po_id',`<select class="control">${D.pos.map(x=>`<option>${x.id}</option>`).join('')}</select>`,true)}
+      ${fieldL('receipt_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('warehouse_id',`<select class="control"><option>WH-P1</option><option>WH-FG</option></select>`)}
+      ${fieldL('receipt_type',`<select class="control"><option>PARTIAL</option><option>FULL</option></select>`,true)}
+    </div></div></div>
+    ${linesTable({id:'gr', cols:[{key:'line',label:'#'},{key:'item',label:'Artículo'},{key:'open_qty',label:'Abierta'},{key:'ordered_qty',label:'Pedida'}],
+      rows:(p.lines||[]), editable:false})}`;
+})()
 ;
   
 });

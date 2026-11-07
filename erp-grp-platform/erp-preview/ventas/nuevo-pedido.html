@@ -7,28 +7,56 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-crumbs([{label:'Ventas',href:'index.html'},{label:'Nuevo pedido'}])+
-pageHead('Crear / editar pedido', 'FM §8.1 · line_discount_pct > umbral → WF',
-  `<button class="btn btn-primary btn-sm" onclick="toast('SO DRAFT/CONFIRMED simulado');location.href='pedidos.html'">Guardar</button>`)+
-`<div class="panel"><div class="panel-bd"><div class="form-grid">
-  <div class="field"><label class="req">customer_id</label><select class="control">${D.customers.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('')}</select></div>
-  <div class="field"><label class="req">order_date</label><input class="control" type="date" value="2026-11-07"/></div>
-  <div class="field"><label>requested_date</label><input class="control" type="date" value="2026-11-18"/></div>
-  <div class="field"><label class="req">currency</label><input class="control" value="MXN"/></div>
-  <div class="field"><label>price_list_id</label><input class="control" placeholder="opcional"/></div>
-  <div class="field"><label class="req">line_item_id</label><select class="control">${D.items.map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
-  <div class="field"><label class="req">line_qty</label><input class="control" type="number" value="5"/></div>
-  <div class="field"><label class="req">line_price</label><input class="control" type="number" value="8450"/></div>
-  <div class="field"><label>line_discount_pct</label><input class="control" type="number" value="0"/><span class="hint">0–100 · WF si &gt; umbral</span></div>
-  <div class="field"><label class="req">total_amount</label><input class="control" value="42250" readonly/></div>
-</div></div></div>
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  window.__soLines={rows:[{item:'FG-FRAME-01',qty:5,price:8450,discount:0}],
+    cols:[
+      {key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},
+      {key:'qty',label:L('line_qty'),type:'number'},
+      {key:'price',label:L('line_price'),type:'number'},
+      {key:'discount',label:L('line_discount_pct'),type:'number'}
+    ], blank:{item:'FG-FRAME-01',qty:1,price:8450,discount:0}, qtyKey:'qty', priceKey:'price',
+    onChange:(tot)=>{ const t=document.getElementById('so-total'); if(t) t.value=tot; refreshCredit(); }};
+  window.refreshCredit=()=>{
+    const code=document.getElementById('so-cust').value;
+    const c=D.customers.find(x=>x.code===code);
+    const tot=Number(document.getElementById('so-total').value)||0;
+    document.getElementById('credit-host').innerHTML=creditBanner(c,tot);
+  };
+  return crumbs([{label:'Ventas',href:'index.html'},{label:'Nuevo pedido'}])+
+    pageHead('Crear / editar pedido','Validación de crédito al confirmar',
+      `<button class="btn btn-primary btn-sm" onclick="confirmSO()">Guardar / Confirmar</button>`)+
+    `<div id="credit-host"></div>
+    <div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('customer_id',`<select class="control" id="so-cust" onchange="refreshCredit()">${D.customers.map(c=>`<option value="${c.code}">${c.code} — ${c.name}</option>`).join('')}</select>`,true)}
+      ${fieldL('order_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('requested_date',`<input class="control" type="date" value="2026-11-18"/>`)}
+      ${fieldL('currency',`<input class="control" value="MXN"/>`,true)}
+      ${fieldL('total_amount',`<input class="control" id="so-total" value="42250" readonly/>`,true)}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'so-lines', cols:window.__soLines.cols, rows:window.__soLines.rows, editable:true, total:42250})}</div>`;
+})()
 ;
   
+bindLinesTable("so-lines", window.__soLines);
+refreshCredit();
+window.confirmSO=()=>{
+  const code=document.getElementById('so-cust').value;
+  const c=D.customers.find(x=>x.code===code);
+  const tot=Number(document.getElementById('so-total').value)||0;
+  const head=(c.credit_limit||0)-(c.credit_exposure||0);
+  if(c.credit_block || tot>head){ toast('No confirmado: crédito insuficiente / bloqueado'); return; }
+  toast('SO CONFIRMED'); location.href='pedidos.html';
+};
+
 });
 </script></body></html>

@@ -7,18 +7,20 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
 crumbs([{label:'Compras',href:'index.html'},{label:'Requisiciones'}])+
-pageHead('Mis requisiciones', 'Campos FM: id, title, requester_id, org_unit_id, status, total_amount',
-  `<a class="btn btn-primary btn-sm" href="nueva-requisicion.html">Nueva</a>`)+
-`<div class="toolbar"><input class="control" style="max-width:220px" placeholder="status_filter / search_text" oninput="ERPDemo.filter=(this.value||'').toLowerCase();location.reload()" disabled/><span class="hint">Filtros lista SI §12</span></div>
-<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>title</th><th>requester_id</th><th>org_unit_id</th><th>need_by_date</th><th>priority</th><th>total_amount</th><th>status</th></tr></thead>
-<tbody>${D.prs.map(p=>`<tr class="clickable" onclick="location.href='detalle-pr.html?id=${p.id}'"><td><strong>${p.id}</strong></td><td>${p.title}</td><td>${p.requester_id}</td><td>${p.org_unit_id}</td><td>${p.need_by_date||'—'}</td><td>${p.priority||'—'}</td><td>${D.money(p.total_amount)}</td><td>${D.badge(p.status)}</td></tr>`).join('')}</tbody></table></div>
+pageHead('Mis requisiciones','',`<a class="btn btn-primary btn-sm" href="nueva-requisicion.html">Nueva</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('title')}</th><th>${L('requester_id')}</th><th>${L('org_unit_id')}</th><th>${L('need_by_date')}</th><th>${L('total_amount')}</th><th>${L('status')}</th></tr></thead>
+<tbody>${D.prs.map(p=>`<tr class="clickable" onclick="location.href='detalle-pr.html?id=${p.id}'"><td><strong>${p.id}</strong></td><td>${p.title}</td><td>${p.requester_id}</td><td>${p.org_unit_id}</td><td>${p.need_by_date||'—'}</td><td>${D.money(p.total_amount)}</td><td>${statusChip(p.status)}</td></tr>`).join('')}</tbody></table></div>
 ;
   
 });

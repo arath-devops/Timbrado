@@ -7,16 +7,20 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
 crumbs([{label:'Ventas',href:'index.html'},{label:'Pedidos'}])+
-pageHead('Lista de pedidos de venta', '', `<a class="btn btn-primary btn-sm" href="nuevo-pedido.html">Nuevo</a>`)+
-`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>customer_id</th><th>order_date</th><th>total_amount</th><th>status</th></tr></thead>
-<tbody>${D.salesOrders.map(s=>`<tr class="clickable" onclick="location.href='detalle-pedido.html?id=${s.id}'"><td><strong>${s.id}</strong></td><td>${s.customer_id}</td><td>${s.order_date}</td><td>${D.money(s.total_amount)}</td><td>${D.badge(s.status)}</td></tr>`).join('')}</tbody></table></div>
+pageHead('Pedidos de venta','',`<a class="btn btn-primary btn-sm" href="nuevo-pedido.html">Nuevo</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>${L('customer_id')}</th><th>${L('order_date')}</th><th>${L('total_amount')}</th><th>Crédito</th><th>${L('status')}</th></tr></thead>
+<tbody>${D.salesOrders.map(s=>`<tr class="clickable" onclick="location.href='detalle-pedido.html?id=${s.id}'"><td><strong>${s.id}</strong></td><td>${s.customer_id}</td><td>${s.order_date}</td><td>${D.money(s.total_amount)}</td><td>${s.credit_ok===false?statusChip('CREDIT_BLOCKED'):'OK'}</td><td>${statusChip(s.status)}</td></tr>`).join('')}</tbody></table></div>
 ;
   
 });

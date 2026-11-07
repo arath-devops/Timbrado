@@ -7,37 +7,55 @@
 <link rel="stylesheet" href="../assets/css/components.css"/>
 </head><body data-depth="..">
 <div class="app" id="app"><main class="main" id="main"><div id="content"></div>
-<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
-<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',()=>{
-  const D=ERPDemo;
-  document.getElementById('content').innerHTML = 
-(()=>{const id=new URLSearchParams(location.search).get('id')||'PO-2026-0842';
-const p=D.pos.find(x=>x.id===id)||D.pos[0];
-const v=D.vendors.find(x=>x.vendor_code===p.vendor_id);
-return crumbs([{label:'Órdenes',href:'ordenes.html'},{label:p.id}])+
-pageHead(p.id, (v?v.legal_name:p.vendor_id)+' · '+D.money(p.total_amount),
-  `<a class="btn btn-secondary btn-sm" href="recepcion.html">Recepción</a>
-   <a class="btn btn-primary btn-sm" href="../administracion/bandeja.html">Aprobar (bandeja)</a>`)+
-`<div class="grid-2"><div class="panel"><div class="panel-hd"><h3>Cabecera</h3>${D.badge(p.status)}</div><div class="panel-bd form-grid">
-  <div class="field"><label>vendor_id</label><div>${p.vendor_id}</div></div>
-  <div class="field"><label>order_date</label><div>${p.order_date}</div></div>
-  <div class="field"><label>currency</label><div>${p.currency}</div></div>
-  <div class="field"><label>payment_terms</label><div>${p.payment_terms}</div></div>
-  <div class="field full"><label>delivery_address</label><div>${p.delivery_address}</div></div>
-  <div class="field"><label>pr_id</label><div>${p.pr_id||'—'}</div></div>
-  <div class="field"><label>buyer_id</label><div>${p.buyer_id}</div></div>
-</div></div>
-<div class="panel"><div class="panel-hd"><h3>Estados / WF / Docs / Audit</h3></div><div class="panel-bd">
-<div class="timeline">
-  <div class="tl done"><h4>DRAFT</h4></div>
-  <div class="tl done"><h4>PENDING_APPROVAL</h4><p>PO_APPROVAL</p></div>
-  <div class="tl"><h4>APPROVED → SENT → RECEIVED</h4></div>
-</div>
-<p class="hint">Documentos: OC, COT · Auditoría: PO_*</p>
-</div></div></div>`;})()
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const id=new URLSearchParams(location.search).get('id')||'PO-2026-0842';
+  const p=D.pos.find(x=>x.id===id)||D.pos[0];
+  const v=D.vendors.find(x=>x.vendor_code===p.vendor_id);
+  const datos=`<div class="form-grid">
+    ${fieldL('vendor_id',`<div>${p.vendor_id} — ${v?v.legal_name:''} ${statusChip(v?v.status:'')}</div>`)}
+    ${fieldL('order_date',`<div>${p.order_date}</div>`)}
+    ${fieldL('currency',`<div>${p.currency}</div>`)}
+    ${fieldL('payment_terms',`<div>${p.payment_terms}</div>`)}
+    ${fieldL('delivery_address',`<div>${p.delivery_address}</div>`,false,true)}
+    ${fieldL('pr_id',`<div>${p.pr_id?`<a href="detalle-pr.html?id=${p.pr_id}">${p.pr_id}</a>`:'—'}</div>`)}
+    ${fieldL('buyer_id',`<div>${p.buyer_id}</div>`)}
+    ${fieldL('total_amount',`<div style="font-size:20px;font-weight:700">${D.money(p.total_amount)}</div>`)}
+  </div>`;
+  const lineCols=[{key:'line',label:'#'},{key:'item',label:L('line_item_id')},{key:'desc',label:L('line_description')},
+    {key:'ordered_qty',label:L('ordered_qty')},{key:'received_qty',label:L('received_qty')},{key:'billed_qty',label:L('billed_qty')},
+    {key:'open_qty',label:L('open_qty')},{key:'uom',label:L('line_uom')},{key:'price',label:L('line_price'),money:true},{key:'cost_center_id',label:L('cost_center_id')}];
+  const lineRows=(p.lines||[]).map(l=>({...l, price:l.price}));
+  const lineHtml=linesTable({id:'po-lines', cols:lineCols, rows:lineRows, editable:false, total:p.total_amount, qtyKey:'ordered_qty', priceKey:'price'});
+  const tabs=objectTabs([
+    {id:'datos',label:'Datos generales',html:datos},
+    {id:'lineas',label:'Líneas',html:lineHtml},
+    {id:'wf',label:'Workflow',html:wfStub([
+      {title:'Borrador',done:true,when:'creada'},
+      {title:'Pend. aprobación',done:p.status==='PENDING_APPROVAL'||p.status!=='DRAFT',desc:'PO_APPROVAL'},
+      {title:'Aprobada → Enviada → Recibida',done:false}
+    ])},
+    {id:'docs',label:'Documentos',html:docsStub(p.id)},
+    {id:'audit',label:'Auditoría',html:auditStub(p.id)}
+  ],'lineas');
+  return crumbs([{label:'Órdenes',href:'ordenes.html'},{label:p.id}])+
+    pageHead(p.id, (v?v.legal_name:p.vendor_id)+' · '+D.money(p.total_amount),
+      `<a class="btn btn-secondary btn-sm" href="recepcion.html?po=${p.id}">Recepción</a>
+       <a class="btn btn-secondary btn-sm" href="../inventarios/recepcion-inv.html?po=${p.id}">Recepción (Almacén)</a>
+       <a class="btn btn-primary btn-sm" href="../administracion/bandeja.html">Aprobar</a>`)+
+    `<div style="margin-bottom:8px">${statusChip(p.status)}</div>`+
+    `<div id="obj">${tabs}</div>`;
+})()
 ;
-  
+  bindObjectTabs("#obj");
 });
 </script></body></html>
