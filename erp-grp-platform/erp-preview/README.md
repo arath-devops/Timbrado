@@ -15,8 +15,13 @@ Login demo: `mhernandez` / cualquier password → Dashboard.
 
 ### Portable (1 archivo)
 
-Abre `portable.html` directo en el navegador (doble clic) o descarga desde la rama `feat-ERP`.  
-Incluye sidebar, módulos y datos ACME en un solo HTML sin servidor.
+**No uses** `raw.githubusercontent.com` ni `htmlpreview.github.io` (muestran el código o rompen los clics).
+
+Abrir demo (MIME correcto):
+
+https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-preview/portable.html
+
+O descarga `portable.html` y ábrelo con doble clic. Login: `mhernandez` / cualquier password.
 
 ## Estructura
 
