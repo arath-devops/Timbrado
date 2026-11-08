@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Compras · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · pantallas/campos ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Operación'},{label:'Compras'}])+
+pageHead('Compras (P2P)', 'Requisiciones · Órdenes · Recepción · Proveedores',
+  `<a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=compras">Campos del módulo</a>
+   <a class="btn btn-primary btn-sm" href="nueva-requisicion.html">Nueva requisición</a>
+   <a class="btn btn-secondary btn-sm" href="nueva-oc.html">Nueva OC</a>`)+
+`<div class="kpi-row">
+  <div class="kpi"><div class="l">PR abiertas</div><div class="v">${D.prs.filter(p=>p.status==='SUBMITTED'||p.status==='APPROVED').length}</div></div>
+  <div class="kpi"><div class="l">OC pendientes</div><div class="v">${D.pos.filter(p=>p.status.includes('PENDING')||p.status.includes('PARTIAL')).length}</div></div>
+  <div class="kpi"><div class="l">Proveedores ACTIVE</div><div class="v">${D.vendors.filter(v=>v.status==='ACTIVE').length}</div></div>
+  <div class="kpi"><div class="l">BLOCKED</div><div class="v">${D.vendors.filter(v=>v.status==='BLOCKED').length}</div><div class="d down">no comprar</div></div>
+</div>
+<div class="panel"><div class="panel-hd"><h3>Módulo compras (SI-001)</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="requisiciones.html">Mis requisiciones / Lista PR</a>
+  <a class="btn btn-secondary btn-sm" href="nueva-requisicion.html">Nueva requisición</a>
+  <a class="btn btn-secondary btn-sm" href="ordenes.html">Lista OC</a>
+  <a class="btn btn-secondary btn-sm" href="nueva-oc.html">Crear / editar OC</a>
+  <a class="btn btn-secondary btn-sm" href="recepcion.html">Recepción</a>
+  <a class="btn btn-secondary btn-sm" href="proveedores.html">Proveedores</a>
+</div></div>
+<div class="panel"><div class="panel-hd"><h3>Órdenes recientes</h3></div><div class="panel-bd"><div class="table-wrap"><table class="data">
+<thead><tr><th>id</th><th>vendor_id</th><th>order_date</th><th>total_amount</th><th>status</th></tr></thead>
+<tbody>${D.pos.map(p=>`<tr class="clickable" onclick="location.href='detalle-oc.html?id=${p.id}'"><td><strong>${p.id}</strong></td><td>${p.vendor_id}</td><td>${p.order_date}</td><td>${D.money(p.total_amount)}</td><td>${D.badge(p.status)}</td></tr>`).join('')}</tbody>
+</table></div></div></div>
+;
+  
+});
+</script></body></html>

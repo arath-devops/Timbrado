@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ausencias · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'RRHH',href:'index.html'},{label:'Ausencias'}])+
+pageHead('Ausencias', 'leave_type, from_date, to_date',
+  `<button class="btn btn-primary btn-sm" onclick="toast('Solicitud de ausencia enviada')">Enviar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">leave_type</label><select class="control"><option>VACATION</option><option>SICK</option></select></div>
+  <div class="field"><label class="req">from_date</label><input class="control" type="date" value="2026-12-01"/></div>
+  <div class="field"><label class="req">to_date</label><input class="control" type="date" value="2026-12-05"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

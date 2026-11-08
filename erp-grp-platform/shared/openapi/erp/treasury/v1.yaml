@@ -1,0 +1,156 @@
+openapi: 3.1.0
+info:
+  title: ERP treasury-service API
+  version: 1.0.0-erp
+  description: Bancos, ejecución de pagos (checker), extractos, conciliación.
+  x-service: treasury-service
+  x-track: erp
+servers:
+  - url: /api/v1
+tags: [BankAccounts, Payments, Statements, Reconciliation]
+paths:
+  /bank-accounts:
+    get:
+      tags: [BankAccounts]
+      operationId: listBankAccounts
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+      responses:
+        '200':
+          description: Cuentas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BankAccount' }
+  /payments/execute:
+    post:
+      tags: [Payments]
+      operationId: executePayment
+      summary: Checker — preparador ≠ ejecutor (SoD)
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExecutePaymentRequest' }
+      responses:
+        '200':
+          description: Ejecutado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentOrder' }
+        '403':
+          description: SOD_VIOLATION
+          content:
+            application/json:
+              schema: { $ref: '../../common/v1.yaml#/components/schemas/ApiError' }
+  /bank-statements:
+    post:
+      tags: [Statements]
+      operationId: importBankStatement
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportStatementRequest' }
+      responses:
+        '201':
+          description: Importado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BankStatement' }
+  /reconciliations:
+    post:
+      tags: [Reconciliation]
+      operationId: completeReconciliation
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompleteReconciliationRequest' }
+      responses:
+        '200':
+          description: Completada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Reconciliation' }
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    Money:
+      $ref: '../../common/v1.yaml#/components/schemas/Money'
+    BankAccount:
+      type: object
+      required: [id, name, currency, glAccountCode]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        mask: { type: string }
+        currency: { type: string, enum: [MXN] }
+        glAccountCode: { type: string }
+        availableBalance: { $ref: '#/components/schemas/Money' }
+    ExecutePaymentRequest:
+      type: object
+      required: [legalEntityId, paymentProposalId]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        paymentProposalId: { type: string, format: uuid }
+    PaymentOrder:
+      type: object
+      required: [id, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [EXECUTED, FAILED, CANCELLED] }
+        executedBy: { type: string, format: uuid }
+    ImportStatementRequest:
+      type: object
+      required: [legalEntityId, bankAccountId, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        bankAccountId: { type: string, format: uuid }
+        statementDate: { type: string, format: date }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [amount, bookingDate]
+            properties:
+              amount: { type: string }
+              bookingDate: { type: string, format: date }
+              description: { type: string }
+              externalRef: { type: string }
+    BankStatement:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [IMPORTED, RECONCILED] }
+    CompleteReconciliationRequest:
+      type: object
+      required: [legalEntityId, statementId, matchedPaymentIds]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        statementId: { type: string, format: uuid }
+        matchedPaymentIds:
+          type: array
+          items: { type: string, format: uuid }
+    Reconciliation:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string, format: uuid }
+        status: { type: string, enum: [COMPLETED] }
+security:
+  - bearerAuth: []

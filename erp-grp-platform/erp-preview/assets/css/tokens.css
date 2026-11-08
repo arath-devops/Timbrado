@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --font: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --bg: #f0f2f5;
+  --bg-soft: #e8ecf1;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --ink: #1a2332;
+  --ink-2: #4a5568;
+  --ink-3: #718096;
+  --border: #d8dee6;
+  --border-strong: #b8c2ce;
+  /* Fiori/Fusion-inspired enterprise blue — not purple */
+  --brand: #0a6ed1;
+  --brand-hover: #0854a0;
+  --brand-soft: #e8f3fc;
+  --brand-ink: #064a8c;
+  --accent: #243141;
+  --ok: #107e3e;
+  --ok-soft: #e3f5ea;
+  --warn: #e9730c;
+  --warn-soft: #fef3e8;
+  --danger: #bb0000;
+  --danger-soft: #fce8e8;
+  --info: #0a6ed1;
+  --info-soft: #e8f3fc;
+  --sidebar-w: 260px;
+  --header-h: 52px;
+  --radius: 4px;
+  --shadow: 0 1px 3px rgba(26, 35, 50, 0.08);
+  --ease: 180ms ease;
+}
+
+[data-theme='dark'] {
+  --bg: #0f1419;
+  --bg-soft: #161c24;
+  --surface: #1a222d;
+  --surface-2: #222b38;
+  --ink: #e8eef5;
+  --ink-2: #a8b5c4;
+  --ink-3: #7a8796;
+  --border: #2d3848;
+  --border-strong: #3d4b5e;
+  --brand: #4db1ff;
+  --brand-hover: #7ec5ff;
+  --brand-soft: rgba(77, 177, 255, 0.12);
+  --brand-ink: #b3dbff;
+  --ok: #3dd68c;
+  --ok-soft: rgba(61, 214, 140, 0.12);
+  --warn: #f5a623;
+  --warn-soft: rgba(245, 166, 35, 0.12);
+  --danger: #ff5c5c;
+  --danger-soft: rgba(255, 92, 92, 0.12);
+  --info-soft: rgba(77, 177, 255, 0.12);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+}
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+code, .mono { font-family: var(--mono); font-size: 12.5px; }

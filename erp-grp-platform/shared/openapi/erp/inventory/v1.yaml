@@ -1,0 +1,185 @@
+openapi: 3.1.0
+info:
+  title: ERP inventory-service API
+  version: 1.0.0-erp
+  description: Artículos, ATP, movimientos, entregas. Track ERP-SF-001.
+  x-service: inventory-service
+  x-track: erp
+servers:
+  - url: /api/v1
+tags: [Items, Stock, Movements, Deliveries]
+paths:
+  /items:
+    post:
+      tags: [Items]
+      operationId: createItem
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Item' }
+    get:
+      tags: [Items]
+      operationId: listItems
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/PageParam'
+        - $ref: '../../common/v1.yaml#/components/parameters/SizeParam'
+      responses:
+        '200':
+          description: Página
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items: { $ref: '#/components/schemas/Item' }
+                  page:
+                    $ref: '../../common/v1.yaml#/components/schemas/PageMeta'
+  /stock/{itemId}:
+    get:
+      tags: [Stock]
+      operationId: getStock
+      summary: ATP = onHand - reserved
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - name: itemId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: warehouseId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockBalance' }
+  /movements:
+    post:
+      tags: [Movements]
+      operationId: postMovement
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostMovementRequest' }
+      responses:
+        '201':
+          description: Posted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StockMovement' }
+  /deliveries:
+    post:
+      tags: [Deliveries]
+      operationId: postDelivery
+      summary: Baja de inventario por pedido de venta
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PostDeliveryRequest' }
+      responses:
+        '201':
+          description: Delivery posted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Delivery' }
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    CreateItemRequest:
+      type: object
+      required: [legalEntityId, sku, name, itemType]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        sku: { type: string }
+        name: { type: string }
+        itemType: { type: string, enum: [STOCK, SERVICE] }
+        uom: { type: string, default: EA }
+    Item:
+      type: object
+      required: [id, sku, name, itemType, status]
+      properties:
+        id: { type: string, format: uuid }
+        sku: { type: string }
+        name: { type: string }
+        itemType: { type: string, enum: [STOCK, SERVICE] }
+        status: { type: string, enum: [ACTIVE, INACTIVE] }
+        uom: { type: string }
+    StockBalance:
+      type: object
+      required: [itemId, onHand, reserved, available]
+      properties:
+        itemId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        onHand: { type: string }
+        reserved: { type: string }
+        available: { type: string, description: ATP }
+    PostMovementRequest:
+      type: object
+      required: [legalEntityId, itemId, movementType, quantity]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        itemId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        movementType: { type: string, enum: [IN, OUT, TRANSFER, ADJUST] }
+        quantity: { type: string }
+        referenceType: { type: string }
+        referenceId: { type: string, format: uuid }
+    StockMovement:
+      type: object
+      required: [id, movementType, quantity, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        movementType: { type: string }
+        quantity: { type: string }
+        status: { type: string, enum: [POSTED, REVERSED] }
+    PostDeliveryRequest:
+      type: object
+      required: [legalEntityId, salesOrderId, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        salesOrderId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [itemId, quantity]
+            properties:
+              itemId: { type: string, format: uuid }
+              quantity: { type: string }
+    Delivery:
+      type: object
+      required: [id, salesOrderId, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        salesOrderId: { type: string, format: uuid }
+        status: { type: string, enum: [POSTED, REVERSED] }
+security:
+  - bearerAuth: []

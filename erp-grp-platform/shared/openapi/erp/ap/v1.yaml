@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: ERP ap-service API
+  version: 1.0.0-erp
+  description: CxP, 3-way match, retenciones, payment_block, propuestas de pago.
+  x-service: ap-service
+  x-track: erp
+servers:
+  - url: /api/v1
+tags: [VendorInvoices, Match, PaymentProposals]
+paths:
+  /vendor-invoices:
+    post:
+      tags: [VendorInvoices]
+      operationId: createVendorInvoice
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateVendorInvoiceRequest' }
+      responses:
+        '201':
+          description: Recibida
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VendorInvoice' }
+        '403':
+          description: SOD_VIOLATION (mismo user que GR)
+          content:
+            application/json:
+              schema: { $ref: '../../common/v1.yaml#/components/schemas/ApiError' }
+  /vendor-invoices/{id}/match:
+    post:
+      tags: [Match]
+      operationId: runThreeWayMatch
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Resultado match
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchResult' }
+  /vendor-invoices/{id}/approve:
+    post:
+      tags: [VendorInvoices]
+      operationId: approveVendorInvoice
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: APPROVED → posting CxP
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VendorInvoice' }
+  /payment-proposals:
+    post:
+      tags: [PaymentProposals]
+      operationId: createPaymentProposal
+      summary: Maker — requiere dual control WF
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePaymentProposalRequest' }
+      responses:
+        '201':
+          description: Propuesta creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentProposal' }
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    Money:
+      $ref: '../../common/v1.yaml#/components/schemas/Money'
+    CreateVendorInvoiceRequest:
+      type: object
+      required: [legalEntityId, vendorId, purchaseOrderId, lines, grossTotal]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        vendorId: { type: string, format: uuid }
+        purchaseOrderId: { type: string, format: uuid }
+        goodsReceiptId: { type: string, format: uuid }
+        vendorInvoiceRef: { type: string }
+        currency: { type: string, enum: [MXN], default: MXN }
+        grossTotal: { $ref: '#/components/schemas/Money' }
+        withholdingTaxCode: { type: string, description: Retención MX opcional }
+        paymentBlock: { type: boolean, default: false }
+        paymentBlockReason: { type: string }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [lineNumber, quantity, unitPrice]
+            properties:
+              lineNumber: { type: integer }
+              quantity: { type: string }
+              unitPrice: { type: string }
+              taxCode: { type: string }
+    VendorInvoice:
+      type: object
+      required: [id, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [RECEIVED, MATCHED, EXCEPTION, APPROVED, BLOCKED, PAID] }
+        paymentBlock: { type: boolean }
+        matchStatus: { type: string, enum: [PENDING, MATCHED, EXCEPTION] }
+    MatchResult:
+      type: object
+      required: [invoiceId, outcome]
+      properties:
+        invoiceId: { type: string, format: uuid }
+        outcome: { type: string, enum: [MATCHED, EXCEPTION] }
+        priceVariancePct: { type: string }
+        qtyVariancePct: { type: string }
+        workflowStarted: { type: boolean, description: true si erp.ap.match_exception }
+    CreatePaymentProposalRequest:
+      type: object
+      required: [legalEntityId, invoiceIds, bankAccountId]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        invoiceIds:
+          type: array
+          items: { type: string, format: uuid }
+        bankAccountId: { type: string, format: uuid }
+        scheduledDate: { type: string, format: date }
+    PaymentProposal:
+      type: object
+      required: [id, documentNumber, status, preparedBy]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [DRAFT, PENDING_APPROVAL, APPROVED, REJECTED, EXECUTED] }
+        preparedBy: { type: string, format: uuid }
+        total: { $ref: '#/components/schemas/Money' }
+security:
+  - bearerAuth: []

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Plan de cuentas · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Plan de cuentas'}])+
+pageHead('Plan de cuentas', 'FM §2.1 account_code, type, allow_manual_posting, is_recon_account', '')+
+`<div class="table-wrap"><table class="data"><thead><tr><th>account_code</th><th>account_name</th><th>account_type</th><th>allow_manual_posting</th><th>is_recon_account</th></tr></thead>
+<tbody>${D.accounts.map(a=>`<tr><td class="mono"><strong>${a.account_code}</strong></td><td>${a.account_name}</td><td>${a.account_type}</td><td>${a.allow_manual_posting}</td><td>${a.is_recon_account}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

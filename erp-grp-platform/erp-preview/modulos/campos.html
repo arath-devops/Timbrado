@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Campos obligatorios ERP · Atlas</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+<link rel="stylesheet" href="../assets/css/atlas.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">Catálogo de campos obligatorios · Freeze IN · ERP-FM-001</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/module-atlas.js"></script>
+<script src="../assets/js/atlas-ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  ERPDemo.restoreSession();
+  const rows = renderFieldsSummary();
+  const mods = [...new Set(rows.map(r => r.mod))];
+  let q = '', mod = '';
+
+  function paint() {
+    const filtered = rows.filter(r =>
+      (!mod || r.mod === mod) &&
+      (!q || (r.key + r.label + r.screen + r.mod).toLowerCase().includes(q.toLowerCase()))
+    );
+    document.getElementById('content').innerHTML =
+      crumbs([{ label: 'Atlas', href: 'index.html' }, { label: 'Campos obligatorios' }]) +
+      pageHead('Campos obligatorios del ERP Freeze',
+        `${rows.length} campos con Obligatorio = Sí en pantallas DENTRO del alcance SF-001`,
+        `<a class="btn btn-secondary btn-sm" href="index.html">Volver al atlas</a>`) +
+      `<div class="toolbar">
+        <input class="control" style="max-width:280px" id="q" placeholder="Buscar campo, pantalla, módulo…" value="${q.replace(/"/g,'&quot;')}"/>
+        <select class="control" style="max-width:220px" id="mod">
+          <option value="">Todos los módulos</option>
+          ${mods.map(m => `<option value="${m}" ${m===mod?'selected':''}>${m}</option>`).join('')}
+        </select>
+        <span class="spacer"></span>
+        <span class="chip">${filtered.length} resultados</span>
+      </div>
+      <div class="panel"><div class="panel-bd"><div class="table-wrap"><table class="data fields-table">
+        <thead><tr><th>Módulo</th><th>Pantalla</th><th>Campo UI</th><th>API key</th><th>Tipo</th><th>Nota</th></tr></thead>
+        <tbody>${filtered.map(r => `<tr>
+          <td>${r.mod}</td><td>${r.screen}</td>
+          <td><strong>${r.label}</strong></td>
+          <td><code class="mono">${r.key}</code></td>
+          <td>${r.type}</td>
+          <td class="muted">${r.note || '—'}</td>
+        </tr>`).join('') || '<tr><td colspan="6" class="empty">Sin coincidencias</td></tr>'}
+        </tbody>
+      </table></div></div></div>`;
+
+    document.getElementById('q').oninput = (e) => { q = e.target.value; paint(); };
+    document.getElementById('mod').onchange = (e) => { mod = e.target.value; paint(); };
+  }
+  paint();
+});
+</script></body></html>

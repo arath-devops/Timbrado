@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Subir evidencia · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Documentos',href:'documentos.html'},{label:'Subir'}])+
+pageHead('Subir evidencia', 'file ≤20MB · doc_type catálogo',
+  `<button class="btn btn-primary btn-sm" onclick="toast('DOCUMENT_UPLOADED')">Cargar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">case_file_id</label><input class="control" value="CF-PO-2026-0842"/></div>
+  <div class="field"><label class="req">doc_type</label><select class="control">${D.catalogs.filter(c=>c.catalog_code==='DOC_TYPE').map(c=>`<option>${c.item_code}</option>`).join('')}</select></div>
+  <div class="field full"><label class="req">file</label><div class="alert">Selector de archivo simulado (mime allowlist)</div></div>
+  <div class="field full"><label>notes</label><textarea class="control"></textarea></div>
+  <div class="field"><label>replaces_document_id</label><input class="control" placeholder="opcional versión"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

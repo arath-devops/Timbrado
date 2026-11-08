@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://erp-grp.local/schemas/events/mvp/PurchaseRequestCreated.json",
+  "title": "PurchaseRequestCreated",
+  "description": "Kafka event PurchaseRequestCreated. Topic=erp.procurement.events. Producer=procurement-service. Version=1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eventId",
+    "eventType",
+    "eventVersion",
+    "eventTimestamp",
+    "tenantId",
+    "correlationId",
+    "producer",
+    "payload"
+  ],
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "eventType": {
+      "type": "string",
+      "const": "PurchaseRequestCreated"
+    },
+    "eventVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "eventTimestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tenantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlationId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "causationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "producer": {
+      "type": "string",
+      "const": "procurement-service"
+    },
+    "traceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "requestId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purchaseRequestId",
+        "orgUnitId",
+        "allocationId",
+        "totalAmount",
+        "currency",
+        "createdBy",
+        "status"
+      ],
+      "properties": {
+        "purchaseRequestId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "orgUnitId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "allocationId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "totalAmount": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d{1,4})?$"
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "MXN"
+          ]
+        },
+        "caseFileId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "createdBy": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "DRAFT",
+            "SUBMITTED",
+            "APPROVED",
+            "REJECTED",
+            "CANCELLED"
+          ]
+        }
+      }
+    }
+  },
+  "x-topic": "erp.procurement.events",
+  "x-producer": "procurement-service",
+  "x-event-version": 1
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Inventarios · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+crumbs([{label:'Operación'},{label:'Inventarios'}])+
+pageHead('Inventarios','Artículos · ATP · Movimientos · Recepción',
+  `<a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=inventarios">Campos del módulo</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
+  <a class="btn btn-secondary btn-sm" href="articulos.html">Maestro de artículos</a>
+  <a class="btn btn-secondary btn-sm" href="existencias.html">Existencias (ATP)</a>
+  <a class="btn btn-secondary btn-sm" href="movimientos.html">Movimientos</a>
+  <a class="btn btn-primary btn-sm" href="recepcion-inv.html">Recepción de mercancía</a>
+</div></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>Artículo</th><th>Almacén</th><th>On hand</th><th>Reserved</th><th>Available</th></tr></thead>
+<tbody>${D.stock.map(s=>`<tr><td><strong>${s.item_code}</strong></td><td>${s.warehouse_id}</td><td>${s.qty_on_hand.toLocaleString('es-MX')}</td><td>${s.qty_reserved.toLocaleString('es-MX')}</td><td><strong>${s.qty_available.toLocaleString('es-MX')}</strong></td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Reportes · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Plataforma'},{label:'Reportes'}])+
+pageHead('Reportes estándar', 'SI-001 Analytics MVP · REPORT_RUN', '')+
+`<div class="grid-2">
+  <div class="panel"><div class="panel-hd"><h3>Finanzas</h3></div><div class="panel-bd" style="display:grid;gap:8px">
+    <a class="btn btn-secondary btn-sm" href="../finanzas/mayor.html">Balanza / EEFF</a>
+    <a class="btn btn-secondary btn-sm" href="../finanzas/aging-ap.html">Aging AP</a>
+    <a class="btn btn-secondary btn-sm" href="../finanzas/aging-ar.html">Aging AR</a>
+    <a class="btn btn-secondary btn-sm" href="../finanzas/bancos.html">Posición de efectivo</a>
+  </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Operación</h3></div><div class="panel-bd" style="display:grid;gap:8px">
+    <a class="btn btn-secondary btn-sm" href="../compras/ordenes.html">OC por status</a>
+    <a class="btn btn-secondary btn-sm" href="../ventas/pedidos.html">Pedidos por status</a>
+    <a class="btn btn-secondary btn-sm" href="../inventarios/existencias.html">Existencias</a>
+    <button class="btn btn-secondary btn-sm" onclick="toast('Export XLSX simulado')">Export</button>
+  </div></div>
+</div>
+;
+  
+});
+</script></body></html>

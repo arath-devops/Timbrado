@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Finanzas · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas'}])+
+pageHead('Finanzas', 'Contabilidad · CxP · Facturación · CxC · Tesorería',
+  `<a class="btn btn-secondary btn-sm" href="../modulos/index.html">Atlas módulos</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=contabilidad">Campos Contabilidad</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=cxp">Campos CxP</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=facturacion">Campos Facturación</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=cxc">Campos CxC</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=tesoreria">Campos Tesorería</a>
+</div></div>
+<div class="grid-3">
+${[
+  ['Contabilidad (GL)','contabilidad.html','COA, periodos, asientos, mayor, balanza, EEFF'],
+  ['CxP · Cuentas por pagar','cxp.html','Facturas proveedor, 3-way match, pagos, aging'],
+  ['Facturación','facturacion.html','Emisión de factura / CFDI desde pedidos'],
+  ['CxC · Cuentas por cobrar','cxc.html','Facturas cliente, cobros, aging, edo. cuenta'],
+  ['Tesorería','tesoreria.html','Bancos, posición, órdenes de pago, conciliación'],
+  ['Asientos (atajo)','asientos.html','Libro diario']
+].map(([t,h,d])=>`<a class="panel" href="${h}"><div class="panel-bd"><h3 style="margin:0 0 6px">${t}</h3><p style="margin:0;font-size:12px;color:var(--ink-3)">${d}</p></div></a>`).join('')}
+</div>
+<div class="kpi-row" style="margin-top:8px">
+  <div class="kpi"><div class="l">CxP abierto</div><div class="v">${D.money(D.apInvoices.filter(i=>i.status!=='PAID').reduce((s,i)=>s+i.grand_total,0))}</div></div>
+  <div class="kpi"><div class="l">CxC abierto</div><div class="v">${D.money(D.arInvoices.reduce((s,i)=>s+i.open_amount,0))}</div></div>
+  <div class="kpi"><div class="l">Periodo</div><div class="v">2026-11</div><div class="d">${D.badge('OPEN')}</div></div>
+  <div class="kpi"><div class="l">Efectivo MXN</div><div class="v">${D.money(D.banks.filter(b=>b.currency==='MXN').reduce((s,b)=>s+b.balance,0))}</div></div>
+</div>
+;
+});
+</script></body></html>

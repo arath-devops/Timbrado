@@ -1,0 +1,300 @@
+openapi: 3.1.0
+info:
+  title: ERP+GRP Common API Components
+  version: 1.0.0
+  description: |
+    Componentes reutilizables OpenAPI 3.1 para servicios MVP.
+    No es un servicio desplegable; se referencia desde specs por servicio.
+  contact:
+    name: Principal API Architect
+    email: architecture@example.local
+  license:
+    name: Proprietary
+
+paths: {}
+
+components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Página 0-based
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    SizeParam:
+      name: size
+      in: query
+      description: Tamaño de página
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    SortParam:
+      name: sort
+      in: query
+      description: "Campo,dirección (ej. createdAt,desc)"
+      schema:
+        type: string
+        example: createdAt,desc
+    CorrelationIdHeader:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      description: ID de correlación de negocio/flujo. Si se omite, el servidor genera uno.
+      schema:
+        type: string
+        format: uuid
+    RequestIdHeader:
+      name: X-Request-Id
+      in: header
+      required: false
+      description: ID único por request HTTP del cliente. Echo en response.
+      schema:
+        type: string
+        format: uuid
+    TenantIdHeader:
+      name: X-Tenant-Id
+      in: header
+      required: false
+      description: |
+        Solo entornos local/dev. En integración/producción el tenant se toma
+        exclusivamente del claim JWT `tenant_id`. Si ambos existen y difieren → 403.
+      schema:
+        type: string
+        format: uuid
+    TraceIdHeader:
+      name: X-Trace-Id
+      in: header
+      required: false
+      description: Trace id (hex). Preferir W3C `traceparent` cuando esté disponible.
+      schema:
+        type: string
+        pattern: '^[a-fA-F0-9]{16,32}$'
+    TraceparentHeader:
+      name: traceparent
+      in: header
+      required: false
+      description: W3C Trace Context
+      schema:
+        type: string
+        example: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+    IdempotencyKeyHeader:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Clave de idempotencia (UUID). Replays con mismo key+body → misma respuesta.
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKeyHeaderOptional:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: Recomendado en POST de creación para evitar duplicados.
+      schema:
+        type: string
+        format: uuid
+    LegalEntityIdHeader:
+      name: X-Legal-Entity-Id
+      in: header
+      required: true
+      description: |
+        Entidad legal (compañía) del documento/transacción ERP.
+        Debe estar en el scope del JWT (`org_scopes` / legal entities permitidas).
+        Obligatorio en todos los endpoints TX del track ERP (ERP-CP-001).
+      schema:
+        type: string
+        format: uuid
+
+  headers:
+    X-Correlation-Id:
+      description: Correlation id echo / generado
+      schema:
+        type: string
+        format: uuid
+    X-Request-Id:
+      description: Request id echo / generado
+      schema:
+        type: string
+        format: uuid
+    X-Trace-Id:
+      description: Trace id echo
+      schema:
+        type: string
+    Idempotency-Replayed:
+      description: true si la respuesta proviene de store de idempotencia
+      schema:
+        type: boolean
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Access token JWT emitido por iam-service.
+        Claims mínimos: sub, tenant_id, roles, org_scopes, modules, sid, exp.
+
+  responses:
+    BadRequest:
+      description: Request inválido (validación)
+      headers:
+        X-Correlation-Id:
+          $ref: '#/components/headers/X-Correlation-Id'
+        X-Request-Id:
+          $ref: '#/components/headers/X-Request-Id'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: VALIDATION_ERROR
+            message: Request validation failed
+            traceId: "4bf92f3577b34da6a3ce929d0e0e4736"
+            correlationId: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+            requestId: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+            details:
+              - field: amount
+                issue: must be greater than 0
+    Unauthorized:
+      description: No autenticado / token inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: UNAUTHORIZED
+            message: Missing or invalid bearer token
+            traceId: "4bf92f3577b34da6a3ce929d0e0e4736"
+    Forbidden:
+      description: Autenticado pero sin permiso o tenant mismatch
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: FORBIDDEN
+            message: Insufficient role or tenant mismatch
+            traceId: "4bf92f3577b34da6a3ce929d0e0e4736"
+    NotFound:
+      description: Recurso no encontrado en el tenant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+          example:
+            code: NOT_FOUND
+            message: Resource not found
+            traceId: "4bf92f3577b34da6a3ce929d0e0e4736"
+    Conflict:
+      description: Conflicto de estado / idempotencia / versión
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Unprocessable:
+      description: Regla de negocio no satisfecha
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: Rate limit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    InternalError:
+      description: Error interno
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+  schemas:
+    ApiError:
+      type: object
+      required: [code, message, traceId]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          description: Código estable de error de negocio o técnico
+          examples: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, SOD_VIOLATION, NOT_FOUND, CONFLICT, PERIOD_CLOSED]
+        message:
+          type: string
+        traceId:
+          type: string
+          description: Identificador de traza (alineado a X-Trace-Id / OTel)
+        correlationId:
+          type: string
+          format: uuid
+        requestId:
+          type: string
+          format: uuid
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiErrorDetail'
+    ApiErrorDetail:
+      type: object
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+        issue:
+          type: string
+        rejectedValue:
+          description: Valor rechazado (sin secretos)
+    PageMeta:
+      type: object
+      required: [page, size, totalElements, totalPages]
+      additionalProperties: false
+      properties:
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+        totalElements:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+    Money:
+      type: object
+      required: [amount, currency]
+      additionalProperties: false
+      properties:
+        amount:
+          type: string
+          description: Decimal exacto como string para evitar float
+          pattern: '^-?\d+(\.\d{1,4})?$'
+          examples: ["125000.00"]
+        currency:
+          type: string
+          enum: [MXN]
+    AuditFields:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        updatedAt:
+          type: string
+          format: date-time
+        updatedBy:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          minimum: 0
+          description: Optimistic lock

@@ -1,0 +1,17 @@
+name: CD Dev
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy with Kustomize
+        run: |
+          echo "kubectl apply -k erp-grp-platform/infrastructure/kubernetes/overlays/dev"
+          # Replace with authenticated kubeconfig / Argo CD sync in real env

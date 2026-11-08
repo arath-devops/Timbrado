@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Corrida nómina · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Nómina',href:'index.html'},{label:'Corrida'}])+
+pageHead('Corrida de nómina', 'pay_period, payroll_group, run_date',
+  `<button class="btn btn-primary btn-sm" onclick="toast('Corrida CALCULATED → pendiente APPROVED')">Calcular</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">pay_period</label><input class="control" value="2026-11-Q1"/></div>
+  <div class="field"><label class="req">payroll_group</label><input class="control" value="MENSUAL-MX"/></div>
+  <div class="field"><label class="req">run_date</label><input class="control" type="date" value="2026-11-28"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

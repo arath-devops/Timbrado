@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RRHH · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script><script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Personas'},{label:'RRHH'}])+
+pageHead('Recursos humanos', 'Empleados (lista/ficha) · Ausencias',
+  `<a class="btn btn-secondary btn-sm" href="empleados.html">Empleados</a>
+   <a class="btn btn-secondary btn-sm" href="ausencias.html">Ausencias</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>employee_number</th><th>full_name</th><th>hire_date</th><th>org_unit_id</th><th>position_id</th><th>salary_base</th><th>status</th></tr></thead>
+<tbody>${D.employees.map(e=>`<tr><td><strong>${e.employee_number}</strong></td><td>${e.full_name}</td><td>${e.hire_date}</td><td>${e.org_unit_id}</td><td>${e.position_id}</td><td>${D.money(e.salary_base)}</td><td>${D.badge(e.status)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

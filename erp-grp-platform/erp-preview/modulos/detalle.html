@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle módulo · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+<link rel="stylesheet" href="../assets/css/atlas.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">Detalle módulo · FM-001 campos · SF-001 Freeze</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/module-atlas.js"></script>
+<script src="../assets/js/atlas-ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  ERPDemo.restoreSession();
+  const id = new URLSearchParams(location.search).get('m') || 'compras';
+  const mod = ERPModules.byId(id);
+  document.title = (mod ? mod.name : 'Módulo') + ' · Atlas ERP';
+  document.getElementById('content').innerHTML = renderModuleDetail(mod);
+});
+</script></body></html>

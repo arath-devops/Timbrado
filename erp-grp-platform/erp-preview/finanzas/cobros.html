@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Cobros AR · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'AR',href:'facturas-ar.html'},{label:'Cobros'}])+
+pageHead('Registro de cobros', 'application_amount ≤ saldo y ≤ receipt',
+  `<button class="btn btn-primary btn-sm" onclick="toast('AR_RECEIPT_POSTED')">Postear cobro</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">customer_id</label><select class="control">${D.customers.map(c=>`<option>${c.code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">receipt_date</label><input class="control" type="date" value="2026-11-07"/></div>
+  <div class="field"><label class="req">amount</label><input class="control" type="number" value="88450"/></div>
+  <div class="field"><label class="req">bank_account_id</label><select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">application_invoice_id</label><select class="control">${D.arInvoices.filter(i=>i.open_amount>0).map(i=>`<option>${i.id} (open ${D.money(i.open_amount)})</option>`).join('')}</select></div>
+  <div class="field"><label class="req">application_amount</label><input class="control" type="number" value="88450"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

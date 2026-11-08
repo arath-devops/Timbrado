@@ -1,0 +1,227 @@
+openapi: 3.1.0
+info:
+  title: ERP ar-billing-service API
+  version: 1.0.0-erp
+  description: Clientes, crédito, SO, facturas CxC, cobros, puerto CFDI.
+  x-service: ar-billing-service
+  x-track: erp
+servers:
+  - url: /api/v1
+tags: [Customers, Credit, SalesOrders, CustomerInvoices, Payments, Fiscal]
+paths:
+  /customers:
+    post:
+      tags: [Customers]
+      operationId: createCustomer
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCustomerRequest' }
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Customer' }
+  /credit-checks:
+    post:
+      tags: [Credit]
+      operationId: checkCredit
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, amount]
+              properties:
+                customerId: { type: string, format: uuid }
+                amount: { $ref: '#/components/schemas/Money' }
+      responses:
+        '200':
+          description: Resultado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreditCheckResult' }
+  /sales-orders:
+    post:
+      tags: [SalesOrders]
+      operationId: createSalesOrder
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateSalesOrderRequest' }
+      responses:
+        '201':
+          description: Creado / hold
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SalesOrder' }
+  /customer-invoices:
+    post:
+      tags: [CustomerInvoices]
+      operationId: issueCustomerInvoice
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/IssueCustomerInvoiceRequest' }
+      responses:
+        '201':
+          description: ISSUED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerInvoice' }
+  /customer-payments:
+    post:
+      tags: [Payments]
+      operationId: applyCustomerPayment
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApplyCustomerPaymentRequest' }
+      responses:
+        '201':
+          description: Aplicado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CustomerPayment' }
+  /fiscal/cfdi/issue:
+    post:
+      tags: [Fiscal]
+      operationId: issueCfdi
+      summary: Puerto CFDI — adaptador; sin vendor concreto
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerInvoiceId]
+              properties:
+                customerInvoiceId: { type: string, format: uuid }
+      responses:
+        '202':
+          description: Enviado a adaptador fiscal
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FiscalDocumentRef' }
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    Money:
+      $ref: '../../common/v1.yaml#/components/schemas/Money'
+    CreateCustomerRequest:
+      type: object
+      required: [legalEntityId, code, legalName, taxId, creditLimit]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        code: { type: string }
+        legalName: { type: string }
+        taxId: { type: string }
+        creditLimit: { $ref: '#/components/schemas/Money' }
+    Customer:
+      type: object
+      required: [id, code, status, creditLimit]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        code: { type: string }
+        legalName: { type: string }
+        status: { type: string, enum: [ACTIVE, ON_HOLD, BLOCKED] }
+        creditLimit: { $ref: '#/components/schemas/Money' }
+        creditExposure: { $ref: '#/components/schemas/Money' }
+    CreditCheckResult:
+      type: object
+      required: [outcome]
+      properties:
+        outcome: { type: string, enum: [OK, HOLD] }
+        availableCredit: { $ref: '#/components/schemas/Money' }
+        workflowSuggested: { type: string, example: erp.ar.credit_exception }
+    CreateSalesOrderRequest:
+      type: object
+      required: [legalEntityId, customerId, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [itemId, quantity, unitPrice]
+            properties:
+              itemId: { type: string, format: uuid }
+              quantity: { type: string }
+              unitPrice: { type: string }
+    SalesOrder:
+      type: object
+      required: [id, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [DRAFT, CREDIT_HOLD, CONFIRMED, DELIVERED, INVOICED, CANCELLED] }
+        creditHold: { type: boolean }
+    IssueCustomerInvoiceRequest:
+      type: object
+      required: [legalEntityId, salesOrderId]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        salesOrderId: { type: string, format: uuid }
+        deliveryId: { type: string, format: uuid }
+    CustomerInvoice:
+      type: object
+      required: [id, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [ISSUED, VOID, PAID, PARTIAL] }
+        total: { $ref: '#/components/schemas/Money' }
+        fiscalStatus: { type: string, enum: [PENDING, STAMPED, ERROR] }
+    ApplyCustomerPaymentRequest:
+      type: object
+      required: [legalEntityId, customerId, amount, invoiceIds]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        customerId: { type: string, format: uuid }
+        amount: { $ref: '#/components/schemas/Money' }
+        invoiceIds:
+          type: array
+          items: { type: string, format: uuid }
+    CustomerPayment:
+      type: object
+      required: [id, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [APPLIED, REVERSED] }
+    FiscalDocumentRef:
+      type: object
+      properties:
+        customerInvoiceId: { type: string, format: uuid }
+        uuid: { type: string, description: UUID CFDI si aplica }
+        status: { type: string, enum: [PENDING, STAMPED, ERROR] }
+security:
+  - bearerAuth: []

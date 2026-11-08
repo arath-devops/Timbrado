@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Movimientos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Inventarios',href:'index.html'},{label:'Movimientos'}])+
+pageHead('Movimientos de inventario', 'ADJUST puede requerir WF',
+  `<button class="btn btn-primary btn-sm" onclick="toast('INV_MOVE_POSTED')">Postear</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">move_type</label><select class="control"><option>IN</option><option>OUT</option><option>TRANSFER</option><option>ADJUST</option></select></div>
+  <div class="field"><label class="req">item_id</label><select class="control">${D.items.filter(i=>i.item_type==='STOCK').map(i=>`<option>${i.item_code}</option>`).join('')}</select></div>
+  <div class="field"><label class="req">qty</label><input class="control" type="number" value="10"/><span class="hint">≠0</span></div>
+  <div class="field"><label class="req">warehouse_id</label><select class="control"><option>WH-P1</option><option>WH-FG</option></select></div>
+  <div class="field"><label>warehouse_dest_id</label><input class="control" placeholder="si TRANSFER"/></div>
+  <div class="field"><label>reason_code</label><input class="control" placeholder="si ADJUST"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

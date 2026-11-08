@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle SO · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const id=new URLSearchParams(location.search).get('id')||'SO-2026-0551';
+  const s=D.salesOrders.find(x=>x.id===id)||D.salesOrders[0];
+  const c=D.customers.find(x=>x.code===s.customer_id);
+  const stock=D.stock.find(x=>x.item_code==='FG-FRAME-01');
+  const datos=creditBanner(c,s.total_amount)+`<div class="form-grid">
+    ${fieldL('customer_id',`<div>${s.customer_id} — ${c?c.name:''}</div>`)}
+    ${fieldL('credit_limit',`<div>${c?D.money(c.credit_limit):'—'}</div>`)}
+    ${fieldL('credit_exposure',`<div>${c?D.money(c.credit_exposure):'—'}</div>`)}
+    ${fieldL('order_date',`<div>${s.order_date}</div>`)}
+    ${fieldL('requested_date',`<div>${s.requested_date||'—'}</div>`)}
+    ${fieldL('currency',`<div>${s.currency}</div>`)}
+    ${fieldL('total_amount',`<div style="font-weight:700">${D.money(s.total_amount)}</div>`)}
+    ${fieldL('status',`<div>${statusChip(s.status)}${s.credit_ok===false?' '+statusChip('CREDIT_BLOCKED'):''}</div>`)}
+  </div>`+(stock?`<div class="alert">ATP ${stock.item_code}: on hand ${stock.qty_on_hand} · reserved ${stock.qty_reserved} · <strong>available ${stock.qty_available}</strong></div>`:'');
+  const lineHtml=linesTable({id:'so-lines', cols:[
+    {key:'item',label:L('line_item_id')},{key:'qty',label:L('line_qty')},{key:'price',label:L('line_price'),money:true},{key:'discount',label:L('line_discount_pct')}
+  ], rows:s.lines||[], editable:false, total:s.total_amount});
+  const tabs=objectTabs([
+    {id:'datos',label:'Datos generales',html:datos},
+    {id:'lineas',label:'Líneas',html:lineHtml},
+    {id:'wf',label:'Workflow',html:wfStub([{title:'DRAFT',done:true},{title:'CONFIRMED',done:s.status!=='DRAFT'},{title:'DELIVERED / INVOICED',done:s.status==='DELIVERED'||s.status==='INVOICED'}])},
+    {id:'docs',label:'Documentos',html:docsStub(s.id)},
+    {id:'audit',label:'Auditoría',html:auditStub(s.id)}
+  ],'datos');
+  const blockFact = s.credit_ok===false || (c&&c.credit_block);
+  return crumbs([{label:'Pedidos',href:'pedidos.html'},{label:s.id}])+
+    pageHead(s.id, D.money(s.total_amount),
+      `<a class="btn btn-secondary btn-sm" href="entregas.html">Entrega</a>
+       ${blockFact
+         ? `<button class="btn btn-danger btn-sm" onclick="toast('Bloqueado por crédito')">Facturar (bloqueado)</button>`
+         : `<a class="btn btn-primary btn-sm" href="../finanzas/emitir-factura.html?so=${s.id}">Facturar</a>`}`)+
+    `<div class="journey"><strong>O2C:</strong> Pedido → Entrega → Facturación → CxC</div>
+    <div id="obj">${tabs}</div>`;
+})()
+;
+  bindObjectTabs("#obj");
+});
+</script></body></html>

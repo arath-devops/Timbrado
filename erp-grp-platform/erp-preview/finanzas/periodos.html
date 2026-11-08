@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Periodos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'Periodos'}])+
+pageHead('Periodos contables', 'OPEN / SOFT_CLOSE / HARD_CLOSE', '')+
+`<div class="table-wrap"><table class="data"><thead><tr><th>fiscal_year</th><th>period_id</th><th>start_date</th><th>end_date</th><th>status</th></tr></thead>
+<tbody>${D.periods.map(p=>`<tr><td>${p.fiscal_year}</td><td><strong>${p.period_id}</strong></td><td>${p.start_date}</td><td>${p.end_date}</td><td>${D.badge(p.status)}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

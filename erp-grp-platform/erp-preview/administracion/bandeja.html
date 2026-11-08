@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bandeja · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Bandeja'}])+
+pageHead('Bandeja de aprobación', 'CompleteTask APPROVE|REJECT · comment si REJECT', '')+
+D.tasks.map(t=>`<div class="panel"><div class="panel-bd">
+  <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px">
+    <div><strong>${t.task_id}</strong> · ${t.process} · ${t.ref}<div style="font-size:13px;margin-top:4px">${t.title}</div></div>
+    <div style="text-align:right">${D.money(t.amount)}<div>${t.sla.includes('vencida')?'<span class="badge b-danger">'+t.sla+'</span>':'<span class="badge b-neu">'+t.sla+'</span>'}</div></div>
+  </div>
+  <div class="field"><label>comment</label><textarea class="control" id="c-${t.task_id}" placeholder="Obligatorio si REJECT (mín. 5)"></textarea></div>
+  <div class="page-actions">
+    <button class="btn btn-danger btn-sm" onclick="decide('${t.task_id}','REJECT')">Rechazar</button>
+    <button class="btn btn-primary btn-sm" onclick="decide('${t.task_id}','APPROVE')">Aprobar</button>
+  </div>
+</div></div>`).join('')
+;
+  
+window.decide=(id,decision)=>{
+  const c=document.getElementById('c-'+id)?.value?.trim()||'';
+  if(decision==='REJECT'&&c.length<5){toast('Validación: comment obligatorio en REJECT');return;}
+  toast(id+' · '+decision+' · idempotency_key aplicado (simulado)');
+};
+
+});
+</script></body></html>

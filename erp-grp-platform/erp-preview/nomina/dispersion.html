@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dispersión · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Nómina',href:'index.html'},{label:'Dispersión'}])+
+pageHead('Dispersión / archivo bancario', 'payroll_run_id APPROVED',
+  `<button class="btn btn-primary btn-sm" onclick="toast('Dispersión enviada a Tesorería')">Dispersar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">payroll_run_id</label><input class="control" value="PAY-2026-11A"/></div>
+  <div class="field"><label class="req">bank_account_id</label><select class="control">${D.banks.map(b=>`<option>${b.bank_name}</option>`).join('')}</select></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

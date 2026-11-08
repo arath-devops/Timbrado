@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Alta activo · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Activos',href:'index.html'},{label:'Alta'}])+
+pageHead('Alta de activo', 'FM §9',
+  `<button class="btn btn-primary btn-sm" onclick="toast('ASSET CAPITALIZED (simulado)')">Capitalizar</button>`)+
+`<div class="panel"><div class="panel-bd"><div class="form-grid">
+  <div class="field"><label class="req">asset_code</label><input class="control"/></div>
+  <div class="field"><label class="req">asset_name</label><input class="control"/></div>
+  <div class="field"><label class="req">capitalization_date</label><input class="control" type="date"/></div>
+  <div class="field"><label class="req">acquisition_cost</label><input class="control" type="number"/></div>
+  <div class="field"><label class="req">useful_life_months</label><input class="control" type="number" value="60"/></div>
+  <div class="field"><label class="req">depreciation_method</label><select class="control"><option>SL</option><option>DB</option></select></div>
+  <div class="field"><label class="req">asset_account</label><input class="control" value="1500-001"/></div>
+  <div class="field"><label class="req">accum_dep_account</label><input class="control" value="1500-002"/></div>
+  <div class="field"><label class="req">expense_account</label><input class="control" value="5200-001"/></div>
+</div></div></div>
+;
+  
+});
+</script></body></html>

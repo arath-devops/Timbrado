@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Artículos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Inventarios',href:'index.html'},{label:'Artículos'}])+
+pageHead('Maestro de artículos', 'FM §7.1', '')+
+`<div class="table-wrap"><table class="data"><thead><tr><th>item_code</th><th>item_name</th><th>item_type</th><th>uom</th><th>costing_method</th><th>sales_price</th><th>purchase_price</th></tr></thead>
+<tbody>${D.items.map(i=>`<tr><td class="mono"><strong>${i.item_code}</strong></td><td>${i.item_name}</td><td>${i.item_type}</td><td>${i.uom}</td><td>${i.costing_method||'—'}</td><td>${i.sales_price}</td><td>${i.purchase_price}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

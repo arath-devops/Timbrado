@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nueva OC · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const from=new URLSearchParams(location.search).get('from_pr');
+  const pr=from?D.prs.find(x=>x.id===from):null;
+  const initLines = pr ? (pr.lines||[]).map(l=>({item:l.item, desc:l.desc, qty:l.qty, price:l.price, tax:'IVA16', cost_center_id:l.cost_center_id||''}))
+    : [{item:'RM-STEEL-12', desc:'Placa acero A36 1/2"', qty:1000, price:22, tax:'IVA16', cost_center_id:'OU-PROD-1'}];
+  window.__ocLines={rows:initLines, cols:[
+    {key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},
+    {key:'desc',label:L('line_description')},
+    {key:'qty',label:L('line_qty'),type:'number'},
+    {key:'price',label:L('line_price'),type:'number'},
+    {key:'tax',label:L('line_tax_code')},
+    {key:'cost_center_id',label:L('cost_center_id'),type:'select',options:D.orgUnits.map(o=>o.ou_code)}
+  ], blank:{item:'RM-BOLT-M12',desc:'',qty:1,price:0,tax:'IVA16',cost_center_id:'OU-PROD-1'}, qtyKey:'qty', priceKey:'price',
+    onChange:(tot)=>{ const t=document.getElementById('oc-total'); if(t) t.value=tot; }};
+  return crumbs([{label:'Compras',href:'index.html'},{label:'Nueva OC'}])+
+    pageHead('Crear / editar OC', pr?('Desde '+pr.id):'Campos FM-001 · proveedor ACTIVE',
+      `<button class="btn btn-secondary btn-sm" onclick="history.back()">Cancelar</button>
+       <button class="btn btn-primary btn-sm" onclick="toast('OC guardada DRAFT → PO_APPROVAL');location.href='ordenes.html'">Guardar</button>`)+
+    `<div class="alert warn">Proveedor BLOCKED (V-1102) no puede usarse.</div>
+    <div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('vendor_id',`<select class="control">${D.vendors.map(v=>`<option value="${v.vendor_code}">${v.vendor_code} — ${v.legal_name} (${ERPStatusES[v.status]||v.status})</option>`).join('')}</select>`,true)}
+      ${fieldL('order_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('currency',`<select class="control"><option>MXN</option><option>USD</option></select>`,true)}
+      ${fieldL('payment_terms',`<select class="control"><option>NET15</option><option selected>NET30</option></select>`,true)}
+      ${fieldL('delivery_address',`<input class="control" value="Almacén Planta 1 · Av. Industrial 120"/>`,true,true)}
+      ${fieldL('pr_id',`<input class="control" value="${pr?pr.id:''}" readonly/>`)}
+      ${fieldL('buyer_id',`<input class="control" value="clopez"/>`,true)}
+      ${fieldL('total_amount',`<input class="control" id="oc-total" value="${pr?pr.total_amount:22000}" readonly/>`,true)}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'oc-lines', cols:window.__ocLines.cols, rows:window.__ocLines.rows, editable:true, total:pr?pr.total_amount:22000})}</div>`;
+})()
+;
+  bindLinesTable("oc-lines", window.__ocLines);
+});
+</script></body></html>

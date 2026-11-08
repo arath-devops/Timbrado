@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Nueva requisición · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  window.__prLines={rows:[{item:'RM-BOLT-M12',desc:'Tornillo hex M12x40',qty:5000,uom:'PZA',price:2.1,cost_center_id:'OU-PROD-2'}],
+    cols:[
+      {key:'item',label:L('line_item_id'),type:'select',options:D.items.map(i=>i.item_code)},
+      {key:'desc',label:L('line_description')},
+      {key:'qty',label:L('line_qty'),type:'number'},
+      {key:'uom',label:L('line_uom')},
+      {key:'price',label:L('line_est_price'),type:'number'},
+      {key:'cost_center_id',label:L('cost_center_id'),type:'select',options:D.orgUnits.map(o=>o.ou_code)}
+    ], blank:{item:'RM-BOLT-M12',desc:'',qty:1,uom:'PZA',price:0,cost_center_id:'OU-PROD-2'},
+    qtyKey:'qty', priceKey:'price',
+    onChange:(tot)=>{ const t=document.getElementById('pr-total'); if(t) t.value=tot; }};
+  return crumbs([{label:'Compras',href:'index.html'},{label:'Nueva requisición'}])+
+    pageHead('Nueva requisición','Campos obligatorios FM-001',
+      `<button class="btn btn-ghost btn-sm" onclick="toast('Borrador')">Guardar borrador</button>
+       <button class="btn btn-primary btn-sm" onclick="submitPR()">Enviar</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('title',`<input class="control" id="title" placeholder="5–200 caracteres"/>`,true,true)}
+      ${fieldL('requester_id',`<input class="control" value="${D.session.username}" readonly/>`,true)}
+      ${fieldL('org_unit_id',`<select class="control">${D.orgUnits.map(o=>`<option>${o.ou_code} — ${o.ou_name}</option>`).join('')}</select>`,true)}
+      ${fieldL('need_by_date',`<input class="control" type="date" value="2026-11-20"/>`)}
+      ${fieldL('priority',`<select class="control"><option>LOW</option><option selected>MED</option><option>HIGH</option></select>`)}
+      ${fieldL('justification',`<textarea class="control" id="just" placeholder="≥20 caracteres"></textarea>`,true,true)}
+      ${fieldL('total_amount',`<input class="control" id="pr-total" value="10500" readonly/>`,true)}
+    </div></div></div>
+    <div id="lines-host">${linesTable({id:'pr-lines', cols:window.__prLines.cols, rows:window.__prLines.rows, editable:true, total:10500})}</div>`;
+})()
+;
+  
+bindLinesTable("pr-lines", window.__prLines);
+window.submitPR=()=>{
+  const t=document.getElementById('title').value.trim();
+  const j=document.getElementById('just').value.trim();
+  if(t.length<5||j.length<20){toast('Validación: título ≥5 y justificación ≥20');return;}
+  toast('PR enviada · SUBMITTED'); location.href='requisiciones.html';
+};
+
+});
+</script></body></html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Detalle PR · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const id=new URLSearchParams(location.search).get('id')||'PR-2026-1204';
+  const p=D.prs.find(x=>x.id===id)||D.prs[0];
+  const canOC = p.status==='APPROVED';
+  const datos=`<div class="form-grid">
+    ${fieldL('requester_id',`<div>${p.requester_id}</div>`)}
+    ${fieldL('org_unit_id',`<div>${p.org_unit_id}</div>`)}
+    ${fieldL('need_by_date',`<div>${p.need_by_date||'—'}</div>`)}
+    ${fieldL('priority',`<div>${p.priority||'—'}</div>`)}
+    ${fieldL('total_amount',`<div style="font-size:20px;font-weight:700">${D.money(p.total_amount)}</div>`)}
+    ${fieldL('justification',`<div>${p.justification}</div>`,false,true)}
+  </div>`;
+  const lineHtml=linesTable({id:'pr-lines', cols:[
+    {key:'item',label:L('line_item_id')},{key:'desc',label:L('line_description')},
+    {key:'qty',label:L('line_qty')},{key:'uom',label:L('line_uom')},
+    {key:'price',label:L('line_est_price'),money:true},{key:'cost_center_id',label:L('cost_center_id')}
+  ], rows:p.lines||[], editable:false, total:p.total_amount});
+  const tabs=objectTabs([
+    {id:'datos',label:'Datos generales',html:datos},
+    {id:'lineas',label:'Líneas',html:lineHtml},
+    {id:'wf',label:'Workflow',html:wfStub([{title:'DRAFT',done:true},{title:'SUBMITTED',done:true,desc:'PR_APPROVAL'},{title:'APPROVED / REJECTED',done:p.status==='APPROVED'||p.status==='CLOSED'}])},
+    {id:'docs',label:'Documentos',html:docsStub(p.id)},
+    {id:'audit',label:'Auditoría',html:auditStub(p.id)}
+  ],'datos');
+  return crumbs([{label:'Requisiciones',href:'requisiciones.html'},{label:p.id}])+
+    pageHead(p.title, p.id+' · '+statusChip(p.status),
+      canOC
+        ? `<a class="btn btn-primary btn-sm" href="nueva-oc.html?from_pr=${p.id}">Crear OC desde PR</a>`
+        : `<button class="btn btn-secondary btn-sm" disabled title="Solo PR APPROVED">Crear OC desde PR</button>
+           <a class="btn btn-secondary btn-sm" href="../administracion/bandeja.html">Ir a bandeja</a>`)+
+    `<div id="obj">${tabs}</div>`;
+})()
+;
+  bindObjectTabs("#obj");
+});
+</script></body></html>

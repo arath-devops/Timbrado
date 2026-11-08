@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Organización · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Organización'}])+
+pageHead('Estructura organizacional', 'ou_code, ou_type, parent_ou_id', '')+
+`<div class="table-wrap"><table class="data"><thead><tr><th>ou_code</th><th>ou_name</th><th>ou_type</th><th>parent_ou_id</th><th>manager_user_id</th></tr></thead>
+<tbody>${D.orgUnits.map(o=>`<tr><td><strong>${o.ou_code}</strong></td><td>${o.ou_name}</td><td>${o.ou_type}</td><td>${o.parent_ou_id||'—'}</td><td>${o.manager_user_id||'—'}</td></tr>`).join('')}</tbody></table></div>
+;
+  
+});
+</script></body></html>

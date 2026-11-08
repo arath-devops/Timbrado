@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Facturas AP · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Finanzas',href:'index.html'},{label:'AP'}])+
+pageHead('Lista de facturas de proveedor', 'Workbench AP',
+  `<a class="btn btn-primary btn-sm" href="captura-factura-ap.html">Captura factura</a>
+   <a class="btn btn-secondary btn-sm" href="programacion-pagos.html">Programación pagos</a>`)+
+`<div class="table-wrap"><table class="data"><thead><tr><th>id</th><th>vendor_id</th><th>invoice_number</th><th>invoice_date</th><th>po_id</th><th>grand_total</th><th>due_date</th><th>match_status</th><th>status</th></tr></thead>
+<tbody>${D.apInvoices.map(i=>`<tr class="clickable" onclick="location.href='detalle-factura-ap.html?id=${i.id}'"><td><strong>${i.id}</strong></td><td>${i.vendor_id}</td><td>${i.invoice_number}</td><td>${i.invoice_date}</td><td>${i.po_id||'—'}</td><td>${D.money(i.grand_total)}</td><td>${i.due_date}</td><td>${i.match_status}</td><td>${D.badge(i.status)}</td></tr>`).join('')}</tbody></table></div>
+<p style="margin-top:10px"><a href="aging-ap.html">Antigüedad saldos AP</a></p>
+;
+  
+});
+</script></body></html>

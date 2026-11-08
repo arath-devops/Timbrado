@@ -1,0 +1,423 @@
+openapi: 3.1.0
+info:
+  title: ERP procurement-service API
+  version: 1.0.0-erp
+  description: |
+    Contratos P2P del track ERP (ERP-SF-001, ADR-014).
+    **Sin** allocationId / CommitBudget / budget-service.
+    Aprobación OC vía workflow + umbrales.
+  x-service: procurement-service
+  x-track: erp
+  x-adr: ADR-014
+
+servers:
+  - url: /api/v1
+    description: Gateway strip prefix
+
+tags:
+  - name: Vendors
+  - name: Requisitions
+  - name: PurchaseOrders
+  - name: GoodsReceipts
+
+paths:
+  /vendors:
+    post:
+      tags: [Vendors]
+      operationId: createVendor
+      summary: Alta de proveedor
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVendorRequest'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+        '400':
+          $ref: '../../common/v1.yaml#/components/responses/BadRequest'
+        '403':
+          $ref: '../../common/v1.yaml#/components/responses/Forbidden'
+  /vendors/{id}:
+    get:
+      tags: [Vendors]
+      operationId: getVendor
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+        '404':
+          $ref: '../../common/v1.yaml#/components/responses/NotFound'
+    patch:
+      tags: [Vendors]
+      operationId: patchVendor
+      summary: Actualizar datos o hold de proveedor
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchVendorRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendor'
+        '403':
+          description: SOD_VIOLATION u otro forbid
+          content:
+            application/json:
+              schema:
+                $ref: '../../common/v1.yaml#/components/schemas/ApiError'
+  /requisitions:
+    post:
+      tags: [Requisitions]
+      operationId: createRequisition
+      summary: Crear requisición (DRAFT)
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequisitionRequest'
+      responses:
+        '201':
+          description: Creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+  /requisitions/{id}/submit:
+    post:
+      tags: [Requisitions]
+      operationId: submitRequisition
+      summary: Enviar a workflow erp.pr.approve
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: SUBMITTED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseRequisition'
+        '422':
+          $ref: '../../common/v1.yaml#/components/responses/Unprocessable'
+  /purchase-orders:
+    post:
+      tags: [PurchaseOrders]
+      operationId: createPurchaseOrder
+      summary: Crear OC (DRAFT) — sin allocation presupuestal
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePurchaseOrderRequest'
+      responses:
+        '201':
+          description: Creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+  /purchase-orders/from-pr:
+    post:
+      tags: [PurchaseOrders]
+      operationId: createPoFromPr
+      summary: Crear OC desde PR aprobada
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requisitionId]
+              properties:
+                requisitionId: { type: string, format: uuid }
+                vendorId: { type: string, format: uuid }
+      responses:
+        '201':
+          description: OC creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+  /purchase-orders/{id}:
+    get:
+      tags: [PurchaseOrders]
+      operationId: getPurchaseOrder
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+  /purchase-orders/{id}/submit:
+    post:
+      tags: [PurchaseOrders]
+      operationId: submitPurchaseOrder
+      summary: Submit WF erp.po.approve (NO CommitBudget)
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: SUBMITTED — aprobación depende de workflow, no de presupuesto GRP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PurchaseOrder'
+  /goods-receipts:
+    post:
+      tags: [GoodsReceipts]
+      operationId: createGoodsReceipt
+      summary: Registrar recepción contra OC
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/CorrelationIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/RequestIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoodsReceiptRequest'
+      responses:
+        '201':
+          description: GR posted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GoodsReceipt'
+        '403':
+          description: SOD — receptor no puede ser AP de la misma factura
+          content:
+            application/json:
+              schema:
+                $ref: '../../common/v1.yaml#/components/schemas/ApiError'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    Money:
+      $ref: '../../common/v1.yaml#/components/schemas/Money'
+    CreateVendorRequest:
+      type: object
+      required: [legalEntityId, code, legalName, taxId]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        code: { type: string }
+        legalName: { type: string }
+        taxId: { type: string, description: RFC }
+        paymentTermsDays: { type: integer, default: 30 }
+        bankAccount:
+          type: object
+          properties:
+            bankName: { type: string }
+            clabe: { type: string }
+            currency: { type: string, enum: [MXN] }
+    PatchVendorRequest:
+      type: object
+      properties:
+        legalName: { type: string }
+        hold:
+          type: boolean
+        holdReason: { type: string }
+        bankAccount:
+          type: object
+          properties:
+            bankName: { type: string }
+            clabe: { type: string }
+    Vendor:
+      type: object
+      required: [id, legalEntityId, code, status, documentNumber]
+      properties:
+        id: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        documentNumber: { type: string }
+        code: { type: string }
+        legalName: { type: string }
+        taxId: { type: string }
+        status: { type: string, enum: [ACTIVE, ON_HOLD, BLOCKED] }
+        holdReason: { type: string }
+    AccountAssignment:
+      type: object
+      description: Asignación interna ERP (NO partida presupuestal GRP)
+      properties:
+        costCenterId: { type: string }
+        category: { type: string, enum: [COST_CENTER, PROJECT, ASSET, OTHER] }
+        glAccountHint: { type: string }
+    DocumentLine:
+      type: object
+      required: [lineNumber, itemCode, quantity, unitPrice]
+      properties:
+        lineNumber: { type: integer }
+        itemCode: { type: string }
+        description: { type: string }
+        quantity: { type: string, pattern: '^-?\d+(\.\d{1,4})?$' }
+        uom: { type: string }
+        unitPrice: { type: string }
+        taxCode: { type: string, enum: [IVA16, IVA0, EXENTO] }
+        accountAssignment:
+          $ref: '#/components/schemas/AccountAssignment'
+    CreateRequisitionRequest:
+      type: object
+      required: [legalEntityId, orgUnitId, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        orgUnitId: { type: string }
+        currency: { type: string, enum: [MXN], default: MXN }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DocumentLine'
+    PurchaseRequisition:
+      type: object
+      required: [id, legalEntityId, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [DRAFT, SUBMITTED, APPROVED, REJECTED, CANCELLED] }
+        total:
+          $ref: '#/components/schemas/Money'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentLine'
+    CreatePurchaseOrderRequest:
+      type: object
+      required: [legalEntityId, orgUnitId, vendorId, lines]
+      description: Sin allocationId — ADR-014
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        orgUnitId: { type: string }
+        vendorId: { type: string, format: uuid }
+        currency: { type: string, enum: [MXN], default: MXN }
+        grBasedInvoice: { type: boolean, default: true }
+        lines:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/DocumentLine'
+    PurchaseOrder:
+      type: object
+      required: [id, legalEntityId, documentNumber, status, vendorId]
+      properties:
+        id: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        documentNumber: { type: string }
+        vendorId: { type: string, format: uuid }
+        status: { type: string, enum: [DRAFT, SUBMITTED, APPROVED, REJECTED, CANCELLED, CLOSED] }
+        grBasedInvoice: { type: boolean }
+        total:
+          $ref: '#/components/schemas/Money'
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentLine'
+    CreateGoodsReceiptRequest:
+      type: object
+      required: [legalEntityId, purchaseOrderId, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        purchaseOrderId: { type: string, format: uuid }
+        warehouseId: { type: string }
+        lines:
+          type: array
+          items:
+            type: object
+            required: [poLineNumber, quantity]
+            properties:
+              poLineNumber: { type: integer }
+              quantity: { type: string }
+    GoodsReceipt:
+      type: object
+      required: [id, legalEntityId, documentNumber, purchaseOrderId, status]
+      properties:
+        id: { type: string, format: uuid }
+        legalEntityId: { type: string, format: uuid }
+        documentNumber: { type: string }
+        purchaseOrderId: { type: string, format: uuid }
+        status: { type: string, enum: [POSTED, REVERSED] }
+
+security:
+  - bearerAuth: []

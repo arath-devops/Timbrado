@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Visor · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Documentos',href:'documentos.html'},{label:'Visor'}])+
+pageHead('Visor de documento', 'document_id, version_no',
+  `<button class="btn btn-secondary btn-sm" onclick="toast('DOCUMENT_DOWNLOAD')">Descargar</button>`)+
+`<div class="grid-2">
+  <div class="panel" style="background:#1a1f2a;min-height:360px;display:grid;place-items:center;padding:20px">
+    <div style="background:#fff;color:#111;padding:24px;width:100%;max-width:420px;min-height:320px;font-size:12px">
+      <div style="text-align:right;font-size:10px;color:#666">ACME Industrial</div>
+      <h3 style="margin:8px 0">Cotización · DOC-9912</h3>
+      <p>Expediente CF-PO-2026-0842 · tipo COT · v2</p><hr/>
+      <p>Preview simulado (FM Visor). No es documento oficial.</p>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-hd"><h3>Metadatos</h3></div><div class="panel-bd form-grid">
+    <div class="field"><label>document_id</label><div>DOC-9912</div></div>
+    <div class="field"><label>version_no</label><div>2</div></div>
+    <div class="field"><label>status</label><div>${D.badge('AVAILABLE')}</div></div>
+  </div></div>
+</div>
+;
+  
+});
+</script></body></html>

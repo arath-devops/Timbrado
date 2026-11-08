@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERP Preview · Ingresar</title>
+  <link rel="stylesheet" href="assets/css/tokens.css"/>
+  <link rel="stylesheet" href="assets/css/components.css"/>
+  <link rel="stylesheet" href="assets/css/shell.css"/>
+</head>
+<body data-public="1">
+  <div class="login-wrap">
+    <form class="login-card" id="login">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <div class="brand-mark" style="width:36px;height:36px;border-radius:6px;background:#0a6ed1;color:#fff;display:grid;place-items:center;font-weight:700;font-size:12px">ERP</div>
+        <div><strong>ACME Industrial</strong><div style="font-size:12px;color:var(--ink-3)">ERP Preview · P0 UX (roles demo)</div></div>
+      </div>
+      <h1>Iniciar sesión</h1>
+      <p class="sub">Elija empresa y rol — el menú se filtra automáticamente</p>
+      <div class="field"><label class="req">Empresa / tenant <span class="tech">tenant_or_company</span></label>
+        <select class="control" name="company" id="company"></select>
+      </div>
+      <div class="field"><label class="req">Rol demo</label>
+        <select class="control" name="role" id="role"></select>
+      </div>
+      <div class="field"><label class="req">Usuario <span class="tech">username</span></label>
+        <input class="control" name="username" id="username" readonly/>
+      </div>
+      <div class="field"><label class="req">Contraseña <span class="tech">password</span></label>
+        <input class="control" name="password" type="password" value="demo1234"/>
+        <span class="hint">Demo: cualquier password admite ingreso</span>
+      </div>
+      <button class="btn btn-primary" style="width:100%;height:36px;margin-top:8px" type="submit">Entrar</button>
+    </form>
+  </div>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script>
+    const co = document.getElementById('company');
+    const role = document.getElementById('role');
+    const user = document.getElementById('username');
+    ERPDemo.companies.forEach(c => {
+      const o = document.createElement('option'); o.value = c.id; o.textContent = c.name; co.appendChild(o);
+    });
+    ERPDemo.roles.forEach(r => {
+      const o = document.createElement('option'); o.value = r.id; o.textContent = r.label; role.appendChild(o);
+    });
+    role.value = 'GL';
+    function syncUser(){ user.value = (ERPDemo.roles.find(r => r.id === role.value) || {}).username || ''; }
+    role.onchange = syncUser; syncUser();
+    document.getElementById('login').onsubmit = (e) => {
+      e.preventDefault();
+      sessionStorage.setItem('erp-demo-auth', '1');
+      ERPDemo.applyRole(role.value, co.value);
+      location.href = 'dashboard/index.html';
+    };
+  </script>
+</body>
+</html>

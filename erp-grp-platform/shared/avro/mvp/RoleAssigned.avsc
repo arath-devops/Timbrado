@@ -1,0 +1,98 @@
+{
+  "type": "record",
+  "name": "RoleAssigned",
+  "namespace": "mx.gov.erpgrp.events.mvp",
+  "doc": "Kafka event RoleAssigned on topic core.iam.events produced by iam-service. eventVersion=1",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "doc": "UUID \u2014 consumer idempotency key"
+    },
+    {
+      "name": "eventType",
+      "type": "string"
+    },
+    {
+      "name": "eventVersion",
+      "type": "int",
+      "default": 1
+    },
+    {
+      "name": "eventTimestamp",
+      "type": "string",
+      "doc": "ISO-8601 UTC"
+    },
+    {
+      "name": "tenantId",
+      "type": "string",
+      "doc": "UUID"
+    },
+    {
+      "name": "correlationId",
+      "type": "string",
+      "doc": "UUID \u2014 E2E flow"
+    },
+    {
+      "name": "causationId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "producer",
+      "type": "string"
+    },
+    {
+      "name": "traceId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "requestId",
+      "type": [
+        "null",
+        "string"
+      ],
+      "default": null
+    },
+    {
+      "name": "payload",
+      "type": {
+        "type": "record",
+        "name": "RoleAssignedPayload",
+        "namespace": "mx.gov.erpgrp.events.mvp",
+        "fields": [
+          {
+            "name": "userId",
+            "type": "string"
+          },
+          {
+            "name": "roleCodes",
+            "type": {
+              "type": "array",
+              "items": "string"
+            }
+          },
+          {
+            "name": "assignedBy",
+            "type": "string"
+          },
+          {
+            "name": "previousRoleCodes",
+            "type": {
+              "type": "array",
+              "items": "string"
+            },
+            "default": []
+          }
+        ]
+      }
+    }
+  ]
+}

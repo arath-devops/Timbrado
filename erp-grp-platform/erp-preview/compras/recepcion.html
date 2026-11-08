@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Recepción · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · P0 UX · ERP-SI/FM · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo; D.restoreSession();
+  const el=document.getElementById('content');
+  el.innerHTML = 
+(()=>{
+  const poId=new URLSearchParams(location.search).get('po')||'PO-2026-0799';
+  const p=D.pos.find(x=>x.id===poId)||D.pos[1];
+  return crumbs([{label:'Compras',href:'index.html'},{label:'Recepción'}])+
+    pageHead('Recepción (Compras)','También disponible en Inventarios',
+      `<a class="btn btn-secondary btn-sm" href="../inventarios/recepcion-inv.html?po=${p.id}">Vista almacén</a>
+       <button class="btn btn-primary btn-sm" onclick="toast('GR POSTED')">Postear</button>`)+
+    `<div class="panel"><div class="panel-bd"><div class="form-grid">
+      ${fieldL('po_id',`<select class="control">${D.pos.map(x=>`<option>${x.id}</option>`).join('')}</select>`,true)}
+      ${fieldL('receipt_date',`<input class="control" type="date" value="2026-11-07"/>`,true)}
+      ${fieldL('warehouse_id',`<select class="control"><option>WH-P1</option><option>WH-FG</option></select>`)}
+      ${fieldL('receipt_type',`<select class="control"><option>PARTIAL</option><option>FULL</option></select>`,true)}
+    </div></div></div>
+    ${linesTable({id:'gr', cols:[{key:'line',label:'#'},{key:'item',label:'Artículo'},{key:'open_qty',label:'Abierta'},{key:'ordered_qty',label:'Pedida'}],
+      rows:(p.lines||[]), editable:false})}`;
+})()
+;
+  
+});
+</script></body></html>

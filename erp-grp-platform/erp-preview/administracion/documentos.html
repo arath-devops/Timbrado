@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Documentos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Documentos'}])+
+pageHead('Explorador de documentos / expediente', 'case_file_id, business_ref_*',
+  `<a class="btn btn-primary btn-sm" href="subir.html">Subir evidencia</a>
+   <a class="btn btn-secondary btn-sm" href="visor.html">Visor</a>`)+
+`<div class="panel"><div class="panel-bd form-grid">
+  <div class="field"><label class="req">case_file_id</label><div>CF-PO-2026-0842</div></div>
+  <div class="field"><label class="req">business_ref_type</label><div>PurchaseOrder</div></div>
+  <div class="field"><label class="req">business_ref_id</label><div>PO-2026-0842</div></div>
+</div></div>
+<div class="table-wrap"><table class="data"><thead><tr><th>document_id</th><th>doc_type</th><th>name</th><th>version_no</th><th>status</th></tr></thead>
+<tbody>
+<tr class="clickable" onclick="location.href='visor.html'"><td>DOC-9912</td><td>COT</td><td>Cotización Aceros.pdf</td><td>2</td><td>${D.badge('AVAILABLE')}</td></tr>
+<tr><td>DOC-9901</td><td>OC</td><td>OC-2026-0842.pdf</td><td>1</td><td>${D.badge('AVAILABLE')}</td></tr>
+</tbody></table></div>
+;
+  
+});
+</script></body></html>

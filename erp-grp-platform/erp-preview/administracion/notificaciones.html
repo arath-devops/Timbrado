@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Notificaciones · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">ERP Preview · ERP-SI-001 / ERP-FM-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+  const D=ERPDemo;
+  document.getElementById('content').innerHTML = 
+crumbs([{label:'Administración',href:'index.html'},{label:'Notificaciones'}])+
+pageHead('Notificaciones', 'UNREAD / READ', '')+
+`<div class="panel"><div class="panel-bd">
+${D.notifications.map(n=>`<a class="list-row" href="${n.href}">
+  <div style="flex:1"><div style="display:flex;gap:8px;align-items:center">${n.unread?'<span class="badge b-info">UNREAD</span>':'<span class="badge b-neu">READ</span>'}<strong>${n.title}</strong></div></div>
+  <span style="font-size:12px;color:var(--ink-3)">${n.time}</span>
+</a>`).join('')}
+</div></div>
+;
+  
+});
+</script></body></html>
