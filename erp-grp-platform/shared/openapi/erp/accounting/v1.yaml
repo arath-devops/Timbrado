@@ -1,0 +1,157 @@
+openapi: 3.1.0
+info:
+  title: ERP accounting-service API
+  version: 1.0.0-erp
+  description: COA, periodos, asientos park/post, saldos, mayor, balanza.
+  x-service: accounting-service
+  x-track: erp
+servers:
+  - url: /api/v1
+tags: [CoA, Periods, Journals, Balances]
+paths:
+  /accounts:
+    get:
+      tags: [CoA]
+      operationId: listAccounts
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+      responses:
+        '200':
+          description: Plan de cuentas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GlAccount' }
+  /periods/{periodCode}/close:
+    post:
+      tags: [Periods]
+      operationId: closePeriod
+      summary: Inicia WF erp.gl.period_close
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - name: periodCode
+          in: path
+          required: true
+          schema: { type: string, example: "2026-11" }
+      responses:
+        '202':
+          description: Cierre solicitado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FiscalPeriod' }
+  /journal-entries:
+    post:
+      tags: [Journals]
+      operationId: createJournalEntry
+      summary: Park (DRAFT) por defecto
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateJournalEntryRequest' }
+      responses:
+        '201':
+          description: Parked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JournalEntry' }
+  /journal-entries/{id}/post:
+    post:
+      tags: [Journals]
+      operationId: postJournalEntry
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - $ref: '../../common/v1.yaml#/components/parameters/IdempotencyKeyHeader'
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: POSTED
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JournalEntry' }
+        '422':
+          description: Periodo cerrado o asiento desbalanceado
+          content:
+            application/json:
+              schema: { $ref: '../../common/v1.yaml#/components/schemas/ApiError' }
+  /balances/trial:
+    get:
+      tags: [Balances]
+      operationId: trialBalance
+      parameters:
+        - $ref: '../../common/v1.yaml#/components/parameters/LegalEntityIdHeader'
+        - name: periodCode
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Balanza
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AccountBalance' }
+components:
+  securitySchemes:
+    bearerAuth:
+      $ref: '../../common/v1.yaml#/components/securitySchemes/bearerAuth'
+  schemas:
+    Money:
+      $ref: '../../common/v1.yaml#/components/schemas/Money'
+    GlAccount:
+      type: object
+      required: [code, name, accountType]
+      properties:
+        code: { type: string }
+        name: { type: string }
+        accountType: { type: string, enum: [ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE] }
+    FiscalPeriod:
+      type: object
+      required: [code, status]
+      properties:
+        code: { type: string }
+        status: { type: string, enum: [OPEN, CLOSING, CLOSED] }
+    CreateJournalEntryRequest:
+      type: object
+      required: [legalEntityId, periodCode, lines]
+      properties:
+        legalEntityId: { type: string, format: uuid }
+        periodCode: { type: string }
+        memo: { type: string }
+        lines:
+          type: array
+          minItems: 2
+          items:
+            type: object
+            required: [accountCode, debit, credit]
+            properties:
+              accountCode: { type: string }
+              debit: { type: string }
+              credit: { type: string }
+              costCenterId: { type: string }
+    JournalEntry:
+      type: object
+      required: [id, documentNumber, status]
+      properties:
+        id: { type: string, format: uuid }
+        documentNumber: { type: string }
+        status: { type: string, enum: [DRAFT, POSTED, REVERSED] }
+        periodCode: { type: string }
+    AccountBalance:
+      type: object
+      required: [accountCode, debit, credit]
+      properties:
+        accountCode: { type: string }
+        debit: { type: string }
+        credit: { type: string }
+security:
+  - bearerAuth: []

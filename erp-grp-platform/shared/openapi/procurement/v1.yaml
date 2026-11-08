@@ -4,13 +4,17 @@ info:
   version: 1.0.0
   summary: P2P operativo — requisiciones y órdenes de compra (MVP)
   description: |
-    Contrato OpenAPI 3.1 de `procurement-service` (MVP Sprint 1).
+    **DEPRECATED para track ERP** (ADR-014 / ERP-SF-001).
+    Este contrato acopla P2P a `budget-service` (CommitBudget).
+    Desarrollo ERP debe usar `shared/openapi/erp/procurement/v1.yaml`.
+    Se conserva solo como referencia del camino GRP histórico.
     Estados OC: DRAFT | SUBMITTED | APPROVED | REJECTED | CANCELLED.
-    Regla: sin CommitBudget COMMITTED no hay APPROVED.
-    Recepción/factura/3-way match fuera de scope.
+    Regla GRP: sin CommitBudget COMMITTED no hay APPROVED.
   x-service: procurement-service
   x-api-version: v1
   x-baseline: BL-S1-001
+  x-deprecated-for: erp
+  x-successor: shared/openapi/erp/procurement/v1.yaml
 
 servers:
   - url: https://procurement.{env}.erp-grp.local

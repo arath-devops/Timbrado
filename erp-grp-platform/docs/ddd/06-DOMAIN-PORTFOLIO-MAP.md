@@ -162,9 +162,22 @@ Dominios cuyo **concepto de negocio existe en ambos mundos**, aunque el lenguaje
 3. **Accounting es autoridad de asientos**; nadie escribe pólizas fuera de `accounting-service`.  
 4. **Treasury es autoridad de movimiento de dinero**; AP/AR/Payroll emiten *solicitudes de pago/cobro*.  
 5. **Document/Workflow/Audit** son *generic subdomains* consumidos por todos.  
-6. Sync solo para invariante inmediata (ej. `CommitBudget`); resto eventos.
+6. Sync solo para invariante inmediata en **track GRP** (ej. `CommitBudget`); resto eventos.  
+7. **Track ERP comercial** ([ADR-014](../adr/ADR-014-erp-sin-budget-grp.md)): Purchasing **no** depende de Budget; ver [ERP-MS-001](../erp/09-MAPA-SERVICIOS-ERP.md).
 
-### 5.2 Dependencias críticas (MVP → F2)
+### 5.2 Dependencias críticas
+
+**ERP (feat-ERP / Freeze):**
+
+```text
+Purchasing ──async─► Workflow, Document, Audit, Inventory, AP
+AP ──async──► Purchasing (OC/GR), Treasury (propuesta), Accounting
+AR/Billing ──async──► Inventory, Accounting, Fiscal-port
+Treasury ──async──► Accounting, AP
+(sin Budget)
+```
+
+**GRP (legado / otra iniciativa):**
 
 ```text
 Purchasing ──sync──► Budget (CommitBudget)

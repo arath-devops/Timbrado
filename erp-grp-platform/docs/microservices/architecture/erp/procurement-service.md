@@ -1,77 +1,63 @@
 # `procurement-service`
-## SA-MS-001 · Capa **ERP (Purchasing/P2P)** · Prioridad: **MVP + F1**
+## SA-MS-001 · Capa **ERP (Purchasing/P2P)** · Track **ERP-SF-001**
 
 ### Responsabilidad
-Ciclo Procure-to-Pay operativo: requisiciones, órdenes de compra, recepciones, matching de facturas y cancelaciones, con integración a presupuesto, workflow y documentos.
+Ciclo Procure-to-Pay operativo comercial: proveedores, requisiciones, órdenes de compra y recepciones.  
+Aprobación vía **workflow + umbrales** (ERP-WF-001). **Sin** `budget-service` ([ADR-014](../../../adr/ADR-014-erp-sin-budget-grp.md)).
 
 ### Límites (Bounded Context)
 
 **Posee / es dueño de:**
+- Vendor (maestro proveedor + banco + holds)
 - PurchaseRequisition
 - PurchaseOrder
-- GoodsReceipt
-- SupplierInvoice
-- SupplierRef
+- GoodsReceipt (cabecera/líneas; stock lo confirma inventory)
+- SupplierRef / vínculo a catálogo
 
 **No posee / no debe hacer:**
-- Saldos de partida (budget-service)
-- Expediente binario (document-service)
-- Motor de aprobaciones (workflow-service)
-- Procedimientos de licitación pública (futuro public-procurement-service)
+- Partidas / fondos públicos (`budget-service` — **GRP only**)
+- Factura CxP y 3-way match motor final (`ap-service`)
+- Expediente binario (`document-service`)
+- Motor de aprobaciones (`workflow-service`)
+- Saldos de inventario (`inventory-service`)
 
-### API (OpenAPI `/api/v1`)
+### API (OpenAPI track ERP)
+
+Contrato canónico: [`shared/openapi/erp/procurement/v1.yaml`](../../../../shared/openapi/erp/procurement/v1.yaml)
 
 | Método | Path | Descripción |
 |--------|------|-------------|
-| `POST` | `/api/v1/requisitions` | Crear requisición |
-| `GET` | `/api/v1/requisitions/{id}` | Detalle |
-| `POST` | `/api/v1/requisitions/{id}/submit` | Enviar a aprobación |
+| `POST` | `/api/v1/vendors` | Alta proveedor |
+| `PATCH` | `/api/v1/vendors/{id}` | Actualizar / hold |
+| `POST` | `/api/v1/requisitions` | Crear PR |
+| `POST` | `/api/v1/requisitions/{id}/submit` | Enviar WF `erp.pr.approve` |
 | `POST` | `/api/v1/purchase-orders` | Crear OC |
-| `POST` | `/api/v1/purchase-orders/{id}/submit` | Submit (dispara budget+WF) |
-| `GET` | `/api/v1/purchase-orders/{id}` | Detalle |
-| `POST` | `/api/v1/purchase-orders/{id}/cancel` | Cancelar |
+| `POST` | `/api/v1/purchase-orders/from-pr` | OC desde PR aprobada |
+| `POST` | `/api/v1/purchase-orders/{id}/submit` | Enviar WF `erp.po.approve` (**sin** CommitBudget) |
 | `POST` | `/api/v1/goods-receipts` | Registrar recepción |
-| `POST` | `/api/v1/invoices/match` | 3-way/2-way match |
+| `GET` | `/api/v1/purchase-orders/{id}` | Detalle + open qty |
 
 ### Eventos publicados
-- `PurchaseRequisitionCreated`
-- `PurchaseRequisitionSubmitted`
-- `PurchaseRequisitionApproved`
-- `PurchaseOrderCreated`
-- `PurchaseOrderSubmitted`
-- `PurchaseOrderApproved`
-- `PurchaseOrderRejected`
-- `PurchaseOrderCancelled`
-- `GoodsReceived`
-- `InvoiceMatched`
-- `InvoiceMatchFailed`
+Ver [ERP-EV-001](../../../erp/10-EVENTOS-ERP-MVP.md):  
+`PurchaseRequisitionSubmitted/Approved`, `PurchaseOrder*`, `GoodsReceiptPosted`.
 
 ### Eventos consumidos
-- `ProcessCompleted / ProcessRejected`
-- `BudgetCommitted`
-- `BudgetCommitFailed`
-- `BudgetCommitmentReleased`
+- `WorkflowApproved` / `WorkflowRejected` (processKey ERP)
 - `DocumentLinked`
 - `CatalogItemDeprecated`
 
+### Eventos que NO consume (ERP)
+- `BudgetCommitted` / `BudgetReleased` / `BudgetCommitFailed`
+
 ### Base de datos
-- Motor: **PostgreSQL**
-- Database/schema: `procurement_db`
-- Regla: acceso exclusivo de `procurement-service`; migraciones Flyway propias
-- Campos mínimos: `id`, `tenant_id`, auditoría, `version`
+- PostgreSQL · `procurement_db` · Flyway propio
+- Campos mínimos: `id`, `tenant_id`, `legal_entity_id`, `document_number`, auditoría, `version`
+- **Sin** columnas `allocation_id` / `budget_movement_id`
 
 ### Dependencias
-- `PostgreSQL`
-- `Kafka`
-- `IAM`
-- `workflow-service`
-- `budget-service`
-- `document-service`
-- `catalog-service`
-- `audit-service`
-- `notification-service`
-- `inventory-service (F2 events)`
-- `accounting-service (F1 events)`
+- IAM · catalog · workflow · document · audit · Kafka · Postgres
+- inventory (eventos GR) · ap (refs PO/GR)
+- **No** budget-service
 
 ### Notas de contrato
-Al submit/approve: sync CommitBudget (idempotent). No aprobar sin COMMITTED. businessRef hacia workflow/document case file.
+Aprobación OC = WF + umbrales ACME. Account assignment = `costCenterId` / categoría interna, **no** partida CONAC.

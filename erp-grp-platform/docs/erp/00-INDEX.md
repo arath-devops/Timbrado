@@ -18,8 +18,15 @@
 5. [Congelamiento de alcance MVP](05-ERP-SCOPE-FREEZE-MVP.md) — **ERP-SF-001** *(VoBo 2026-11-07)*
 6. [Paquete de control MVP](06-ERP-MVP-CONTROL-PACK.md) — **ERP-CP-001** *(fusionado en FM §19)*
 7. [Glosario para desarrollo](07-GLOSARIO-ERP-DESARROLLO.md) — **ERP-GL-001**
-8. [Acoplamiento pre-desarrollo](08-ERP-ACOPLAMIENTO-PRE-DESARROLLO.md) — **ERP-AC-001**
-9. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)
+8. [Acoplamiento pre-desarrollo](08-ERP-ACOPLAMIENTO-PRE-DESARROLLO.md) — **ERP-AC-001** *(bloqueantes cerrados)*
+9. [Mapa de servicios ERP](09-MAPA-SERVICIOS-ERP.md) — **ERP-MS-001**
+10. [Eventos ERP MVP](10-EVENTOS-ERP-MVP.md) — **ERP-EV-001**
+11. [Workflows ERP MVP](11-WORKFLOWS-ERP-MVP.md) — **ERP-WF-001**
+12. [Casos SoD](12-SOD-CASOS-PRUEBA.md) — **ERP-SOD-001**
+13. [Config seed ACME](13-CONFIG-SEED-ACME.md) — **ERP-CFG-001**
+14. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)
+15. ADR desacople budget: [ADR-014](../adr/ADR-014-erp-sin-budget-grp.md)
+16. OpenAPI ERP: [`shared/openapi/erp/`](../../shared/openapi/erp/)
 
 ## Cómo leer estos documentos
 
@@ -32,5 +39,7 @@
 | SF-001 | Qué entra y qué no en el primer release (congelado) |
 | CP-001 | Controles financieros obligatorios (crédito, match, dual control…) |
 | GL-001 | Traducción de términos EN↔ES para el equipo |
+| AC-001 | Checklist pre-dev; bloqueantes vs ámbar |
+| MS/EV/WF/SOD/CFG | Contratos de servicios, eventos, flujos, SoD y seed para implementar |
 
 Los **códigos** (`legal_entity_id`, `PO_APPROVAL`, estados `POSTED`) se dejan en inglés porque serán nombres de API/BD; en UI y en prosa de negocio usamos español.

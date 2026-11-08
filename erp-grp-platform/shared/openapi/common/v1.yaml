@@ -97,6 +97,17 @@ components:
       schema:
         type: string
         format: uuid
+    LegalEntityIdHeader:
+      name: X-Legal-Entity-Id
+      in: header
+      required: true
+      description: |
+        Entidad legal (compañía) del documento/transacción ERP.
+        Debe estar en el scope del JWT (`org_scopes` / legal entities permitidas).
+        Obligatorio en todos los endpoints TX del track ERP (ERP-CP-001).
+      schema:
+        type: string
+        format: uuid
 
   headers:
     X-Correlation-Id:
@@ -212,7 +223,7 @@ components:
         code:
           type: string
           description: Código estable de error de negocio o técnico
-          examples: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, NOT_FOUND, CONFLICT, INSUFFICIENT_FUNDS]
+          examples: [VALIDATION_ERROR, UNAUTHORIZED, FORBIDDEN, SOD_VIOLATION, NOT_FOUND, CONFLICT, PERIOD_CLOSED]
         message:
           type: string
         traceId:

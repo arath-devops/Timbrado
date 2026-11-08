@@ -19,7 +19,14 @@ Todos los eventos: **version = 1**, formato Avro + JSON Schema, envelope con `co
 | `BudgetReleased` | `grp.budget.events` | `budget-service` | `procurement-service`, `audit-service` | `tenantId:allocationId` | [BudgetReleased.avsc](../../../shared/avro/mvp/BudgetReleased.avsc) | [BudgetReleased.json](../../../shared/json-schema/mvp/BudgetReleased.json) |
 | `BudgetCommitFailed` | `grp.budget.events` | `budget-service` | `procurement-service`, `audit-service`, `workflow-service` (opcional) | `tenantId:allocationId` | [BudgetCommitFailed.avsc](../../../shared/avro/mvp/BudgetCommitFailed.avsc) | [BudgetCommitFailed.json](../../../shared/json-schema/mvp/BudgetCommitFailed.json) |
 
-## Secuencia happy path (referencia)
+## Track ERP (canónico)
+
+Catálogo completo P2P/O2C/AP/AR/GL/Treasury sin budget:  
+**[ERP-EV-001](../../erp/10-EVENTOS-ERP-MVP.md)**
+
+En ERP, `WorkflowApproved` **no** implica ni requiere `BudgetCommitted`. Consumers ERP de `Budget*` = ninguno (ADR-014).
+
+## Secuencia happy path GRP (legado — no ERP)
 
 ```text
 UserCreated / RoleAssigned
@@ -33,4 +40,5 @@ UserCreated / RoleAssigned
   → AuditRecordCreated (en cada mutación relevante vía bridge)
 ```
 
-> Nota: el **commit presupuestal sync** HTTP sigue siendo la fuente de decisión para APPROVED de OC; los eventos `Budget*` son el espejo asíncrono y la base de proyección/audit.
+> Nota GRP: el **commit presupuestal sync** HTTP es la fuente de decisión para APPROVED de OC en el track público.  
+> Nota ERP: ver ERP-EV-001 — aprobación = solo workflow + umbrales.

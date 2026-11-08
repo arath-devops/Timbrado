@@ -6,7 +6,8 @@ info:
   description: |
     Contrato OpenAPI 3.1 de `procurement-service` (MVP Sprint 1).
     Estados OC: DRAFT | SUBMITTED | APPROVED | REJECTED | CANCELLED.
-    Regla: sin CommitBudget COMMITTED no hay APPROVED.
+    LEGADO GRP: sin CommitBudget COMMITTED no hay APPROVED.
+    Track ERP: usar shared/openapi/erp/procurement/v1.yaml (ADR-014, sin budget).
     Recepción/factura/3-way match fuera de scope.
   x-service: procurement-service
   x-api-version: v1
