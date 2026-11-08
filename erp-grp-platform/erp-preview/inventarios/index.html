@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   const el=document.getElementById('content');
   el.innerHTML = 
 crumbs([{label:'Operación'},{label:'Inventarios'}])+
-pageHead('Inventarios','Artículos · ATP · Movimientos · Recepción')+
+pageHead('Inventarios','Artículos · ATP · Movimientos · Recepción',
+  `<a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=inventarios">Campos del módulo</a>`)+
 `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
   <a class="btn btn-secondary btn-sm" href="articulos.html">Maestro de artículos</a>
   <a class="btn btn-secondary btn-sm" href="existencias.html">Existencias (ATP)</a>

@@ -5,13 +5,13 @@ window.ERPDemo = {
     { id: 'ACME-MX-002', name: 'ACME Servicios Norte S.A. de C.V.' }
   ],
   roles: [
-    { id: 'DG', label: 'Director General', username: 'dgomez', display_name: 'Diego Gómez', short: 'DG', email: 'diego.gomez@acme-industrial.mx', nav: ['dashboard','bandeja','reportes','finanzas','cxp','cxc','facturacion','tesoreria','contabilidad','compras','ventas'] },
-    { id: 'CFO', label: 'CFO', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','bandeja','reportes','contabilidad','cxp','facturacion','cxc','tesoreria','finanzas','activos'] },
-    { id: 'GL', label: 'Contador', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','bandeja','contabilidad','cxp','cxc','facturacion','tesoreria','finanzas','reportes'] },
-    { id: 'BUY', label: 'Comprador', username: 'clopez', display_name: 'Carlos López', short: 'CL', email: 'carlos.lopez@acme-industrial.mx', nav: ['dashboard','bandeja','compras','inventarios','proveedores','reportes'] },
-    { id: 'SAL', label: 'Vendedor', username: 'avargas', display_name: 'Ana Vargas', short: 'AV', email: 'ana.vargas@acme-industrial.mx', nav: ['dashboard','ventas','facturacion','cxc','inventarios','reportes'] },
-    { id: 'INV', label: 'Encargado de Almacén', username: 'rsolis', display_name: 'Roberto Solís', short: 'RS', email: 'roberto.solis@acme-industrial.mx', nav: ['dashboard','inventarios','compras','reportes'] },
-    { id: 'HR', label: 'RRHH', username: 'lramos', display_name: 'Laura Ramos', short: 'LR', email: 'laura.ramos@acme-industrial.mx', nav: ['dashboard','rh','nomina','bandeja','reportes'] }
+    { id: 'DG', label: 'Director General', username: 'dgomez', display_name: 'Diego Gómez', short: 'DG', email: 'diego.gomez@acme-industrial.mx', nav: ['dashboard','modulos','bandeja','reportes','finanzas','cxp','cxc','facturacion','tesoreria','contabilidad','compras','ventas'] },
+    { id: 'CFO', label: 'CFO', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','modulos','bandeja','reportes','contabilidad','cxp','facturacion','cxc','tesoreria','finanzas','activos'] },
+    { id: 'GL', label: 'Contador', username: 'mhernandez', display_name: 'María Hernández', short: 'MH', email: 'maria.hernandez@acme-industrial.mx', nav: ['dashboard','modulos','bandeja','contabilidad','cxp','cxc','facturacion','tesoreria','finanzas','reportes'] },
+    { id: 'BUY', label: 'Comprador', username: 'clopez', display_name: 'Carlos López', short: 'CL', email: 'carlos.lopez@acme-industrial.mx', nav: ['dashboard','modulos','bandeja','compras','inventarios','proveedores','reportes'] },
+    { id: 'SAL', label: 'Vendedor', username: 'avargas', display_name: 'Ana Vargas', short: 'AV', email: 'ana.vargas@acme-industrial.mx', nav: ['dashboard','modulos','ventas','facturacion','cxc','inventarios','reportes'] },
+    { id: 'INV', label: 'Encargado de Almacén', username: 'rsolis', display_name: 'Roberto Solís', short: 'RS', email: 'roberto.solis@acme-industrial.mx', nav: ['dashboard','modulos','inventarios','compras','reportes'] },
+    { id: 'HR', label: 'RRHH', username: 'lramos', display_name: 'Laura Ramos', short: 'LR', email: 'laura.ramos@acme-industrial.mx', nav: ['dashboard','modulos','rh','nomina','bandeja','reportes'] }
   ],
   session: null, /* set by applyRole */
   notifications: [

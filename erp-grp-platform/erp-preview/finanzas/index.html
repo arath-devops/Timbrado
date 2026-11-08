@@ -14,8 +14,16 @@ document.addEventListener('DOMContentLoaded',()=>{
   const D=ERPDemo;
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Finanzas'}])+
-pageHead('Finanzas', 'Contabilidad · CxP · Facturación · CxC · Tesorería', '')+
-`<div class="grid-3">
+pageHead('Finanzas', 'Contabilidad · CxP · Facturación · CxC · Tesorería',
+  `<a class="btn btn-secondary btn-sm" href="../modulos/index.html">Atlas módulos</a>`)+
+`<div class="panel"><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=contabilidad">Campos Contabilidad</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=cxp">Campos CxP</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=facturacion">Campos Facturación</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=cxc">Campos CxC</a>
+  <a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=tesoreria">Campos Tesorería</a>
+</div></div>
+<div class="grid-3">
 ${[
   ['Contabilidad (GL)','contabilidad.html','COA, periodos, asientos, mayor, balanza, EEFF'],
   ['CxP · Cuentas por pagar','cxp.html','Facturas proveedor, 3-way match, pagos, aging'],

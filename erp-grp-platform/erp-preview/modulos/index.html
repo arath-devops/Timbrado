@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Atlas de módulos · ERP Preview</title>
+<link rel="stylesheet" href="../assets/css/tokens.css"/>
+<link rel="stylesheet" href="../assets/css/shell.css"/>
+<link rel="stylesheet" href="../assets/css/components.css"/>
+<link rel="stylesheet" href="../assets/css/atlas.css"/>
+</head><body data-depth="..">
+<div class="app" id="app"><main class="main" id="main"><div id="content"></div>
+<p class="footer-note">Vista previa por módulo · campos ERP-FM-001 · alcance ERP-SF-001 · sin backend</p></main></div>
+<script src="../assets/js/data.js"></script>
+<script src="../assets/js/i18n.js"></script>
+<script src="../assets/js/components.js"></script>
+<script src="../assets/js/module-atlas.js"></script>
+<script src="../assets/js/atlas-ui.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  ERPDemo.restoreSession();
+  const inMods = ERPModules.modules.filter(m => m.freeze === 'IN');
+  const reqCount = renderFieldsSummary().length;
+  let filter = 'in';
+  const el = document.getElementById('content');
+
+  function paint() {
+    el.innerHTML =
+      crumbs([{ label: 'Inicio', href: '../dashboard/index.html' }, { label: 'Atlas de módulos' }]) +
+      pageHead('Vista previa por módulo',
+        'Cómo se ve cada módulo del ERP Freeze y qué campos son obligatorios (ERP completo = alcance SF-001)',
+        `<div class="seg" role="group">
+          <button type="button" class="seg-btn ${filter==='in'?'active':''}" data-f="in">Freeze IN (${inMods.length})</button>
+          <button type="button" class="seg-btn ${filter==='all'?'active':''}" data-f="all">Todos</button>
+          <button type="button" class="seg-btn ${filter==='out'?'active':''}" data-f="out">OUT</button>
+        </div>
+        <a class="btn btn-secondary btn-sm" href="campos.html">Catálogo campos obligatorios (${reqCount})</a>`) +
+      `<div class="atlas-hero">
+        <p>Cada tarjeta abre el <strong>boceto de pantallas</strong> del módulo con la tabla de campos
+        <code>API key</code> tomados de <strong>ERP-FM-001</strong> y el Control Pack. Use “Ver UI preview” para la pantalla interactiva existente.</p>
+        <ul>
+          <li><strong>DENTRO Freeze</strong> — a construir en release-1</li>
+          <li><strong>FUERA</strong> — stubs (RRHH, nómina, activos); no campos MVP</li>
+          <li>Sin <code>allocationId</code> / budget GRP (ADR-014)</li>
+        </ul>
+      </div>` +
+      renderModuleCards(filter);
+    el.querySelectorAll('[data-f]').forEach(btn => {
+      btn.onclick = () => { filter = btn.dataset.f; paint(); };
+    });
+  }
+  paint();
+});
+</script></body></html>

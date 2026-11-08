@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Operación'},{label:'Compras'}])+
 pageHead('Compras (P2P)', 'Requisiciones · Órdenes · Recepción · Proveedores',
-  `<a class="btn btn-primary btn-sm" href="nueva-requisicion.html">Nueva requisición</a>
+  `<a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=compras">Campos del módulo</a>
+   <a class="btn btn-primary btn-sm" href="nueva-requisicion.html">Nueva requisición</a>
    <a class="btn btn-secondary btn-sm" href="nueva-oc.html">Nueva OC</a>`)+
 `<div class="kpi-row">
   <div class="kpi"><div class="l">PR abiertas</div><div class="v">${D.prs.filter(p=>p.status==='SUBMITTED'||p.status==='APPROVED').length}</div></div>

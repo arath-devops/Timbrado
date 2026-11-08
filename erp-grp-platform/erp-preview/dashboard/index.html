@@ -45,8 +45,14 @@ document.addEventListener('DOMContentLoaded',()=>{
           ${s.nav.slice(0,8).map(k=>`<span class="chip">${k}</span>`).join('')}
         </div></div>
       </div>`)+
-  `<div class="panel"><div class="panel-hd"><h3>Accesos rápidos</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
-    ${[['CxP','../finanzas/cxp.html'],['Facturación','../finanzas/facturacion.html'],['CxC','../finanzas/cxc.html'],['Compras','../compras/index.html'],['Ventas','../ventas/index.html'],['Inventarios','../inventarios/index.html'],['Recepción (INV)','../inventarios/recepcion-inv.html']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="${h}">${l}</a>`).join('')}
+  `<div class="panel"><div class="panel-hd"><h3>Atlas de módulos (vista previa + campos)</h3>
+    <a class="btn btn-primary btn-sm" href="../modulos/index.html">Abrir atlas</a></div>
+    <div class="panel-bd" style="font-size:13px;color:var(--ink-2)">
+      Recorra el ERP Freeze módulo a módulo: boceto de pantallas y campos obligatorios (FM-001).
+      También el <a href="../modulos/campos.html">catálogo de campos obligatorios</a>.
+    </div></div>
+  <div class="panel"><div class="panel-hd"><h3>Accesos rápidos</h3></div><div class="panel-bd" style="display:flex;flex-wrap:wrap;gap:8px">
+    ${[['Atlas módulos','../modulos/index.html'],['CxP','../finanzas/cxp.html'],['Facturación','../finanzas/facturacion.html'],['CxC','../finanzas/cxc.html'],['Compras','../compras/index.html'],['Ventas','../ventas/index.html'],['Inventarios','../inventarios/index.html'],['Recepción (INV)','../inventarios/recepcion-inv.html']].map(([l,h])=>`<a class="btn btn-secondary btn-sm" href="${h}">${l}</a>`).join('')}
   </div></div>`;
 })()
 ;

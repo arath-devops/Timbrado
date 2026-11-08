@@ -15,6 +15,15 @@ python3 -m http.server 4174 --bind 127.0.0.1
 
 En el inicio de sesión elige **empresa + rol** (Director General, CFO, Contador, Comprador, Vendedor, Almacén, RRHH). Cualquier contraseña.
 
+### Atlas por módulo (campos del ERP Freeze)
+
+Tras el login: **Atlas módulos + campos** en el menú, o `/modulos/`.
+
+- Tarjetas por módulo (Compras, Inventarios, Ventas, CxP, CxC, Facturación, GL, Tesorería, Plataforma…)
+- En cada módulo: boceto de pantalla + tabla de campos necesarios (`API key`, obligatorio/condicional)
+- Catálogo filtrable: `/modulos/campos.html`
+- Alcance = **ERP-SF-001** (IN); RRHH/Nómina/Activos marcados OUT
+
 ### Mejoras P0 de experiencia
 
 - Etiquetas en español (+ pista técnica del campo)
@@ -39,13 +48,14 @@ https://raw.githack.com/arath-devops/Timbrado/feat-ERP/erp-grp-platform/erp-prev
 erp-preview/
   index.html                 # Inicio de sesión
   dashboard/                 # Inicio ejecutivo
+  modulos/                   # Atlas por módulo + catálogo de campos obligatorios
   finanzas/                  # Contabilidad, CxP, CxC, Facturación, Tesorería
   compras/                   # Requisiciones, OC, Recepción, Proveedores
   ventas/                    # Pedidos, Entregas
   inventarios/               # Artículos, Existencias, Movimientos, Recepción
-  rh/                        # Empleados, Ausencias
-  nomina/                    # Corrida, Dispersión (stub Profesional)
-  activos/                   # Alta, Depreciación (stub)
+  rh/                        # Empleados, Ausencias (OUT Freeze)
+  nomina/                    # Corrida, Dispersión (OUT Freeze)
+  activos/                   # Alta, Depreciación (OUT Freeze)
   proyectos/                 # Lista, Timesheets (stub)
   administracion/            # Usuarios, Org, Catálogos, Bandeja, Docs, Perfil, Auditoría
   reportes/                  # Reportes estándar MVP

@@ -5,7 +5,8 @@
   /* nav keys map to role.nav filters */
   const NAV = [
     { sec: 'Inicio', items: [
-      { key: 'dashboard', href: 'dashboard/index.html', label: 'Dashboard', ico: '▣' }
+      { key: 'dashboard', href: 'dashboard/index.html', label: 'Dashboard', ico: '▣' },
+      { key: 'modulos', href: 'modulos/index.html', label: 'Atlas módulos + campos', ico: '◫', match: ['modulos'] }
     ]},
     { sec: 'Operación', items: [
       { key: 'compras', href: 'compras/index.html', label: 'Compras', ico: '◇', match: ['compras','requisiciones','ordenes','recepcion','proveedores','detalle-oc','detalle-pr','nueva'] },

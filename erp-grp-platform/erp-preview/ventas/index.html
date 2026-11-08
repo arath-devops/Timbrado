@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('content').innerHTML = 
 crumbs([{label:'Operación'},{label:'Ventas'}])+
 pageHead('Ventas (Order-to-Cash)', 'Pedidos · Entregas · enlace Billing',
-  `<a class="btn btn-primary btn-sm" href="nuevo-pedido.html">Crear pedido</a>`)+
+  `<a class="btn btn-secondary btn-sm" href="../modulos/detalle.html?m=ventas">Campos del módulo</a>
+   <a class="btn btn-primary btn-sm" href="nuevo-pedido.html">Crear pedido</a>`)+
 `<div class="panel"><div class="panel-bd" style="display:flex;gap:8px;flex-wrap:wrap">
   <a class="btn btn-secondary btn-sm" href="pedidos.html">Lista de pedidos</a>
   <a class="btn btn-secondary btn-sm" href="nuevo-pedido.html">Crear / editar pedido</a>
