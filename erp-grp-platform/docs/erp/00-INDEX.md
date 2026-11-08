@@ -29,6 +29,7 @@
 16. OpenAPI ERP: [`shared/openapi/erp/`](../../shared/openapi/erp/)
 17. **Dossier técnico (PDF):** [ERP-DOSSIER-001](entregables/ERP-DOSSIER-001-Sistema-ERP.pdf) — descripción, alcance, metas, arquetipo y entregables
 18. [Diagrama microservicios por fases](14-DIAGRAMA-MICROSERVICIOS-FASES.md) — **ERP-ARCH-DIAG-001**
+19. [Catálogos configurables](15-CATALOGOS-CONFIGURABLES-ERP.md) — **ERP-CAT-001**
 
 ## Cómo leer estos documentos
 
