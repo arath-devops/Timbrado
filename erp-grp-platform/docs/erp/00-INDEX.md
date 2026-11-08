@@ -27,6 +27,7 @@
 14. Demo visual HTML: [`../erp-preview/`](../erp-preview/) (rama `feat-ERP`)
 15. ADR desacople budget: [ADR-014](../adr/ADR-014-erp-sin-budget-grp.md)
 16. OpenAPI ERP: [`shared/openapi/erp/`](../../shared/openapi/erp/)
+17. **Dossier técnico (PDF):** [ERP-DOSSIER-001](entregables/ERP-DOSSIER-001-Sistema-ERP.pdf) — descripción, alcance, metas, arquetipo y entregables
 
 ## Cómo leer estos documentos
 
