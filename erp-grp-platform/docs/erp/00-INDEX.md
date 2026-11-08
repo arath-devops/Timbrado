@@ -28,6 +28,7 @@
 15. ADR desacople budget: [ADR-014](../adr/ADR-014-erp-sin-budget-grp.md)
 16. OpenAPI ERP: [`shared/openapi/erp/`](../../shared/openapi/erp/)
 17. **Dossier técnico (PDF):** [ERP-DOSSIER-001](entregables/ERP-DOSSIER-001-Sistema-ERP.pdf) — descripción, alcance, metas, arquetipo y entregables
+18. [Diagrama microservicios por fases](14-DIAGRAMA-MICROSERVICIOS-FASES.md) — **ERP-ARCH-DIAG-001**
 
 ## Cómo leer estos documentos
 
