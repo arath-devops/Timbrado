@@ -44,12 +44,15 @@
     <p class="sub">Empresa, usuario y contraseña. Los permisos los asigna el administrador.</p>
     <div class="err" id="err"></div>
     <label for="company">Empresa</label>
-    <input id="company" name="company" value="ACME" autocomplete="organization" required/>
+    <input id="company" name="company" value="ACME" autocomplete="organization" required
+           data-required-msg="Ingresa la empresa"/>
     <label for="username">Usuario</label>
-    <input id="username" name="username" value="admin.acme" autocomplete="username" required/>
+    <input id="username" name="username" value="admin.acme" autocomplete="username" required
+           data-required-msg="Ingresa el usuario"/>
     <label for="password">Contraseña</label>
     <div class="password-field">
-      <input id="password" name="password" type="password" value="demo1234" autocomplete="current-password" required/>
+      <input id="password" name="password" type="password" value="demo1234" autocomplete="current-password" required
+             data-required-msg="Ingresa la contraseña"/>
       <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
         <svg id="iconShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
@@ -84,9 +87,30 @@
       togglePassword.setAttribute('aria-pressed', String(!visible));
       togglePassword.title = label;
     });
+
+    const requiredInputs = document.querySelectorAll('#f input[required]');
+    requiredInputs.forEach((input) => {
+      const requiredMsg = input.dataset.requiredMsg || 'Este campo es obligatorio';
+      const refreshValidity = () => {
+        if (input.validity.valueMissing) {
+          input.setCustomValidity(requiredMsg);
+        } else {
+          input.setCustomValidity('');
+        }
+      };
+      input.addEventListener('invalid', refreshValidity);
+      input.addEventListener('input', () => input.setCustomValidity(''));
+      input.addEventListener('blur', refreshValidity);
+    });
+
     document.getElementById('f').onsubmit = async (e) => {
       e.preventDefault();
       err.style.display = 'none'; ok.style.display = 'none';
+      const form = e.target;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
       const body = {
         company: document.getElementById('company').value.trim(),
         username: document.getElementById('username').value.trim(),
@@ -100,7 +124,7 @@
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          err.textContent = data.message || data.detail || ('Error ' + res.status);
+          err.textContent = data.message || data.detail || ('No se pudo iniciar sesión (error ' + res.status + ')');
           err.style.display = 'block';
           return;
         }
