@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERP · Iniciar sesión</title>
+  <style>
+    :root { --brand:#0a6ed1; --bg:#f0f2f5; --ink:#1a2332; --muted:#4a5568; --border:#d8dee6; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, sans-serif; background: linear-gradient(160deg,#e8f3fc,#f0f2f5 45%,#e8ecf1); color:var(--ink); min-height:100vh; display:grid; place-items:center; }
+    .card { width:min(400px,92vw); background:#fff; border:1px solid var(--border); border-radius:6px; padding:28px 24px; box-shadow:0 1px 3px rgba(26,35,50,.08); }
+    .brand { display:flex; gap:10px; align-items:center; margin-bottom:18px; }
+    .mark { width:36px; height:36px; border-radius:6px; background:var(--brand); color:#fff; display:grid; place-items:center; font-weight:700; font-size:12px; }
+    h1 { margin:0 0 18px; font-size:22px; }
+    label { display:block; font-size:12px; font-weight:600; margin:0 0 4px; color:var(--muted); }
+    input { width:100%; height:36px; border:1px solid var(--border); border-radius:4px; padding:0 10px; margin-bottom:12px; }
+    input:focus { outline:2px solid #e8f3fc; border-color:var(--brand); }
+    .password-field { position:relative; margin-bottom:12px; }
+    .password-field input { margin-bottom:0; padding-right:40px; }
+    .toggle-password {
+      position:absolute; right:4px; top:50%; transform:translateY(-50%);
+      width:32px; height:28px; border:0; border-radius:4px; background:transparent;
+      color:var(--muted); cursor:pointer; padding:0; display:grid; place-items:center;
+      transition: color .18s ease, background-color .18s ease, box-shadow .18s ease;
+    }
+    .toggle-password:hover { color:var(--brand); background:#eef5fc; }
+    .toggle-password:focus-visible { outline:2px solid #e8f3fc; color:var(--brand); }
+    .toggle-password svg {
+      width:18px; height:18px; display:block; pointer-events:none;
+      transform-origin:center;
+      transition: transform .22s cubic-bezier(.34,1.4,.64,1), opacity .15s ease;
+    }
+    .toggle-password.is-pop svg { animation: eye-pop .34s cubic-bezier(.34,1.4,.64,1); }
+    @keyframes eye-pop {
+      0% { transform: scale(.72) rotate(-12deg); opacity:.55; }
+      55% { transform: scale(1.18) rotate(6deg); opacity:1; }
+      100% { transform: scale(1) rotate(0); opacity:1; }
+    }
+    /* Evita el ojo nativo de Edge/Chrome que pelea con el nuestro */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display:none; }
+    button[type="submit"] {
+      position:relative; overflow:hidden; isolation:isolate;
+      display:grid; place-items:center;
+      width:100%; height:38px; border:0; border-radius:4px;
+      background:var(--brand); color:#fff; font-weight:700; cursor:pointer;
+      margin:6px auto 0; padding:0;
+      transition:
+        background-color .2s ease,
+        transform .16s ease,
+        box-shadow .2s ease,
+        width .42s cubic-bezier(.4,0,.2,1),
+        border-radius .42s cubic-bezier(.4,0,.2,1),
+        min-width .42s cubic-bezier(.4,0,.2,1);
+      box-shadow:0 1px 0 rgba(10,110,209,.25);
+    }
+    button[type="submit"] .btn-label {
+      display:inline-block;
+      letter-spacing:0;
+      transform:scaleX(1);
+      opacity:1;
+      transition:
+        letter-spacing .32s cubic-bezier(.4,0,.2,1),
+        transform .32s cubic-bezier(.4,0,.2,1),
+        opacity .22s ease;
+    }
+    button[type="submit"] .btn-spinner {
+      position:absolute;
+      width:18px; height:18px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.28);
+      border-top-color:#fff;
+      opacity:0; transform:scale(.4);
+      transition: opacity .2s ease .18s, transform .28s cubic-bezier(.34,1.3,.64,1) .12s;
+      pointer-events:none;
+    }
+    button[type="submit"].is-loading {
+      width:38px; min-width:38px; border-radius:50%;
+      cursor:wait; pointer-events:none;
+      box-shadow:0 2px 8px rgba(10,110,209,.28);
+      transform:none;
+    }
+    button[type="submit"].is-loading:hover,
+    button[type="submit"].is-loading:active {
+      background:var(--brand);
+      transform:none;
+      box-shadow:0 2px 8px rgba(10,110,209,.28);
+    }
+    button[type="submit"].is-loading .btn-label {
+      letter-spacing:-.35em;
+      transform:scaleX(.15);
+      opacity:0;
+      transition:
+        letter-spacing .28s cubic-bezier(.4,0,.2,1),
+        transform .28s cubic-bezier(.4,0,.2,1),
+        opacity .16s ease;
+    }
+    button[type="submit"].is-loading .btn-spinner {
+      opacity:1; transform:scale(1);
+      animation: spin .7s linear infinite;
+    }
+    button[type="submit"]:hover {
+      background:#0854a0;
+      box-shadow:0 4px 12px rgba(10,110,209,.28);
+      transform:translateY(-1px);
+    }
+    button[type="submit"]:active {
+      transform:translateY(1px) scale(.985);
+      box-shadow:0 1px 0 rgba(10,110,209,.2);
+    }
+    button[type="submit"] .ripple {
+      position:absolute; border-radius:50%; transform:scale(0);
+      background:rgba(255,255,255,.35); pointer-events:none;
+      animation: ripple-out .55s ease-out forwards;
+    }
+    @keyframes ripple-out {
+      to { transform:scale(2.6); opacity:0; }
+    }
+    @keyframes spin {
+      to { transform:rotate(360deg) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .toggle-password, .toggle-password svg, button[type="submit"],
+      button[type="submit"] .btn-label, button[type="submit"] .btn-spinner { transition:none; }
+      .toggle-password.is-pop svg, button[type="submit"] .ripple,
+      button[type="submit"].is-loading .btn-spinner { animation:none; }
+      button[type="submit"]:hover, button[type="submit"]:active { transform:none; box-shadow:none; }
+      button[type="submit"].is-loading { width:100%; min-width:0; border-radius:4px; }
+      button[type="submit"].is-loading .btn-label { opacity:0; letter-spacing:0; transform:none; }
+      button[type="submit"].is-loading .btn-spinner { opacity:1; transform:none; }
+    }
+    .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
+    .ok { display:none; background:#e3f5ea; color:#107e3e; padding:10px; border-radius:4px; font-size:12px; margin-top:12px; white-space:pre-wrap; word-break:break-all; }
+    .hint { font-size:11px; color:var(--muted); margin-top:12px; }
+  </style>
+</head>
+<body>
+  <form class="card" id="f">
+    <div class="brand">
+      <div class="mark">ERP</div>
+      <div><strong>Iniciar sesión</strong></div>
+    </div>
+    <h1>Entrar</h1>
+    <div class="err" id="err"></div>
+    <label for="company">Empresa</label>
+    <input id="company" name="company" value="ACME" autocomplete="organization" required
+           data-required-msg="Ingresa la empresa"/>
+    <label for="username">Usuario</label>
+    <input id="username" name="username" value="admin.acme" autocomplete="username" required
+           data-required-msg="Ingresa el usuario"/>
+    <label for="password">Contraseña</label>
+    <div class="password-field">
+      <input id="password" name="password" type="password" value="demo1234" autocomplete="current-password" required
+             data-required-msg="Ingresa la contraseña"/>
+      <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
+      </button>
+    </div>
+    <button type="submit" id="submitBtn" aria-live="polite">
+      <span class="btn-label">Entrar</span>
+      <span class="btn-spinner" aria-hidden="true"></span>
+    </button>
+    <p class="hint">Demo: empresa <code>ACME</code> · <code>admin.acme</code> o <code>compras.acme</code> · pass <code>demo1234</code></p>
+    <div class="ok" id="ok"></div>
+  </form>
+  <script>
+    const err = document.getElementById('err');
+    const ok = document.getElementById('ok');
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const ICON_OPEN = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+    const ICON_SLASH = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+    const syncPasswordToggle = () => {
+      const passwordVisible = passwordInput.type === 'text';
+      // Visible → ojo tachado. Oculta → ojo abierto.
+      eyeIcon.innerHTML = passwordVisible ? ICON_SLASH : ICON_OPEN;
+      const label = passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña';
+      togglePassword.setAttribute('aria-label', label);
+      togglePassword.setAttribute('aria-pressed', String(passwordVisible));
+      togglePassword.title = label;
+    };
+    togglePassword.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+      syncPasswordToggle();
+      togglePassword.classList.remove('is-pop');
+      void togglePassword.offsetWidth;
+      togglePassword.classList.add('is-pop');
+    });
+    togglePassword.addEventListener('animationend', () => {
+      togglePassword.classList.remove('is-pop');
+    });
+    syncPasswordToggle();
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.addEventListener('click', (e) => {
+      const rect = submitBtn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 1.15;
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      submitBtn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+
+    const requiredInputs = document.querySelectorAll('#f input[required]');
+    requiredInputs.forEach((input) => {
+      const requiredMsg = input.dataset.requiredMsg || 'Este campo es obligatorio';
+      const refreshValidity = () => {
+        if (input.validity.valueMissing) {
+          input.setCustomValidity(requiredMsg);
+        } else {
+          input.setCustomValidity('');
+        }
+      };
+      input.addEventListener('invalid', refreshValidity);
+      input.addEventListener('input', () => input.setCustomValidity(''));
+      input.addEventListener('blur', refreshValidity);
+    });
+
+    const setSubmitLoading = (loading) => {
+      submitBtn.classList.toggle('is-loading', loading);
+      submitBtn.disabled = loading;
+      submitBtn.setAttribute('aria-busy', String(loading));
+      submitBtn.setAttribute('aria-label', loading ? 'Iniciando sesión' : 'Entrar');
+    };
+
+    document.getElementById('f').onsubmit = async (e) => {
+      e.preventDefault();
+      err.style.display = 'none'; ok.style.display = 'none';
+      const form = e.target;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      const body = {
+        company: document.getElementById('company').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        password: document.getElementById('password').value
+      };
+      setSubmitLoading(true);
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          err.textContent = data.message || data.detail || ('No se pudo iniciar sesión (error ' + res.status + ')');
+          err.style.display = 'block';
+          return;
+        }
+        sessionStorage.setItem('erp_access_token', data.accessToken);
+        sessionStorage.setItem('erp_user', JSON.stringify(data.user));
+        const menuRes = await fetch('/api/v1/me/menus', {
+          headers: { Authorization: 'Bearer ' + data.accessToken }
+        });
+        const menu = await menuRes.json();
+        ok.style.display = 'block';
+        ok.textContent = 'Sesión OK\n' +
+          data.user.displayName + ' @ ' + data.user.companyName + '\n' +
+          'Módulos: ' + (data.user.modules || []).join(', ') + '\n\n' +
+          'Menú (' + (menu.items || []).length + ' secciones):\n' +
+          JSON.stringify(menu.items, null, 2);
+      } catch (ex) {
+        err.textContent = 'No se pudo conectar: ' + ex.message;
+        err.style.display = 'block';
+      } finally {
+        setSubmitLoading(false);
+      }
+    };
+  </script>
+</body>
+</html>
