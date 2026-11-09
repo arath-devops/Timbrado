@@ -24,8 +24,10 @@
     }
     .toggle-password:hover { color:var(--brand); background:#f0f2f5; }
     .toggle-password:focus-visible { outline:2px solid #e8f3fc; color:var(--brand); }
-    .toggle-password svg { width:18px; height:18px; display:block; }
-    .toggle-password svg[hidden] { display:none; }
+    .toggle-password svg { width:18px; height:18px; display:block; pointer-events:none; }
+    /* Evita el ojo nativo de Edge/Chrome que pelea con el nuestro */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear { display:none; }
     button[type="submit"] { width:100%; height:38px; border:0; border-radius:4px; background:var(--brand); color:#fff; font-weight:700; cursor:pointer; margin-top:6px; }
     button[type="submit"]:hover { background:#0854a0; }
     .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
@@ -52,16 +54,7 @@
       <input id="password" name="password" type="password" value="demo1234" autocomplete="current-password" required
              data-required-msg="Ingresa la contraseña"/>
       <button type="button" class="toggle-password" id="togglePassword" aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
-        <svg id="iconShow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-        <svg id="iconHide" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
-          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/>
-          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/>
-          <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
-          <line x1="1" y1="1" x2="23" y2="23"/>
-        </svg>
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
       </button>
     </div>
     <button type="submit">Entrar</button>
@@ -73,19 +66,21 @@
     const ok = document.getElementById('ok');
     const passwordInput = document.getElementById('password');
     const togglePassword = document.getElementById('togglePassword');
-    const iconShow = document.getElementById('iconShow');
-    const iconHide = document.getElementById('iconHide');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const ICON_OPEN = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>';
+    const ICON_SLASH = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 19c-7 0-11-7-11-7a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
     const syncPasswordToggle = () => {
       const passwordVisible = passwordInput.type === 'text';
-      // Visible → ojo tachado (ocultar). Oculta → ojo abierto (mostrar).
-      iconShow.hidden = passwordVisible;
-      iconHide.hidden = !passwordVisible;
+      // Visible → ojo tachado. Oculta → ojo abierto.
+      eyeIcon.innerHTML = passwordVisible ? ICON_SLASH : ICON_OPEN;
       const label = passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña';
       togglePassword.setAttribute('aria-label', label);
       togglePassword.setAttribute('aria-pressed', String(passwordVisible));
       togglePassword.title = label;
     };
-    togglePassword.addEventListener('click', () => {
+    togglePassword.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
       syncPasswordToggle();
     });
