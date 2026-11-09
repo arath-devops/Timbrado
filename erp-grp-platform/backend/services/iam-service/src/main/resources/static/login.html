@@ -75,16 +75,21 @@
     const togglePassword = document.getElementById('togglePassword');
     const iconShow = document.getElementById('iconShow');
     const iconHide = document.getElementById('iconHide');
-    togglePassword.addEventListener('click', () => {
-      const visible = passwordInput.type === 'text';
-      passwordInput.type = visible ? 'password' : 'text';
-      iconShow.hidden = !visible;
-      iconHide.hidden = visible;
-      const label = visible ? 'Mostrar contraseña' : 'Ocultar contraseña';
+    const syncPasswordToggle = () => {
+      const passwordVisible = passwordInput.type === 'text';
+      // Visible → ojo tachado (ocultar). Oculta → ojo abierto (mostrar).
+      iconShow.hidden = passwordVisible;
+      iconHide.hidden = !passwordVisible;
+      const label = passwordVisible ? 'Ocultar contraseña' : 'Mostrar contraseña';
       togglePassword.setAttribute('aria-label', label);
-      togglePassword.setAttribute('aria-pressed', String(!visible));
+      togglePassword.setAttribute('aria-pressed', String(passwordVisible));
       togglePassword.title = label;
+    };
+    togglePassword.addEventListener('click', () => {
+      passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
+      syncPasswordToggle();
     });
+    syncPasswordToggle();
 
     const requiredInputs = document.querySelectorAll('#f input[required]');
     requiredInputs.forEach((input) => {
