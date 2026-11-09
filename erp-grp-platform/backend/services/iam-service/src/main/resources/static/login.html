@@ -41,10 +41,62 @@
     input[type="password"]::-ms-clear { display:none; }
     button[type="submit"] {
       position:relative; overflow:hidden; isolation:isolate;
+      display:grid; place-items:center;
       width:100%; height:38px; border:0; border-radius:4px;
-      background:var(--brand); color:#fff; font-weight:700; cursor:pointer; margin-top:6px;
-      transition: background-color .2s ease, transform .16s ease, box-shadow .2s ease;
+      background:var(--brand); color:#fff; font-weight:700; cursor:pointer;
+      margin:6px auto 0; padding:0;
+      transition:
+        background-color .2s ease,
+        transform .16s ease,
+        box-shadow .2s ease,
+        width .42s cubic-bezier(.4,0,.2,1),
+        border-radius .42s cubic-bezier(.4,0,.2,1),
+        min-width .42s cubic-bezier(.4,0,.2,1);
       box-shadow:0 1px 0 rgba(10,110,209,.25);
+    }
+    button[type="submit"] .btn-label {
+      display:inline-block;
+      letter-spacing:0;
+      transform:scaleX(1);
+      opacity:1;
+      transition:
+        letter-spacing .32s cubic-bezier(.4,0,.2,1),
+        transform .32s cubic-bezier(.4,0,.2,1),
+        opacity .22s ease;
+    }
+    button[type="submit"] .btn-spinner {
+      position:absolute;
+      width:18px; height:18px; border-radius:50%;
+      border:2px solid rgba(255,255,255,.28);
+      border-top-color:#fff;
+      opacity:0; transform:scale(.4);
+      transition: opacity .2s ease .18s, transform .28s cubic-bezier(.34,1.3,.64,1) .12s;
+      pointer-events:none;
+    }
+    button[type="submit"].is-loading {
+      width:38px; min-width:38px; border-radius:50%;
+      cursor:wait; pointer-events:none;
+      box-shadow:0 2px 8px rgba(10,110,209,.28);
+      transform:none;
+    }
+    button[type="submit"].is-loading:hover,
+    button[type="submit"].is-loading:active {
+      background:var(--brand);
+      transform:none;
+      box-shadow:0 2px 8px rgba(10,110,209,.28);
+    }
+    button[type="submit"].is-loading .btn-label {
+      letter-spacing:-.35em;
+      transform:scaleX(.15);
+      opacity:0;
+      transition:
+        letter-spacing .28s cubic-bezier(.4,0,.2,1),
+        transform .28s cubic-bezier(.4,0,.2,1),
+        opacity .16s ease;
+    }
+    button[type="submit"].is-loading .btn-spinner {
+      opacity:1; transform:scale(1);
+      animation: spin .7s linear infinite;
     }
     button[type="submit"]:hover {
       background:#0854a0;
@@ -63,10 +115,18 @@
     @keyframes ripple-out {
       to { transform:scale(2.6); opacity:0; }
     }
+    @keyframes spin {
+      to { transform:rotate(360deg) scale(1); }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .toggle-password, .toggle-password svg, button[type="submit"] { transition:none; }
-      .toggle-password.is-pop svg, button[type="submit"] .ripple { animation:none; }
+      .toggle-password, .toggle-password svg, button[type="submit"],
+      button[type="submit"] .btn-label, button[type="submit"] .btn-spinner { transition:none; }
+      .toggle-password.is-pop svg, button[type="submit"] .ripple,
+      button[type="submit"].is-loading .btn-spinner { animation:none; }
       button[type="submit"]:hover, button[type="submit"]:active { transform:none; box-shadow:none; }
+      button[type="submit"].is-loading { width:100%; min-width:0; border-radius:4px; }
+      button[type="submit"].is-loading .btn-label { opacity:0; letter-spacing:0; transform:none; }
+      button[type="submit"].is-loading .btn-spinner { opacity:1; transform:none; }
     }
     .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
     .ok { display:none; background:#e3f5ea; color:#107e3e; padding:10px; border-radius:4px; font-size:12px; margin-top:12px; white-space:pre-wrap; word-break:break-all; }
@@ -95,7 +155,10 @@
         <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
       </button>
     </div>
-    <button type="submit" id="submitBtn">Entrar</button>
+    <button type="submit" id="submitBtn" aria-live="polite">
+      <span class="btn-label">Entrar</span>
+      <span class="btn-spinner" aria-hidden="true"></span>
+    </button>
     <p class="hint">Demo: empresa <code>ACME</code> · <code>admin.acme</code> o <code>compras.acme</code> · pass <code>demo1234</code></p>
     <div class="ok" id="ok"></div>
   </form>
@@ -158,6 +221,13 @@
       input.addEventListener('blur', refreshValidity);
     });
 
+    const setSubmitLoading = (loading) => {
+      submitBtn.classList.toggle('is-loading', loading);
+      submitBtn.disabled = loading;
+      submitBtn.setAttribute('aria-busy', String(loading));
+      submitBtn.setAttribute('aria-label', loading ? 'Iniciando sesión' : 'Entrar');
+    };
+
     document.getElementById('f').onsubmit = async (e) => {
       e.preventDefault();
       err.style.display = 'none'; ok.style.display = 'none';
@@ -171,6 +241,7 @@
         username: document.getElementById('username').value.trim(),
         password: document.getElementById('password').value
       };
+      setSubmitLoading(true);
       try {
         const res = await fetch('/api/v1/auth/login', {
           method: 'POST',
@@ -198,6 +269,8 @@
       } catch (ex) {
         err.textContent = 'No se pudo conectar: ' + ex.message;
         err.style.display = 'block';
+      } finally {
+        setSubmitLoading(false);
       }
     };
   </script>
