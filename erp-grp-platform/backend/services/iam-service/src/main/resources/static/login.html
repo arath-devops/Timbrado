@@ -21,15 +21,53 @@
       position:absolute; right:4px; top:50%; transform:translateY(-50%);
       width:32px; height:28px; border:0; border-radius:4px; background:transparent;
       color:var(--muted); cursor:pointer; padding:0; display:grid; place-items:center;
+      transition: color .18s ease, background-color .18s ease, box-shadow .18s ease;
     }
-    .toggle-password:hover { color:var(--brand); background:#f0f2f5; }
+    .toggle-password:hover { color:var(--brand); background:#eef5fc; }
     .toggle-password:focus-visible { outline:2px solid #e8f3fc; color:var(--brand); }
-    .toggle-password svg { width:18px; height:18px; display:block; pointer-events:none; }
+    .toggle-password svg {
+      width:18px; height:18px; display:block; pointer-events:none;
+      transform-origin:center;
+      transition: transform .22s cubic-bezier(.34,1.4,.64,1), opacity .15s ease;
+    }
+    .toggle-password.is-pop svg { animation: eye-pop .34s cubic-bezier(.34,1.4,.64,1); }
+    @keyframes eye-pop {
+      0% { transform: scale(.72) rotate(-12deg); opacity:.55; }
+      55% { transform: scale(1.18) rotate(6deg); opacity:1; }
+      100% { transform: scale(1) rotate(0); opacity:1; }
+    }
     /* Evita el ojo nativo de Edge/Chrome que pelea con el nuestro */
     input[type="password"]::-ms-reveal,
     input[type="password"]::-ms-clear { display:none; }
-    button[type="submit"] { width:100%; height:38px; border:0; border-radius:4px; background:var(--brand); color:#fff; font-weight:700; cursor:pointer; margin-top:6px; }
-    button[type="submit"]:hover { background:#0854a0; }
+    button[type="submit"] {
+      position:relative; overflow:hidden; isolation:isolate;
+      width:100%; height:38px; border:0; border-radius:4px;
+      background:var(--brand); color:#fff; font-weight:700; cursor:pointer; margin-top:6px;
+      transition: background-color .2s ease, transform .16s ease, box-shadow .2s ease;
+      box-shadow:0 1px 0 rgba(10,110,209,.25);
+    }
+    button[type="submit"]:hover {
+      background:#0854a0;
+      box-shadow:0 4px 12px rgba(10,110,209,.28);
+      transform:translateY(-1px);
+    }
+    button[type="submit"]:active {
+      transform:translateY(1px) scale(.985);
+      box-shadow:0 1px 0 rgba(10,110,209,.2);
+    }
+    button[type="submit"] .ripple {
+      position:absolute; border-radius:50%; transform:scale(0);
+      background:rgba(255,255,255,.35); pointer-events:none;
+      animation: ripple-out .55s ease-out forwards;
+    }
+    @keyframes ripple-out {
+      to { transform:scale(2.6); opacity:0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .toggle-password, .toggle-password svg, button[type="submit"] { transition:none; }
+      .toggle-password.is-pop svg, button[type="submit"] .ripple { animation:none; }
+      button[type="submit"]:hover, button[type="submit"]:active { transform:none; box-shadow:none; }
+    }
     .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
     .ok { display:none; background:#e3f5ea; color:#107e3e; padding:10px; border-radius:4px; font-size:12px; margin-top:12px; white-space:pre-wrap; word-break:break-all; }
     .hint { font-size:11px; color:var(--muted); margin-top:12px; }
@@ -57,7 +95,7 @@
         <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
       </button>
     </div>
-    <button type="submit">Entrar</button>
+    <button type="submit" id="submitBtn">Entrar</button>
     <p class="hint">Demo: empresa <code>ACME</code> · <code>admin.acme</code> o <code>compras.acme</code> · pass <code>demo1234</code></p>
     <div class="ok" id="ok"></div>
   </form>
@@ -83,8 +121,27 @@
       e.stopPropagation();
       passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
       syncPasswordToggle();
+      togglePassword.classList.remove('is-pop');
+      void togglePassword.offsetWidth;
+      togglePassword.classList.add('is-pop');
+    });
+    togglePassword.addEventListener('animationend', () => {
+      togglePassword.classList.remove('is-pop');
     });
     syncPasswordToggle();
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.addEventListener('click', (e) => {
+      const rect = submitBtn.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height) * 1.15;
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      submitBtn.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
 
     const requiredInputs = document.querySelectorAll('#f input[required]');
     requiredInputs.forEach((input) => {
