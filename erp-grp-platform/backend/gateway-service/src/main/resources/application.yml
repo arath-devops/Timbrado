@@ -25,6 +25,16 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
       routes:
+        # Login producto: empresa + usuario + contraseña
+        - id: auth-login
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/auth/login
+            - Method=POST
+        - id: auth-login-page
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/login.html,/assets/**
         - id: iam-token
           uri: ${IAM_URI:http://localhost:8081}
           predicates:
@@ -38,6 +48,10 @@ spring:
             - Path=/api/v1/iam/oauth2/jwks
           filters:
             - RewritePath=/api/v1/iam/oauth2/jwks, /oauth2/jwks
+        - id: iam-me
+          uri: ${IAM_URI:http://localhost:8081}
+          predicates:
+            - Path=/api/v1/me,/api/v1/me/**
         - id: iam-api
           uri: ${IAM_URI:http://localhost:8081}
           predicates:
