@@ -15,7 +15,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,15 +32,27 @@ public class ResourceServerSecurityConfig {
             TenantContextFilter tenantContextFilter,
             @Value("${erpgrp.security.public-paths:}") String publicPaths
     ) throws Exception {
-        String[] publics = publicPaths == null || publicPaths.isBlank()
-                ? new String[] {
-                    "/actuator/health/**",
-                    "/actuator/info",
-                    "/v3/api-docs/**",
-                    "/swagger-ui/**",
-                    "/swagger-ui.html"
-                }
-                : publicPaths.split(",");
+        LinkedHashSet<String> pathSet = new LinkedHashSet<>();
+        pathSet.addAll(List.of(
+                "/actuator/health/**",
+                "/actuator/info",
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                // UI estática demo (login + shell/menú)
+                "/login.html",
+                "/app",
+                "/app/",
+                "/app/**",
+                "/assets/**"
+        ));
+        if (publicPaths != null && !publicPaths.isBlank()) {
+            Arrays.stream(publicPaths.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .forEach(pathSet::add);
+        }
+        String[] publics = pathSet.toArray(String[]::new);
 
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
