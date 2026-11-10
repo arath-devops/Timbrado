@@ -340,11 +340,38 @@ body {
   width:100%; border:1px solid var(--border); border-radius:8px; padding:10px; font:inherit; resize:vertical;
 }
 .comment-field textarea:focus { outline:2px solid #e8f3fc; border-color:var(--brand); }
-.detail-actions { display:flex; flex-wrap:wrap; gap:8px; }
-.detail-actions .btn { height:36px; padding:0 12px; border-radius:6px; color:#fff; font-weight:700; border:0; cursor:pointer; }
+.detail-actions {
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  margin-top:4px;
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+.detail-actions .btn {
+  flex:0 0 auto;
+  white-space:nowrap;
+  height:36px;
+  min-width:108px;
+  padding:0 14px;
+  border-radius:6px;
+  color:#fff;
+  font-weight:700;
+  border:0;
+  cursor:pointer;
+  box-shadow:none;
+}
 .btn-primary { background:var(--brand); }
 .btn-primary:hover { background:#0a5fb6; }
-.detail-actions .btn-ghost { color:var(--brand); }
+.detail-actions .btn-ghost {
+  color:var(--brand);
+  background:#fff;
+  border:1px solid #b7d4f5;
+}
+.detail-actions .btn-ghost:hover { background:var(--brand-soft); }
+.detail-actions .btn[hidden] { display:none !important; }
 
 .modal-scrim {
   position:fixed; inset:0; background:rgba(16,24,40,.45); z-index:80;

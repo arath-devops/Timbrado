@@ -227,7 +227,10 @@
   const decisionMsg = document.getElementById('decisionMsg');
   const detailActions = document.getElementById('detailActions');
   const openDecisionBlock = document.getElementById('openDecisionBlock');
-  const doneActions = document.getElementById('doneActions');
+  const btnApprove = document.getElementById('btnApprove');
+  const btnReject = document.getElementById('btnReject');
+  const btnViewDoc = document.getElementById('btnViewDoc');
+  const btnDetalle = document.getElementById('btnDetalle');
   const txModal = document.getElementById('txModal');
   const txModalScrim = document.getElementById('txModalScrim');
 
@@ -540,9 +543,12 @@
     decisionMsg.hidden = true;
     const canDecide = task.status === 'OPEN';
     openDecisionBlock.hidden = !canDecide;
-    detailActions.hidden = !canDecide;
     decisionComment.disabled = !canDecide;
-    doneActions.hidden = canDecide;
+    detailActions.hidden = false;
+    btnApprove.hidden = !canDecide;
+    btnReject.hidden = !canDecide;
+    btnViewDoc.hidden = !canDecide;
+    btnDetalle.hidden = false;
     if (!canDecide) {
       decisionMsg.hidden = false;
       decisionMsg.textContent = 'Estado: ' + decisionLabel(task) +
@@ -624,15 +630,15 @@
       : 'Tarea rechazada (demo local).';
   };
 
-  document.getElementById('btnApprove').addEventListener('click', () => decide('APPROVED'));
-  document.getElementById('btnReject').addEventListener('click', () => decide('REJECTED'));
-  document.getElementById('btnViewDoc').addEventListener('click', () => {
+  btnApprove.addEventListener('click', () => decide('APPROVED'));
+  btnReject.addEventListener('click', () => decide('REJECTED'));
+  btnViewDoc.addEventListener('click', () => {
     const task = tasks.find((t) => t.id === selectedTaskId);
     if (!task) return;
     decisionMsg.hidden = false;
     decisionMsg.textContent = 'Vista de documento stub · ' + task.folio + ' (' + task.process + '). Se conectará al módulo en una fase posterior.';
   });
-  document.getElementById('btnDetalle').addEventListener('click', () => {
+  btnDetalle.addEventListener('click', () => {
     openTxModal(tasks.find((t) => t.id === selectedTaskId));
   });
   document.getElementById('txModalClose').addEventListener('click', () => setTxModal(false));
