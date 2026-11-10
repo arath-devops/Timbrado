@@ -149,14 +149,19 @@
                 <div><dt>Antigüedad</dt><dd id="detailAge">—</dd></div>
                 <div><dt>Proceso</dt><dd id="detailProcess">—</dd></div>
               </dl>
-              <label class="comment-field">
-                <span>Comentario <em id="commentHint">(obligatorio al rechazar)</em></span>
-                <textarea id="decisionComment" rows="3" placeholder="Motivo o nota de la decisión"></textarea>
-              </label>
-              <div class="detail-actions" id="detailActions">
-                <button type="button" class="btn btn-ok" id="btnApprove">Aprobar</button>
-                <button type="button" class="btn btn-danger" id="btnReject">Rechazar</button>
-                <button type="button" class="btn btn-ghost" id="btnViewDoc">Ver documento</button>
+              <div id="openDecisionBlock">
+                <label class="comment-field">
+                  <span>Comentario <em id="commentHint">(obligatorio al rechazar)</em></span>
+                  <textarea id="decisionComment" rows="3" placeholder="Motivo o nota de la decisión"></textarea>
+                </label>
+                <div class="detail-actions" id="detailActions">
+                  <button type="button" class="btn btn-ok" id="btnApprove">Aprobar</button>
+                  <button type="button" class="btn btn-danger" id="btnReject">Rechazar</button>
+                  <button type="button" class="btn btn-ghost" id="btnViewDoc">Ver documento</button>
+                </div>
+              </div>
+              <div class="detail-actions" id="doneActions" hidden>
+                <button type="button" class="btn btn-primary" id="btnDetalle">Detalle</button>
               </div>
               <p class="foot-note" id="decisionMsg" hidden></p>
             </div>
@@ -171,6 +176,44 @@
       </section>
     </main>
   </div>
+
+  <div class="modal-scrim" id="txModalScrim" hidden></div>
+  <div class="modal" id="txModal" role="dialog" aria-modal="true" aria-labelledby="txModalTitle" hidden>
+    <div class="modal-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">Detalle de transacción</p>
+          <h2 id="txModalTitle">—</h2>
+        </div>
+        <button type="button" class="icon-btn" id="txModalClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="detail-top">
+          <span class="pill soft" id="txType">—</span>
+          <span class="tag" id="txDecision">—</span>
+        </div>
+        <p class="lead" id="txSummary">—</p>
+        <dl class="detail-grid">
+          <div><dt>Folio</dt><dd id="txFolio">—</dd></div>
+          <div><dt>Prioridad</dt><dd id="txPriority">—</dd></div>
+          <div><dt>Solicitante</dt><dd id="txRequester">—</dd></div>
+          <div><dt>Empresa / área</dt><dd id="txOrg">—</dd></div>
+          <div><dt>Monto</dt><dd id="txAmount">—</dd></div>
+          <div><dt>Paso</dt><dd id="txStep">—</dd></div>
+          <div><dt>Proceso</dt><dd id="txProcess">—</dd></div>
+          <div><dt>Estado</dt><dd id="txStatus">—</dd></div>
+        </dl>
+        <div class="modal-comment">
+          <dt>Comentario de decisión</dt>
+          <p id="txComment">Sin comentario</p>
+        </div>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="txModalOk">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
   <script src="shell.js"></script>
 </body>
 </html>

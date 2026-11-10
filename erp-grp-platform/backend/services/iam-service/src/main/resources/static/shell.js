@@ -226,9 +226,52 @@
   const decisionComment = document.getElementById('decisionComment');
   const decisionMsg = document.getElementById('decisionMsg');
   const detailActions = document.getElementById('detailActions');
+  const openDecisionBlock = document.getElementById('openDecisionBlock');
+  const doneActions = document.getElementById('doneActions');
+  const txModal = document.getElementById('txModal');
+  const txModalScrim = document.getElementById('txModalScrim');
 
   let bandejaTab = 'OPEN';
   let selectedTaskId = null;
+
+  const decisionLabel = (task) => {
+    if (task.decision === 'APPROVED') return 'Aprobada';
+    if (task.decision === 'REJECTED') return 'Rechazada';
+    return task.status === 'DONE' ? 'Completada' : 'Pendiente';
+  };
+
+  const setTxModal = (open) => {
+    txModal.hidden = !open;
+    txModalScrim.hidden = !open;
+    requestAnimationFrame(() => {
+      txModal.classList.toggle('is-open', open);
+      txModalScrim.classList.toggle('is-open', open);
+    });
+    if (!open) {
+      txModal.classList.remove('is-open');
+      txModalScrim.classList.remove('is-open');
+    }
+  };
+
+  const openTxModal = (task) => {
+    if (!task) return;
+    document.getElementById('txModalTitle').textContent = task.title;
+    document.getElementById('txType').textContent = task.type;
+    const dec = document.getElementById('txDecision');
+    dec.textContent = decisionLabel(task);
+    dec.className = 'tag ' + (task.decision === 'REJECTED' ? 'high' : task.decision === 'APPROVED' ? 'ok' : task.tone);
+    document.getElementById('txSummary').textContent = task.summary;
+    document.getElementById('txFolio').textContent = task.folio;
+    document.getElementById('txPriority').textContent = task.priority;
+    document.getElementById('txRequester').textContent = task.requester;
+    document.getElementById('txOrg').textContent = task.org;
+    document.getElementById('txAmount').textContent = task.amount;
+    document.getElementById('txStep').textContent = task.step;
+    document.getElementById('txProcess').textContent = task.process;
+    document.getElementById('txStatus').textContent = decisionLabel(task);
+    document.getElementById('txComment').textContent = task.comment || 'Sin comentario';
+    setTxModal(true);
+  };
 
   const firstName = (user.displayName || user.username || 'Usuario').split(/\s+/)[0];
   const hour = new Date().getHours();
@@ -496,11 +539,15 @@
     decisionComment.value = '';
     decisionMsg.hidden = true;
     const canDecide = task.status === 'OPEN';
+    openDecisionBlock.hidden = !canDecide;
     detailActions.hidden = !canDecide;
     decisionComment.disabled = !canDecide;
+    doneActions.hidden = canDecide;
     if (!canDecide) {
       decisionMsg.hidden = false;
-      decisionMsg.textContent = 'Decisión: ' + (task.decision || task.status) + (task.comment ? ' · ' + task.comment : '');
+      decisionMsg.textContent = 'Estado: ' + decisionLabel(task) +
+        (task.comment ? ' · ' + task.comment : '') +
+        ' · usa Detalle para ver el expediente.';
     }
   };
 
@@ -584,6 +631,15 @@
     if (!task) return;
     decisionMsg.hidden = false;
     decisionMsg.textContent = 'Vista de documento stub · ' + task.folio + ' (' + task.process + '). Se conectará al módulo en una fase posterior.';
+  });
+  document.getElementById('btnDetalle').addEventListener('click', () => {
+    openTxModal(tasks.find((t) => t.id === selectedTaskId));
+  });
+  document.getElementById('txModalClose').addEventListener('click', () => setTxModal(false));
+  document.getElementById('txModalOk').addEventListener('click', () => setTxModal(false));
+  txModalScrim.addEventListener('click', () => setTxModal(false));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !txModal.hidden) setTxModal(false);
   });
 
   let sections = null;
