@@ -15,6 +15,20 @@
         "Botón Entrar → círculo cargando",
         "Credenciales demo ACME"
       ]
+    },
+    {
+      "id": "shell",
+      "name": "Shell · Menú · Dashboard",
+      "status": "listo",
+      "phase": "Fase 1",
+      "path": "modulos/shell/",
+      "summary": "Post-login: hamburguesa, menú por permisos y dashboard stub con KPIs.",
+      "checks": [
+        "Menú admin > menú compras",
+        "Drawer hamburguesa abrir/cerrar",
+        "KPIs stub + accesos rápidos",
+        "Salir vuelve al login"
+      ]
     }
   ]
 }

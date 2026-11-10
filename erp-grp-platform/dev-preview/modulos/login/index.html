@@ -256,21 +256,50 @@
 
     const DEMO_USERS = {
       'admin.acme': {
-        displayName: 'Admin ACME',
+        displayName: 'Administrador ACME',
         companyName: 'ACME Industrial',
-        modules: ['compras', 'inventarios', 'ventas', 'finanzas', 'admin'],
-        menus: [
-          { id: 'compras', label: 'Compras', items: ['Requisiciones', 'Órdenes'] },
-          { id: 'admin', label: 'Administración', items: ['Usuarios', 'Permisos'] }
+        modules: [
+          'core.shell', 'core.iam', 'core.catalog', 'core.workflow', 'core.document', 'core.audit', 'core.report',
+          'erp.procurement', 'erp.inventory', 'erp.ap', 'erp.ar', 'erp.billing', 'erp.accounting', 'erp.treasury'
         ]
       },
       'compras.acme': {
-        displayName: 'Compras ACME',
+        displayName: 'Carlos López',
         companyName: 'ACME Industrial',
-        modules: ['compras'],
-        menus: [{ id: 'compras', label: 'Compras', items: ['Requisiciones', 'Órdenes'] }]
+        modules: ['core.shell', 'core.workflow', 'core.catalog', 'erp.procurement', 'erp.inventory']
       }
     };
+
+    // Misma forma que MenuCatalog del IAM (secciones → children)
+    function menusForModules(modules) {
+      const defs = [
+        ['dashboard', 'Inicio', '/dashboard', 'core.shell', 'Inicio'],
+        ['bandeja', 'Bandeja de aprobación', '/bandeja', 'core.workflow', 'Inicio'],
+        ['catalogos', 'Catálogos', '/catalogos', 'core.catalog', 'Administración'],
+        ['usuarios', 'Usuarios y permisos', '/usuarios', 'core.iam', 'Administración'],
+        ['compras', 'Compras', '/compras', 'erp.procurement', 'Operación'],
+        ['inventarios', 'Inventarios', '/inventarios', 'erp.inventory', 'Operación'],
+        ['ventas', 'Ventas', '/ventas', 'erp.ar', 'Operación'],
+        ['cxp', 'Cuentas por pagar', '/cxp', 'erp.ap', 'Finanzas'],
+        ['facturacion', 'Facturación', '/facturacion', 'erp.billing', 'Finanzas'],
+        ['cxc', 'Cuentas por cobrar', '/cxc', 'erp.ar', 'Finanzas'],
+        ['contabilidad', 'Contabilidad', '/contabilidad', 'erp.accounting', 'Finanzas'],
+        ['tesoreria', 'Tesorería', '/tesoreria', 'erp.treasury', 'Finanzas'],
+        ['documentos', 'Documentos', '/documentos', 'core.document', 'Plataforma'],
+        ['auditoria', 'Auditoría', '/auditoria', 'core.audit', 'Plataforma'],
+        ['reportes', 'Reportes', '/reportes', 'core.report', 'Plataforma']
+      ];
+      const set = new Set(modules);
+      const sections = new Map();
+      defs.forEach(([id, label, route, module, section]) => {
+        if (!set.has(module)) return;
+        if (!sections.has(section)) {
+          sections.set(section, { id: section, label: section, children: [] });
+        }
+        sections.get(section).children.push({ id, label, route, module, children: [] });
+      });
+      return [...sections.values()];
+    }
 
     const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -285,11 +314,12 @@
       return {
         accessToken: 'preview-demo-token',
         user: {
+          username: body.username,
           displayName: user.displayName,
           companyName: user.companyName,
           modules: user.modules
         },
-        menu: { items: user.menus }
+        menu: { items: menusForModules(user.modules) }
       };
     }
 
@@ -330,12 +360,10 @@
         const result = apiBase ? await loginApi(body) : await loginDemo(body);
         sessionStorage.setItem('erp_access_token', result.accessToken);
         sessionStorage.setItem('erp_user', JSON.stringify(result.user));
-        ok.style.display = 'block';
-        ok.textContent = 'Sesión OK' + (apiBase ? '' : ' (preview demo)') + '\n' +
-          result.user.displayName + ' @ ' + result.user.companyName + '\n' +
-          'Módulos: ' + (result.user.modules || []).join(', ') + '\n\n' +
-          'Menú (' + (result.menu.items || []).length + ' secciones):\n' +
-          JSON.stringify(result.menu.items, null, 2);
+        sessionStorage.setItem('erp_menus', JSON.stringify(result.menu.items || []));
+        await wait(280);
+        location.href = '../shell/';
+        return;
       } catch (ex) {
         err.textContent = ex.message || 'No se pudo iniciar sesión';
         err.style.display = 'block';

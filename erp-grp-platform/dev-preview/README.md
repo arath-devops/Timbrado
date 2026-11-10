@@ -25,5 +25,13 @@ El índice lee `modulos.json`. Al cerrar una fase:
 - Ruta: `/modulos/login/`
 - Modo **demo** (default): simula login sin backend para probar toggle, ripple y spinner
 - Modo **API**: `?api=http://localhost:8081` con `iam-service` en perfil `local`
+- Tras login exitoso redirige a **Shell**
 
 Credenciales demo: empresa `ACME` · `admin.acme` / `compras.acme` · `demo1234`
+
+## Shell · Menú · Dashboard (Fase 1)
+
+- Ruta: `/modulos/shell/` (también tras login)
+- Hamburguesa con menú filtrado por permisos
+- Dashboard stub (KPIs + accesos rápidos)
+- Comparar: `admin.acme` ve Finanzas/Admin; `compras.acme` ve menos opciones

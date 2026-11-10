@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERP · Inicio</title>
+  <link rel="stylesheet" href="shell.css"/>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="topbar">
+      <button type="button" class="icon-btn" id="menuBtn" aria-label="Abrir menú" aria-controls="drawer" aria-expanded="false">
+        <span class="burger" aria-hidden="true"></span>
+      </button>
+      <div class="top-brand">
+        <div class="mark">ERP</div>
+        <div>
+          <strong id="companyLabel">Empresa</strong>
+          <div class="muted" id="userLabel">Usuario</div>
+        </div>
+      </div>
+      <button type="button" class="text-btn" id="logoutBtn">Salir</button>
+    </header>
+
+    <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <strong>Menú</strong>
+        <button type="button" class="icon-btn" id="closeMenuBtn" aria-label="Cerrar menú">×</button>
+      </div>
+      <nav id="menuNav" class="menu-nav" aria-label="Módulos"></nav>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <main class="main" id="main">
+      <section class="page" data-page="dashboard">
+        <h1>Inicio</h1>
+        <p class="lead">Resumen del día. Los módulos del menú dependen de tus permisos.</p>
+        <div class="kpi-grid" id="kpiGrid"></div>
+        <div class="panel">
+          <h2>Accesos rápidos</h2>
+          <div class="quick" id="quickLinks"></div>
+        </div>
+        <div class="panel muted-panel">
+          <h2>Estado</h2>
+          <p id="statusLine">Cargando menú…</p>
+        </div>
+      </section>
+      <section class="page" data-page="stub" hidden>
+        <h1 id="stubTitle">Módulo</h1>
+        <p class="lead">Esta pantalla se construirá en una fase posterior.</p>
+        <button type="button" class="btn" id="backHomeBtn">Volver al inicio</button>
+      </section>
+    </main>
+  </div>
+  <script src="shell.js"></script>
+</body>
+</html>

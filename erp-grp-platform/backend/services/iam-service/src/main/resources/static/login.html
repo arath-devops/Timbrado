@@ -260,12 +260,11 @@
           headers: { Authorization: 'Bearer ' + data.accessToken }
         });
         const menu = await menuRes.json();
-        ok.style.display = 'block';
-        ok.textContent = 'Sesión OK\n' +
-          data.user.displayName + ' @ ' + data.user.companyName + '\n' +
-          'Módulos: ' + (data.user.modules || []).join(', ') + '\n\n' +
-          'Menú (' + (menu.items || []).length + ' secciones):\n' +
-          JSON.stringify(menu.items, null, 2);
+        sessionStorage.setItem('erp_menus', JSON.stringify(menu.items || []));
+        // Breve feedback del spinner → shell
+        await new Promise((r) => setTimeout(r, 280));
+        location.href = '/app/';
+        return;
       } catch (ex) {
         err.textContent = 'No se pudo conectar: ' + ex.message;
         err.style.display = 'block';
