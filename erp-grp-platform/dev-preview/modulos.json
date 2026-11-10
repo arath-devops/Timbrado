@@ -1,0 +1,20 @@
+{
+  "title": "ERP · Dev Preview",
+  "note": "Preview local acumulativa. No publicar. Se agrega un módulo cuando termina su fase.",
+  "modules": [
+    {
+      "id": "login",
+      "name": "Inicio de sesión",
+      "status": "listo",
+      "phase": "Fase A",
+      "path": "modulos/login/",
+      "summary": "Empresa + usuario + contraseña, ojo show/hide, ripple, spinner al entrar.",
+      "checks": [
+        "Validación de campos vacíos en español",
+        "Toggle ojo abierto/tachado",
+        "Botón Entrar → círculo cargando",
+        "Credenciales demo ACME"
+      ]
+    }
+  ]
+}
