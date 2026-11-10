@@ -1,6 +1,8 @@
-# Login (feat-login)
+# Login + menú (feat-menu)
 
 Inicio de sesión con **3 campos**: empresa, usuario, contraseña.  
+Tras entrar: **shell** con hamburguesa, menú por permisos y dashboard stub.
+
 Los permisos/menú los asigna un administrador; el usuario **no elige rol** al entrar.
 
 ## Probar en local
@@ -10,8 +12,8 @@ cd erp-grp-platform/backend
 mvn -pl services/iam-service -am spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-- Pantalla: http://localhost:8081/login.html  
-- API: `POST http://localhost:8081/api/v1/auth/login`
+1. Login: http://localhost:8081/login.html  
+2. Tras Entrar → http://localhost:8081/app/ (menú ☰ + dashboard)
 
 ```json
 { "company": "ACME", "username": "admin.acme", "password": "demo1234" }
@@ -19,7 +21,7 @@ mvn -pl services/iam-service -am spring-boot:run -Dspring-boot.run.profiles=loca
 
 Usuarios demo: `admin.acme` (menú completo) · `compras.acme` (menú reducido) · pass `demo1234`.
 
-Tras login: `GET /api/v1/me` y `GET /api/v1/me/menus` con `Authorization: Bearer <token>`.
+API: `POST /api/v1/auth/login` · `GET /api/v1/me` · `GET /api/v1/me/menus` con `Authorization: Bearer <token>`.
 
 ## Tests
 
