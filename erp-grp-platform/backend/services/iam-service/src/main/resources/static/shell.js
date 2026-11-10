@@ -1,5 +1,6 @@
 (() => {
   const LOGIN_HREF = '/login.html';
+  const TASKS_KEY = 'erp_bandeja_tasks';
 
   const DEMO_MENUS = {
     'admin.acme': [
@@ -72,10 +73,10 @@
         { label: 'Alertas abiertas', value: '3', hint: 'Prioridad alta', tone: 'danger', route: '/bandeja' }
       ],
       inbox: [
-        { title: 'OC-1042 · ACME Aceros', detail: 'Monto $248,000 · requiere 2º aprobador', tag: 'Alta', tone: 'high', route: '/compras' },
-        { title: 'Factura proveedor FP-889', detail: 'UUID CFDI pendiente de validar', tag: 'Media', tone: 'med', route: '/cxp' },
-        { title: 'Pedido SO-331', detail: 'Cliente cerca del límite de crédito', tag: 'Alta', tone: 'high', route: '/ventas' },
-        { title: 'Pago tesorería PT-77', detail: 'Sobre umbral · doble control', tag: 'Media', tone: 'med', route: '/tesoreria' }
+        { title: 'OC-1042 · ACME Aceros', detail: 'Monto $248,000 · requiere 2º aprobador', tag: 'Alta', tone: 'high', route: '/bandeja', taskId: 't-oc-1042' },
+        { title: 'Factura proveedor FP-889', detail: 'Excepción de match precio', tag: 'Media', tone: 'med', route: '/bandeja', taskId: 't-match-889' },
+        { title: 'Pedido SO-331', detail: 'Cliente cerca del límite de crédito', tag: 'Alta', tone: 'high', route: '/bandeja', taskId: 't-credit-331' },
+        { title: 'Pago tesorería PT-77', detail: 'Sobre umbral · doble control', tag: 'Media', tone: 'med', route: '/bandeja', taskId: 't-pay-77' }
       ],
       alerts: [
         { title: 'Crédito bloqueado', detail: 'Cliente Norte SA — no confirmar pedidos', tone: 'high' },
@@ -92,14 +93,70 @@
         { label: 'Pendientes míos', value: '2', hint: 'Aprobaciones', tone: 'danger', route: '/bandeja' }
       ],
       inbox: [
-        { title: 'RQ-220 · Empaques', detail: 'Espera tu envío a aprobación', tag: 'Media', tone: 'med', route: '/compras' },
-        { title: 'OC-1038 · Tornillería', detail: 'Listo para seguimiento de recepción', tag: 'Baja', tone: 'low', route: '/inventarios' }
+        { title: 'RQ-220 · Empaques', detail: 'Espera aprobación de compras', tag: 'Media', tone: 'med', route: '/bandeja', taskId: 't-pr-220' },
+        { title: 'OC-1038 · Tornillería', detail: 'Revisión de compras', tag: 'Baja', tone: 'low', route: '/bandeja', taskId: 't-oc-1038' }
       ],
       alerts: [
         { title: 'Artículo SKU-441 bajo ATP', detail: 'Disponible 12 · reservado 10', tone: 'med' },
         { title: 'Proveedor con RFC por completar', detail: 'Bloquea factura si aplica política', tone: 'info' }
       ]
     }
+  };
+
+  const DEMO_TASKS = {
+    'admin.acme': [
+      {
+        id: 't-oc-1042', type: 'OC', folio: 'OC-1042', title: 'OC-1042 · ACME Aceros',
+        summary: 'Orden de compra de acero estructural. Supera umbral de gerencia.',
+        requester: 'Carlos López', org: 'ACME · Compras', amount: '$248,000 MXN',
+        step: 'Gerente / 2º aprobador', age: '1 día', process: 'erp.po.approve',
+        priority: 'Alta', tone: 'high', status: 'OPEN'
+      },
+      {
+        id: 't-match-889', type: 'MATCH', folio: 'FP-889', title: 'Match CxP · FP-889',
+        summary: 'Diferencia de precio fuera de tolerancia en triple match OC/GR/factura.',
+        requester: 'Ana Pérez', org: 'ACME · CxP', amount: '$41,250 MXN',
+        step: 'Controller finanzas', age: '5 h', process: 'erp.ap.match_exception',
+        priority: 'Media', tone: 'med', status: 'OPEN'
+      },
+      {
+        id: 't-credit-331', type: 'CREDIT', folio: 'SO-331', title: 'Crédito · SO-331',
+        summary: 'Pedido supera exposición de crédito del cliente Norte SA.',
+        requester: 'Luis Vega', org: 'ACME · Ventas', amount: '$310,000 MXN',
+        step: 'Crédito / Finanzas', age: '3 h', process: 'erp.ar.credit_exception',
+        priority: 'Alta', tone: 'high', status: 'OPEN'
+      },
+      {
+        id: 't-pay-77', type: 'PAY', folio: 'PT-77', title: 'Pago · PT-77',
+        summary: 'Propuesta de pago sobre umbral. Requiere doble control (preparador ≠ aprobador).',
+        requester: 'Tesorería', org: 'ACME · Tesorería', amount: '$520,000 MXN',
+        step: '2º aprobador pagos', age: '2 días', process: 'erp.ap.payment_dual',
+        priority: 'Media', tone: 'med', status: 'OPEN'
+      },
+      {
+        id: 't-pr-901', type: 'PR', folio: 'RQ-901', title: 'RQ-901 · Servicios TI',
+        summary: 'Requisición de licencias. Ya aprobada en demo.',
+        requester: 'Sistemas', org: 'ACME · TI', amount: '$18,400 MXN',
+        step: 'Cerrado', age: '—', process: 'erp.pr.approve',
+        priority: 'Baja', tone: 'low', status: 'DONE', decision: 'APPROVED'
+      }
+    ],
+    'compras.acme': [
+      {
+        id: 't-pr-220', type: 'PR', folio: 'RQ-220', title: 'RQ-220 · Empaques',
+        summary: 'Requisición de empaques industriales pendiente de revisión compras.',
+        requester: 'Almacén Norte', org: 'ACME · Operaciones', amount: '$12,800 MXN',
+        step: 'Compras', age: '6 h', process: 'erp.pr.approve',
+        priority: 'Media', tone: 'med', status: 'OPEN'
+      },
+      {
+        id: 't-oc-1038', type: 'OC', folio: 'OC-1038', title: 'OC-1038 · Tornillería',
+        summary: 'OC de consumo recurrente. Revisión de lead comprador.',
+        requester: 'Carlos López', org: 'ACME · Compras', amount: '$6,450 MXN',
+        step: 'Lead compras', age: '1 día', process: 'erp.po.approve',
+        priority: 'Baja', tone: 'low', status: 'OPEN'
+      }
+    ]
   };
 
   let user = null;
@@ -118,6 +175,18 @@
 
   const userKey = user.username === 'compras.acme' ? 'compras.acme' : 'admin.acme';
   const home = DEMO_HOME[userKey];
+
+  const loadTasks = () => {
+    try {
+      const raw = sessionStorage.getItem(TASKS_KEY + ':' + userKey);
+      if (raw) return JSON.parse(raw);
+    } catch { /* seed */ }
+    const seed = DEMO_TASKS[userKey].map((t) => ({ ...t }));
+    sessionStorage.setItem(TASKS_KEY + ':' + userKey, JSON.stringify(seed));
+    return seed;
+  };
+  let tasks = loadTasks();
+  const saveTasks = () => sessionStorage.setItem(TASKS_KEY + ':' + userKey, JSON.stringify(tasks));
 
   const companyLabel = document.getElementById('companyLabel');
   const userLabel = document.getElementById('userLabel');
@@ -141,10 +210,25 @@
   const rolePill = document.getElementById('rolePill');
   const pages = {
     dashboard: document.querySelector('[data-page="dashboard"]'),
+    bandeja: document.querySelector('[data-page="bandeja"]'),
     stub: document.querySelector('[data-page="stub"]')
   };
   const stubTitle = document.getElementById('stubTitle');
   const backHomeBtn = document.getElementById('backHomeBtn');
+  const backHomeFromBandeja = document.getElementById('backHomeFromBandeja');
+  const bandejaList = document.getElementById('bandejaList');
+  const bandejaCount = document.getElementById('bandejaCount');
+  const bandejaListTitle = document.getElementById('bandejaListTitle');
+  const filterType = document.getElementById('filterType');
+  const filterSearch = document.getElementById('filterSearch');
+  const bandejaDetailEmpty = document.getElementById('bandejaDetailEmpty');
+  const bandejaDetailBody = document.getElementById('bandejaDetailBody');
+  const decisionComment = document.getElementById('decisionComment');
+  const decisionMsg = document.getElementById('decisionMsg');
+  const detailActions = document.getElementById('detailActions');
+
+  let bandejaTab = 'OPEN';
+  let selectedTaskId = null;
 
   const firstName = (user.displayName || user.username || 'Usuario').split(/\s+/)[0];
   const hour = new Date().getHours();
@@ -167,6 +251,59 @@
     requestAnimationFrame(() => scrim.classList.toggle('is-open', open));
   };
 
+  const hideAllPages = () => {
+    Object.values(pages).forEach((p) => { if (p) p.hidden = true; });
+  };
+
+  const setActiveRoute = (route) => {
+    menuNav.querySelectorAll('.menu-link').forEach((el) => {
+      el.classList.toggle('is-active', el.dataset.route === route);
+    });
+  };
+
+  const showDashboard = () => {
+    hideAllPages();
+    pages.dashboard.hidden = false;
+    document.title = 'ERP · Inicio';
+    setActiveRoute('/dashboard');
+  };
+
+  const showBandeja = (taskId) => {
+    hideAllPages();
+    pages.bandeja.hidden = false;
+    document.title = 'ERP · Bandeja de aprobación';
+    setActiveRoute('/bandeja');
+    setDrawer(false);
+    if (taskId) selectedTaskId = taskId;
+    renderBandeja();
+  };
+
+  const showStub = (label, route) => {
+    if ((route || '') === '/bandeja' || (label || '').toLowerCase().includes('bandeja')) {
+      showBandeja();
+      return;
+    }
+    hideAllPages();
+    pages.stub.hidden = false;
+    stubTitle.textContent = label || 'Módulo';
+    document.title = 'ERP · ' + (label || 'Módulo');
+    setActiveRoute(route);
+    setDrawer(false);
+  };
+
+  const navigateTo = (label, route, taskId) => {
+    if ((route || '') === '/dashboard') {
+      showDashboard();
+      setDrawer(false);
+      return;
+    }
+    if ((route || '') === '/bandeja') {
+      showBandeja(taskId);
+      return;
+    }
+    showStub(label, route);
+  };
+
   menuBtn.addEventListener('click', () => setDrawer(true));
   closeMenuBtn.addEventListener('click', () => setDrawer(false));
   scrim.addEventListener('click', () => setDrawer(false));
@@ -177,26 +314,7 @@
     location.replace(LOGIN_HREF);
   });
   backHomeBtn.addEventListener('click', () => showDashboard());
-
-  const showDashboard = () => {
-    pages.dashboard.hidden = false;
-    pages.stub.hidden = true;
-    document.title = 'ERP · Inicio';
-    menuNav.querySelectorAll('.menu-link').forEach((el) => {
-      el.classList.toggle('is-active', el.dataset.route === '/dashboard');
-    });
-  };
-
-  const showStub = (label, route) => {
-    pages.dashboard.hidden = true;
-    pages.stub.hidden = false;
-    stubTitle.textContent = label || 'Módulo';
-    document.title = 'ERP · ' + (label || 'Módulo');
-    menuNav.querySelectorAll('.menu-link').forEach((el) => {
-      el.classList.toggle('is-active', el.dataset.route === route);
-    });
-    setDrawer(false);
-  };
+  backHomeFromBandeja.addEventListener('click', () => showDashboard());
 
   const flattenItems = (sections) => {
     const items = [];
@@ -219,14 +337,7 @@
         btn.className = 'menu-link';
         btn.textContent = item.label;
         btn.dataset.route = item.route || '';
-        btn.addEventListener('click', () => {
-          if ((item.route || '') === '/dashboard' || item.id === 'dashboard') {
-            showDashboard();
-            setDrawer(false);
-            return;
-          }
-          showStub(item.label, item.route);
-        });
+        btn.addEventListener('click', () => navigateTo(item.label, item.route));
         menuNav.appendChild(btn);
       });
     });
@@ -241,27 +352,21 @@
       </button>
     `).join('');
     kpiGrid.querySelectorAll('.kpi').forEach((el) => {
-      el.addEventListener('click', () => {
-        const route = el.dataset.route;
-        const label = el.dataset.label;
-        if (!route || route === '/dashboard') {
-          showDashboard();
-          return;
-        }
-        showStub(label, route);
-      });
+      el.addEventListener('click', () => navigateTo(el.dataset.label, el.dataset.route));
     });
   };
 
   const renderInbox = () => {
-    inboxCount.textContent = String(home.inbox.length);
-    if (!home.inbox.length) {
+    const openCount = tasks.filter((t) => t.status === 'OPEN').length;
+    inboxCount.textContent = String(openCount);
+    const preview = home.inbox;
+    if (!preview.length) {
       inboxList.innerHTML = '<li class="empty">No tienes pendientes por ahora.</li>';
       return;
     }
-    inboxList.innerHTML = home.inbox.map((item) => `
+    inboxList.innerHTML = preview.map((item) => `
       <li>
-        <button type="button" class="inbox-item linkish" data-route="${item.route}" data-label="${item.title}">
+        <button type="button" class="inbox-item linkish" data-route="/bandeja" data-task="${item.taskId || ''}" data-label="${item.title}">
           <div>
             <strong>${item.title}</strong>
             <span>${item.detail}</span>
@@ -271,7 +376,7 @@
       </li>
     `).join('');
     inboxList.querySelectorAll('.inbox-item').forEach((el) => {
-      el.addEventListener('click', () => showStub(el.dataset.label, el.dataset.route));
+      el.addEventListener('click', () => navigateTo(el.dataset.label, '/bandeja', el.dataset.task));
     });
   };
 
@@ -292,7 +397,6 @@
   };
 
   const sectionOrder = ['Inicio', 'Operación', 'Finanzas', 'Administración', 'Plataforma'];
-
   const sortedSections = (sections) => {
     const copy = [...(sections || [])];
     copy.sort((a, b) => {
@@ -320,28 +424,20 @@
     usable.forEach((section) => {
       const block = document.createElement('div');
       block.className = 'module-block';
-      block.dataset.section = (section.label || section.id || '').toLowerCase();
-
       const title = document.createElement('div');
       title.className = 'module-block-title';
       title.innerHTML = `<span>${section.label || section.id}</span><span class="sec-count">${section.children.length}</span>`;
       block.appendChild(title);
-
       const tiles = document.createElement('div');
       tiles.className = 'tiles';
       section.children.forEach((item) => {
         const tile = document.createElement('button');
         tile.type = 'button';
         tile.className = 'tile';
-        tile.dataset.label = item.label || '';
-        tile.dataset.route = item.route || '';
-        tile.dataset.module = item.module || '';
-        tile.dataset.search = [
-          item.label, item.route, item.module, section.label, section.id
-        ].filter(Boolean).join(' ').toLowerCase();
+        tile.dataset.search = [item.label, item.route, item.module, section.label].filter(Boolean).join(' ').toLowerCase();
         tile.innerHTML = `<div class="tile-code">${(item.module || '').replace('erp.', '').replace('core.', '') || 'app'}</div>
           <div class="tile-name">${item.label}</div>`;
-        tile.addEventListener('click', () => showStub(item.label, item.route));
+        tile.addEventListener('click', () => navigateTo(item.label, item.route));
         tiles.appendChild(tile);
       });
       block.appendChild(tiles);
@@ -349,21 +445,146 @@
     });
   };
 
-  const applyGoSearch = () => {
+  goSearch.addEventListener('input', () => {
     const q = (goSearch.value || '').trim().toLowerCase();
     moduleBlocks.querySelectorAll('.module-block').forEach((block) => {
       let visible = 0;
       block.querySelectorAll('.tile').forEach((tile) => {
         const match = !q || (tile.dataset.search || '').includes(q);
         tile.classList.toggle('is-dim', !match);
-        tile.hidden = false;
         if (match) visible += 1;
       });
       block.hidden = visible === 0;
     });
+  });
+
+  const filteredTasks = () => {
+    const type = filterType.value;
+    const q = (filterSearch.value || '').trim().toLowerCase();
+    return tasks.filter((t) => {
+      if (bandejaTab === 'OPEN' && t.status !== 'OPEN') return false;
+      if (bandejaTab === 'DONE' && t.status === 'OPEN') return false;
+      if (type && t.type !== type) return false;
+      if (q) {
+        const hay = [t.folio, t.title, t.requester, t.process, t.summary].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
   };
 
-  goSearch.addEventListener('input', applyGoSearch);
+  const renderDetail = (task) => {
+    if (!task) {
+      bandejaDetailEmpty.hidden = false;
+      bandejaDetailBody.hidden = true;
+      return;
+    }
+    bandejaDetailEmpty.hidden = true;
+    bandejaDetailBody.hidden = false;
+    document.getElementById('detailType').textContent = task.type;
+    const pr = document.getElementById('detailPriority');
+    pr.textContent = task.priority;
+    pr.className = 'tag ' + task.tone;
+    document.getElementById('detailFolio').textContent = task.title;
+    document.getElementById('detailSummary').textContent = task.summary;
+    document.getElementById('detailRequester').textContent = task.requester;
+    document.getElementById('detailOrg').textContent = task.org;
+    document.getElementById('detailAmount').textContent = task.amount;
+    document.getElementById('detailStep').textContent = task.step;
+    document.getElementById('detailAge').textContent = task.age;
+    document.getElementById('detailProcess').textContent = task.process;
+    decisionComment.value = '';
+    decisionMsg.hidden = true;
+    const canDecide = task.status === 'OPEN';
+    detailActions.hidden = !canDecide;
+    decisionComment.disabled = !canDecide;
+    if (!canDecide) {
+      decisionMsg.hidden = false;
+      decisionMsg.textContent = 'Decisión: ' + (task.decision || task.status) + (task.comment ? ' · ' + task.comment : '');
+    }
+  };
+
+  const renderBandeja = () => {
+    const list = filteredTasks();
+    bandejaListTitle.textContent = bandejaTab === 'OPEN' ? 'Pendientes' : 'Completadas';
+    bandejaCount.textContent = String(list.length);
+    if (!list.length) {
+      bandejaList.innerHTML = '<p class="empty">No hay tareas con estos filtros.</p>';
+      renderDetail(null);
+      return;
+    }
+    if (!selectedTaskId || !list.some((t) => t.id === selectedTaskId)) {
+      selectedTaskId = list[0].id;
+    }
+    bandejaList.innerHTML = list.map((t) => `
+      <button type="button" class="task-card ${t.id === selectedTaskId ? 'is-selected' : ''} ${t.status !== 'OPEN' ? 'is-done' : ''}" data-id="${t.id}">
+        <div class="task-card-top">
+          <span class="pill soft">${t.type}</span>
+          <span class="tag ${t.tone}">${t.priority}</span>
+        </div>
+        <h3>${t.title}</h3>
+        <p>${t.summary}</p>
+        <div class="task-meta">
+          <span>Solicita: <strong>${t.requester}</strong></span>
+          <span>Monto: <strong>${t.amount}</strong></span>
+          <span>Paso: <strong>${t.step}</strong></span>
+          <span>Antigüedad: <strong>${t.age}</strong></span>
+        </div>
+      </button>
+    `).join('');
+    bandejaList.querySelectorAll('.task-card').forEach((el) => {
+      el.addEventListener('click', () => {
+        selectedTaskId = el.dataset.id;
+        renderBandeja();
+      });
+    });
+    renderDetail(tasks.find((t) => t.id === selectedTaskId) || null);
+  };
+
+  document.querySelectorAll('.tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach((t) => t.classList.remove('is-active'));
+      tab.classList.add('is-active');
+      bandejaTab = tab.dataset.tab;
+      selectedTaskId = null;
+      renderBandeja();
+    });
+  });
+  filterType.addEventListener('change', () => { selectedTaskId = null; renderBandeja(); });
+  filterSearch.addEventListener('input', () => renderBandeja());
+
+  const decide = (decision) => {
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    if (!task || task.status !== 'OPEN') return;
+    const comment = (decisionComment.value || '').trim();
+    if (decision === 'REJECTED' && comment.length < 5) {
+      decisionMsg.hidden = false;
+      decisionMsg.textContent = 'Al rechazar, el comentario es obligatorio (mín. 5 caracteres).';
+      decisionComment.focus();
+      return;
+    }
+    task.status = 'DONE';
+    task.decision = decision;
+    task.comment = comment;
+    task.step = decision === 'APPROVED' ? 'Aprobado' : 'Rechazado';
+    task.age = '—';
+    saveTasks();
+    renderInbox();
+    renderBandeja();
+    decisionMsg.hidden = false;
+    decisionMsg.textContent = decision === 'APPROVED'
+      ? 'Tarea aprobada (demo local).'
+      : 'Tarea rechazada (demo local).';
+  };
+
+  document.getElementById('btnApprove').addEventListener('click', () => decide('APPROVED'));
+  document.getElementById('btnReject').addEventListener('click', () => decide('REJECTED'));
+  document.getElementById('btnViewDoc').addEventListener('click', () => {
+    const task = tasks.find((t) => t.id === selectedTaskId);
+    if (!task) return;
+    decisionMsg.hidden = false;
+    decisionMsg.textContent = 'Vista de documento stub · ' + task.folio + ' (' + task.process + '). Se conectará al módulo en una fase posterior.';
+  });
 
   let sections = null;
   try {
@@ -381,7 +602,7 @@
   renderAlerts();
   renderModuleBlocks(sections);
   statusLine.textContent =
-    (user.displayName || 'Usuario') + ' · lanzador por bloques · ' +
+    (user.displayName || 'Usuario') + ' · lanzador + bandeja · ' +
     flattenItems(sections).length + ' accesos de menú';
   showDashboard();
 })();

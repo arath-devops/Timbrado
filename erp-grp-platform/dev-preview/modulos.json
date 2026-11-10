@@ -22,13 +22,12 @@
       "status": "listo",
       "phase": "Fase 1",
       "path": "modulos/shell/",
-      "summary": "Post-login: hamburguesa, menú por permisos y dashboard enriquecido.",
+      "summary": "Shell + dashboard + Bandeja de aprobación (carcasa).",
       "checks": [
         "Saludo + empresa/rol",
-        "KPIs por perfil (admin vs compras)",
-        "Bandeja Mis pendientes",
-        "Alertas",
-        "Módulos en bloques por área + Ir a…",
+        "KPIs y bloques por perfil",
+        "Bandeja: lista, filtros, aprobar/rechazar",
+        "Comentario obligatorio al rechazar",
         "Salir vuelve al login"
       ]
     }

@@ -81,6 +81,75 @@
         <p class="foot-note" id="statusLine">Carcasa UI · datos demo</p>
       </section>
 
+      <section class="page" data-page="bandeja" hidden>
+        <header class="dash-hero">
+          <div>
+            <p class="eyebrow">Workflow</p>
+            <h1>Bandeja de aprobación</h1>
+            <p class="lead">Tareas pendientes de decidir · una sola bandeja para todos los procesos.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="backHomeFromBandeja">← Inicio</button>
+        </header>
+
+        <div class="bandeja-toolbar">
+          <div class="tabs" role="tablist" aria-label="Estado de tareas">
+            <button type="button" class="tab is-active" data-tab="OPEN">Mis pendientes</button>
+            <button type="button" class="tab" data-tab="DONE">Completadas</button>
+          </div>
+          <div class="bandeja-filters">
+            <select id="filterType" aria-label="Tipo de proceso">
+              <option value="">Todos los tipos</option>
+              <option value="PR">Requisición</option>
+              <option value="OC">Orden de compra</option>
+              <option value="MATCH">Match CxP</option>
+              <option value="PAY">Pago</option>
+              <option value="CREDIT">Crédito</option>
+            </select>
+            <input id="filterSearch" type="search" placeholder="Buscar folio, solicitante…" autocomplete="off"/>
+          </div>
+        </div>
+
+        <div class="bandeja-layout">
+          <section class="panel bandeja-list-panel">
+            <div class="panel-head">
+              <h2 id="bandejaListTitle">Pendientes</h2>
+              <span class="count-badge" id="bandejaCount">0</span>
+            </div>
+            <div id="bandejaList" class="task-list"></div>
+          </section>
+
+          <aside class="panel bandeja-detail-panel" id="bandejaDetail">
+            <p class="empty" id="bandejaDetailEmpty">Selecciona una tarea para ver el detalle y decidir.</p>
+            <div id="bandejaDetailBody" hidden>
+              <div class="detail-top">
+                <span class="pill soft" id="detailType">OC</span>
+                <span class="tag" id="detailPriority">Alta</span>
+              </div>
+              <h2 id="detailFolio">—</h2>
+              <p class="lead" id="detailSummary">—</p>
+              <dl class="detail-grid">
+                <div><dt>Solicitante</dt><dd id="detailRequester">—</dd></div>
+                <div><dt>Empresa / área</dt><dd id="detailOrg">—</dd></div>
+                <div><dt>Monto</dt><dd id="detailAmount">—</dd></div>
+                <div><dt>Paso actual</dt><dd id="detailStep">—</dd></div>
+                <div><dt>Antigüedad</dt><dd id="detailAge">—</dd></div>
+                <div><dt>Proceso</dt><dd id="detailProcess">—</dd></div>
+              </dl>
+              <label class="comment-field">
+                <span>Comentario <em id="commentHint">(obligatorio al rechazar)</em></span>
+                <textarea id="decisionComment" rows="3" placeholder="Motivo o nota de la decisión"></textarea>
+              </label>
+              <div class="detail-actions" id="detailActions">
+                <button type="button" class="btn btn-ok" id="btnApprove">Aprobar</button>
+                <button type="button" class="btn btn-danger" id="btnReject">Rechazar</button>
+                <button type="button" class="btn btn-ghost" id="btnViewDoc">Ver documento</button>
+              </div>
+              <p class="foot-note" id="decisionMsg" hidden></p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
       <section class="page" data-page="stub" hidden>
         <h1 id="stubTitle">Módulo</h1>
         <p class="lead">Esta pantalla se construirá en una fase posterior.</p>
