@@ -33,18 +33,47 @@
 
     <main class="main" id="main">
       <section class="page" data-page="dashboard">
-        <h1>Inicio</h1>
-        <p class="lead">Resumen del día. Los módulos del menú dependen de tus permisos.</p>
+        <header class="dash-hero">
+          <div>
+            <p class="eyebrow" id="todayLabel">Hoy</p>
+            <h1 id="greetTitle">Inicio</h1>
+            <p class="lead" id="greetSub">Resumen operativo según tus permisos.</p>
+          </div>
+          <div class="hero-meta">
+            <span class="pill" id="companyPill">Empresa</span>
+            <span class="pill soft" id="rolePill">Rol</span>
+          </div>
+        </header>
+
         <div class="kpi-grid" id="kpiGrid"></div>
-        <div class="panel">
-          <h2>Accesos rápidos</h2>
-          <div class="quick" id="quickLinks"></div>
+
+        <div class="dash-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Mis pendientes</h2>
+              <span class="count-badge" id="inboxCount">0</span>
+            </div>
+            <ul class="inbox" id="inboxList"></ul>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h2>Alertas</h2>
+            </div>
+            <ul class="alerts" id="alertsList"></ul>
+          </section>
         </div>
-        <div class="panel muted-panel">
-          <h2>Estado</h2>
-          <p id="statusLine">Cargando menú…</p>
-        </div>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Accesos rápidos</h2>
+          </div>
+          <div class="tiles" id="quickTiles"></div>
+        </section>
+
+        <p class="foot-note" id="statusLine">Carcasa UI · datos demo</p>
       </section>
+
       <section class="page" data-page="stub" hidden>
         <h1 id="stubTitle">Módulo</h1>
         <p class="lead">Esta pantalla se construirá en una fase posterior.</p>

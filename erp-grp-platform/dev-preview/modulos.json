@@ -22,11 +22,12 @@
       "status": "listo",
       "phase": "Fase 1",
       "path": "modulos/shell/",
-      "summary": "Post-login: hamburguesa, menú por permisos y dashboard stub con KPIs.",
+      "summary": "Post-login: hamburguesa, menú por permisos y dashboard enriquecido.",
       "checks": [
-        "Menú admin > menú compras",
-        "Drawer hamburguesa abrir/cerrar",
-        "KPIs stub + accesos rápidos",
+        "Saludo + empresa/rol",
+        "KPIs por perfil (admin vs compras)",
+        "Bandeja Mis pendientes",
+        "Alertas + tiles de acceso rápido",
         "Salir vuelve al login"
       ]
     }
