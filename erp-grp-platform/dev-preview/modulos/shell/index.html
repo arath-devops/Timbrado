@@ -78,11 +78,18 @@
           </section>
         </div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Accesos rápidos</h2>
+        <section class="panel launchpad">
+          <div class="panel-head launchpad-head">
+            <div>
+              <h2>Módulos</h2>
+              <p class="panel-sub">Agrupados por área · solo lo permitido a tu perfil</p>
+            </div>
+            <label class="go-search">
+              <span class="sr-only">Ir a</span>
+              <input id="goSearch" type="search" placeholder="Ir a… (compras, cxp, usuarios)" autocomplete="off"/>
+            </label>
           </div>
-          <div class="tiles" id="quickTiles"></div>
+          <div id="moduleBlocks" class="module-blocks"></div>
         </section>
 
         <p class="foot-note" id="statusLine">Carcasa UI · datos demo</p>

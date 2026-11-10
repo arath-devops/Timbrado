@@ -128,7 +128,8 @@
   const closeMenuBtn = document.getElementById('closeMenuBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const kpiGrid = document.getElementById('kpiGrid');
-  const quickTiles = document.getElementById('quickTiles');
+  const moduleBlocks = document.getElementById('moduleBlocks');
+  const goSearch = document.getElementById('goSearch');
   const statusLine = document.getElementById('statusLine');
   const inboxList = document.getElementById('inboxList');
   const inboxCount = document.getElementById('inboxCount');
@@ -290,23 +291,79 @@
     `).join('');
   };
 
-  const renderTiles = (sections) => {
-    const items = flattenItems(sections).filter((i) => i.id !== 'dashboard');
-    quickTiles.innerHTML = '';
-    if (!items.length) {
-      quickTiles.innerHTML = '<p class="empty">No hay módulos disponibles.</p>';
+  const sectionOrder = ['Inicio', 'Operación', 'Finanzas', 'Administración', 'Plataforma'];
+
+  const sortedSections = (sections) => {
+    const copy = [...(sections || [])];
+    copy.sort((a, b) => {
+      const ia = sectionOrder.indexOf(a.label || a.id);
+      const ib = sectionOrder.indexOf(b.label || b.id);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    return copy;
+  };
+
+  const renderModuleBlocks = (sections) => {
+    moduleBlocks.innerHTML = '';
+    const usable = sortedSections(sections)
+      .map((section) => ({
+        ...section,
+        children: (section.children || []).filter((c) => c.id !== 'dashboard')
+      }))
+      .filter((section) => section.children.length);
+
+    if (!usable.length) {
+      moduleBlocks.innerHTML = '<p class="empty">No hay módulos disponibles para tu perfil.</p>';
       return;
     }
-    items.slice(0, 8).forEach((item) => {
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'tile';
-      tile.innerHTML = `<div class="tile-code">${(item.module || '').replace('erp.', '').replace('core.', '') || 'app'}</div>
-        <div class="tile-name">${item.label}</div>`;
-      tile.addEventListener('click', () => showStub(item.label, item.route));
-      quickTiles.appendChild(tile);
+
+    usable.forEach((section) => {
+      const block = document.createElement('div');
+      block.className = 'module-block';
+      block.dataset.section = (section.label || section.id || '').toLowerCase();
+
+      const title = document.createElement('div');
+      title.className = 'module-block-title';
+      title.innerHTML = `<span>${section.label || section.id}</span><span class="sec-count">${section.children.length}</span>`;
+      block.appendChild(title);
+
+      const tiles = document.createElement('div');
+      tiles.className = 'tiles';
+      section.children.forEach((item) => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'tile';
+        tile.dataset.label = item.label || '';
+        tile.dataset.route = item.route || '';
+        tile.dataset.module = item.module || '';
+        tile.dataset.search = [
+          item.label, item.route, item.module, section.label, section.id
+        ].filter(Boolean).join(' ').toLowerCase();
+        tile.innerHTML = `<div class="tile-code">${(item.module || '').replace('erp.', '').replace('core.', '') || 'app'}</div>
+          <div class="tile-name">${item.label}</div>`;
+        tile.addEventListener('click', () => showStub(item.label, item.route));
+        tiles.appendChild(tile);
+      });
+      block.appendChild(tiles);
+      moduleBlocks.appendChild(block);
     });
   };
+
+  const applyGoSearch = () => {
+    const q = (goSearch.value || '').trim().toLowerCase();
+    moduleBlocks.querySelectorAll('.module-block').forEach((block) => {
+      let visible = 0;
+      block.querySelectorAll('.tile').forEach((tile) => {
+        const match = !q || (tile.dataset.search || '').includes(q);
+        tile.classList.toggle('is-dim', !match);
+        tile.hidden = false;
+        if (match) visible += 1;
+      });
+      block.hidden = visible === 0;
+    });
+  };
+
+  goSearch.addEventListener('input', applyGoSearch);
 
   let sections = null;
   try {
@@ -322,9 +379,9 @@
   renderKpis();
   renderInbox();
   renderAlerts();
-  renderTiles(sections);
+  renderModuleBlocks(sections);
   statusLine.textContent =
-    (user.displayName || 'Usuario') + ' · carcasa dashboard · ' +
+    (user.displayName || 'Usuario') + ' · lanzador por bloques · ' +
     flattenItems(sections).length + ' accesos de menú';
   showDashboard();
 })();
