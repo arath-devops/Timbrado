@@ -137,8 +137,17 @@
         id: 't-pr-901', type: 'PR', folio: 'RQ-901', title: 'RQ-901 · Servicios TI',
         summary: 'Requisición de licencias. Ya aprobada en demo.',
         requester: 'Sistemas', org: 'ACME · TI', amount: '$18,400 MXN',
-        step: 'Cerrado', age: '—', process: 'erp.pr.approve',
-        priority: 'Baja', tone: 'low', status: 'DONE', decision: 'APPROVED'
+        step: 'Aprobado', age: '—', process: 'erp.pr.approve',
+        priority: 'Baja', tone: 'low', status: 'DONE', decision: 'APPROVED',
+        comment: 'Presupuesto TI autorizado.'
+      },
+      {
+        id: 't-pay-55', type: 'PAY', folio: 'PT-55', title: 'Pago · PT-55',
+        summary: 'Propuesta rechazada por falta de soporte fiscal del proveedor.',
+        requester: 'Tesorería', org: 'ACME · Tesorería', amount: '$87,900 MXN',
+        step: 'Rechazado', age: '—', process: 'erp.ap.payment_dual',
+        priority: 'Media', tone: 'med', status: 'DONE', decision: 'REJECTED',
+        comment: 'Falta CFDI y constancia de situación fiscal vigente.'
       }
     ],
     'compras.acme': [
@@ -155,6 +164,14 @@
         requester: 'Carlos López', org: 'ACME · Compras', amount: '$6,450 MXN',
         step: 'Lead compras', age: '1 día', process: 'erp.po.approve',
         priority: 'Baja', tone: 'low', status: 'OPEN'
+      },
+      {
+        id: 't-pr-188', type: 'PR', folio: 'RQ-188', title: 'RQ-188 · Uniformes',
+        summary: 'Requisición rechazada por fuera de política de compra.',
+        requester: 'RH', org: 'ACME · RH', amount: '$9,200 MXN',
+        step: 'Rechazado', age: '—', process: 'erp.pr.approve',
+        priority: 'Baja', tone: 'low', status: 'DONE', decision: 'REJECTED',
+        comment: 'Usar proveedor autorizado del catálogo marco.'
       }
     ]
   };
@@ -176,13 +193,16 @@
   const userKey = user.username === 'compras.acme' ? 'compras.acme' : 'admin.acme';
   const home = DEMO_HOME[userKey];
 
+  const TASKS_VERSION = '2';
   const loadTasks = () => {
     try {
+      const ver = sessionStorage.getItem(TASKS_KEY + ':ver:' + userKey);
       const raw = sessionStorage.getItem(TASKS_KEY + ':' + userKey);
-      if (raw) return JSON.parse(raw);
+      if (raw && ver === TASKS_VERSION) return JSON.parse(raw);
     } catch { /* seed */ }
     const seed = DEMO_TASKS[userKey].map((t) => ({ ...t }));
     sessionStorage.setItem(TASKS_KEY + ':' + userKey, JSON.stringify(seed));
+    sessionStorage.setItem(TASKS_KEY + ':ver:' + userKey, TASKS_VERSION);
     return seed;
   };
   let tasks = loadTasks();
@@ -509,7 +529,8 @@
     const q = (filterSearch.value || '').trim().toLowerCase();
     return tasks.filter((t) => {
       if (bandejaTab === 'OPEN' && t.status !== 'OPEN') return false;
-      if (bandejaTab === 'DONE' && t.status === 'OPEN') return false;
+      if (bandejaTab === 'APPROVED' && !(t.status === 'DONE' && t.decision === 'APPROVED')) return false;
+      if (bandejaTab === 'REJECTED' && !(t.status === 'DONE' && t.decision === 'REJECTED')) return false;
       if (type && t.type !== type) return false;
       if (q) {
         const hay = [t.folio, t.title, t.requester, t.process, t.summary].join(' ').toLowerCase();
@@ -559,7 +580,11 @@
 
   const renderBandeja = () => {
     const list = filteredTasks();
-    bandejaListTitle.textContent = bandejaTab === 'OPEN' ? 'Pendientes' : 'Completadas';
+    bandejaListTitle.textContent = bandejaTab === 'OPEN'
+      ? 'Pendientes'
+      : bandejaTab === 'APPROVED'
+        ? 'Aprobadas'
+        : 'Rechazadas';
     bandejaCount.textContent = String(list.length);
     if (!list.length) {
       bandejaList.innerHTML = '<p class="empty">No hay tareas con estos filtros.</p>';
