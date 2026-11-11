@@ -13,15 +13,32 @@
     .mark { width:36px; height:36px; border-radius:6px; background:var(--brand); color:#fff; display:grid; place-items:center; font-weight:700; font-size:12px; }
     h1 { margin:0 0 18px; font-size:22px; }
     label { display:block; font-size:12px; font-weight:600; margin:0 0 4px; color:var(--muted); }
-    input { width:100%; height:36px; border:1px solid var(--border); border-radius:4px; padding:0 10px; margin-bottom:12px; }
+    input {
+      width:100%; height:36px; border:1px solid var(--border); border-radius:8px;
+      padding:0 12px; margin-bottom:12px; font:inherit; font-size:13px; color:var(--ink); background:#fff;
+      transition:border-color .15s ease, box-shadow .15s ease;
+    }
+    input:hover { border-color:#b7d4f5; }
     input:focus { outline:2px solid #e8f3fc; border-color:var(--brand); }
+    select {
+      width:100%; height:36px; border:1px solid var(--border); border-radius:8px;
+      padding:0 36px 0 12px; font:inherit; font-size:13px; color:var(--ink); background:#fff;
+      appearance:none; -webkit-appearance:none; cursor:pointer;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+        linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 16px) calc(50% - 2px), calc(100% - 10px) calc(50% - 2px);
+      background-size:6px 6px, 6px 6px; background-repeat:no-repeat;
+      transition:border-color .15s ease;
+    }
+    select:hover { border-color:#b7d4f5; }
+    select:focus { outline:2px solid #e8f3fc; border-color:var(--brand); }
     .password-field { position:relative; margin-bottom:12px; }
     .password-field input { margin-bottom:0; padding-right:40px; }
     .toggle-password {
-      position:absolute; right:2px; top:50%; transform:translateY(-50%);
-      width:36px; height:32px; border:0; border-radius:4px; background:transparent;
+      position:absolute; right:4px; top:50%; transform:translateY(-50%);
+      width:32px; height:28px; border:0; border-radius:4px; background:transparent;
       color:var(--muted); cursor:pointer; padding:0; display:grid; place-items:center;
-      z-index:2;
       transition: color .18s ease, background-color .18s ease, box-shadow .18s ease;
     }
     .toggle-password:hover { color:var(--brand); background:#eef5fc; }
@@ -132,26 +149,19 @@
     .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
     .ok { display:none; background:#e3f5ea; color:#107e3e; padding:10px; border-radius:4px; font-size:12px; margin-top:12px; white-space:pre-wrap; word-break:break-all; }
     .hint { font-size:11px; color:var(--muted); margin-top:12px; }
-    .preview-bar {
-      position:fixed; top:0; left:0; right:0; z-index:20;
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:8px 14px; background:rgba(26,35,50,.92); color:#fff; font-size:12px;
-    }
-    .preview-bar a { color:#9fd0ff; text-decoration:none; font-weight:600; }
-    .preview-bar a:hover { text-decoration:underline; }
-    .mode-pill {
-      border-radius:999px; padding:3px 8px; font-weight:700; font-size:11px;
-      background:#2d6a3e; color:#d8ffe6;
-    }
-    .mode-pill.api { background:#1d4f8c; color:#d6e9ff; }
-    body { padding-top:40px; }
+  </style>
+  <style>
+    .preview-bar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(26,35,50,.92);color:#fff;font-size:12px}
+    .preview-bar a{color:#9fd0ff;text-decoration:none;font-weight:600}
+    .mode-pill{border-radius:999px;padding:3px 8px;font-weight:700;font-size:11px;background:#2d6a3e;color:#d8ffe6}
   </style>
 </head>
 <body>
   <div class="preview-bar">
-    <div><a href="../../">← Dev Preview</a> · módulo Login</div>
-    <span class="mode-pill" id="modePill">Modo demo</span>
+    <div><a href="../../">← Dev Preview</a> · Login</div>
+    <span class="mode-pill">Modo demo</span>
   </div>
+
   <form class="card" id="f">
     <div class="brand">
       <div class="mark">ERP</div>
@@ -246,102 +256,6 @@
       submitBtn.setAttribute('aria-label', loading ? 'Iniciando sesión' : 'Entrar');
     };
 
-    const params = new URLSearchParams(location.search);
-    const apiBase = (params.get('api') || '').replace(/\/$/, '');
-    const modePill = document.getElementById('modePill');
-    if (apiBase) {
-      modePill.textContent = 'Modo API · ' + apiBase;
-      modePill.classList.add('api');
-    }
-
-    const DEMO_USERS = {
-      'admin.acme': {
-        displayName: 'Administrador ACME',
-        companyName: 'ACME Industrial',
-        modules: [
-          'core.shell', 'core.iam', 'core.catalog', 'core.workflow', 'core.document', 'core.audit', 'core.report',
-          'erp.procurement', 'erp.inventory', 'erp.ap', 'erp.ar', 'erp.billing', 'erp.accounting', 'erp.treasury'
-        ]
-      },
-      'compras.acme': {
-        displayName: 'Carlos López',
-        companyName: 'ACME Industrial',
-        modules: ['core.shell', 'core.workflow', 'core.catalog', 'erp.procurement', 'erp.inventory']
-      }
-    };
-
-    // Misma forma que MenuCatalog del IAM (secciones → children)
-    function menusForModules(modules) {
-      const defs = [
-        ['dashboard', 'Inicio', '/dashboard', 'core.shell', 'Inicio'],
-        ['bandeja', 'Bandeja de aprobación', '/bandeja', 'core.workflow', 'Inicio'],
-        ['catalogos', 'Catálogos', '/catalogos', 'core.catalog', 'Administración'],
-        ['usuarios', 'Usuarios y permisos', '/usuarios', 'core.iam', 'Administración'],
-        ['compras', 'Compras', '/compras', 'erp.procurement', 'Operación'],
-        ['inventarios', 'Inventarios', '/inventarios', 'erp.inventory', 'Operación'],
-        ['ventas', 'Ventas', '/ventas', 'erp.ar', 'Operación'],
-        ['cxp', 'Cuentas por pagar', '/cxp', 'erp.ap', 'Finanzas'],
-        ['facturacion', 'Facturación', '/facturacion', 'erp.billing', 'Finanzas'],
-        ['cxc', 'Cuentas por cobrar', '/cxc', 'erp.ar', 'Finanzas'],
-        ['contabilidad', 'Contabilidad', '/contabilidad', 'erp.accounting', 'Finanzas'],
-        ['tesoreria', 'Tesorería', '/tesoreria', 'erp.treasury', 'Finanzas'],
-        ['documentos', 'Documentos', '/documentos', 'core.document', 'Plataforma'],
-        ['auditoria', 'Auditoría', '/auditoria', 'core.audit', 'Plataforma'],
-        ['reportes', 'Reportes', '/reportes', 'core.report', 'Plataforma']
-      ];
-      const set = new Set(modules);
-      const sections = new Map();
-      defs.forEach(([id, label, route, module, section]) => {
-        if (!set.has(module)) return;
-        if (!sections.has(section)) {
-          sections.set(section, { id: section, label: section, children: [] });
-        }
-        sections.get(section).children.push({ id, label, route, module, children: [] });
-      });
-      return [...sections.values()];
-    }
-
-    const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-    async function loginDemo(body) {
-      await wait(1200);
-      if (body.company.toUpperCase() !== 'ACME' || body.password !== 'demo1234' || !DEMO_USERS[body.username]) {
-        const error = new Error('Empresa o credenciales inválidas');
-        error.status = 401;
-        throw error;
-      }
-      const user = DEMO_USERS[body.username];
-      return {
-        accessToken: 'preview-demo-token',
-        user: {
-          username: body.username,
-          displayName: user.displayName,
-          companyName: user.companyName,
-          modules: user.modules
-        },
-        menu: { items: menusForModules(user.modules) }
-      };
-    }
-
-    async function loginApi(body) {
-      const res = await fetch(apiBase + '/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const error = new Error(data.message || data.detail || ('No se pudo iniciar sesión (error ' + res.status + ')'));
-        error.status = res.status;
-        throw error;
-      }
-      const menuRes = await fetch(apiBase + '/api/v1/me/menus', {
-        headers: { Authorization: 'Bearer ' + data.accessToken }
-      });
-      const menu = await menuRes.json();
-      return { accessToken: data.accessToken, user: data.user, menu };
-    }
-
     document.getElementById('f').onsubmit = async (e) => {
       e.preventDefault();
       err.style.display = 'none'; ok.style.display = 'none';
@@ -357,16 +271,41 @@
       };
       setSubmitLoading(true);
       try {
-        const result = apiBase ? await loginApi(body) : await loginDemo(body);
-        sessionStorage.setItem('erp_access_token', result.accessToken);
-        sessionStorage.setItem('erp_user', JSON.stringify(result.user));
-        sessionStorage.setItem('erp_menus', JSON.stringify(result.menu.items || []));
-        await wait(280);
-        location.href = '../shell/';
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          err.textContent = data.message || data.detail || ('No se pudo iniciar sesión (error ' + res.status + ')');
+          err.style.display = 'block';
+          return;
+        }
+        sessionStorage.setItem('erp_access_token', data.accessToken);
+        sessionStorage.setItem('erp_user', JSON.stringify(data.user));
+        try {
+          const menuRes = await fetch('/api/v1/me/menus', {
+            headers: { Authorization: 'Bearer ' + data.accessToken }
+          });
+          if (menuRes.ok) {
+            const menu = await menuRes.json();
+            sessionStorage.setItem('erp_menus', JSON.stringify(menu.items || []));
+          }
+        } catch (_) { /* carcasa: shell arma menú demo */ }
+        await new Promise((r) => setTimeout(r, 280));
+        location.href = '/shell.html';
         return;
       } catch (ex) {
-        err.textContent = ex.message || 'No se pudo iniciar sesión';
-        err.style.display = 'block';
+        // Carcasa UI: si el API falla, igual entra al shell con datos del formulario
+        sessionStorage.setItem('erp_user', JSON.stringify({
+          username: body.username,
+          displayName: body.username,
+          companyName: body.company || 'Empresa'
+        }));
+        sessionStorage.removeItem('erp_menus');
+        location.href = '/shell.html';
+        return;
       } finally {
         setSubmitLoading(false);
       }
