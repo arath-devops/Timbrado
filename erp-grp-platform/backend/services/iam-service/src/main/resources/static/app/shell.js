@@ -245,7 +245,7 @@
   };
 
   const IAM_MODULES = [
-    { code: 'core.shell', name: 'Inicio / shell', area: 'Plataforma' },
+    { code: 'core.shell', name: 'Inicio', area: 'Plataforma' },
     { code: 'core.workflow', name: 'Bandeja de aprobación', area: 'Plataforma' },
     { code: 'core.catalog', name: 'Catálogos', area: 'Administración' },
     { code: 'core.iam', name: 'Usuarios y permisos', area: 'Administración' },
@@ -254,38 +254,40 @@
     { code: 'core.report', name: 'Reportes', area: 'Plataforma' },
     { code: 'erp.procurement', name: 'Compras', area: 'Operación' },
     { code: 'erp.inventory', name: 'Inventarios', area: 'Operación' },
-    { code: 'erp.ar', name: 'Ventas / CxC', area: 'Operación' },
+    { code: 'erp.ar', name: 'Ventas y cuentas por cobrar', area: 'Operación' },
     { code: 'erp.ap', name: 'Cuentas por pagar', area: 'Finanzas' },
     { code: 'erp.billing', name: 'Facturación', area: 'Finanzas' },
     { code: 'erp.accounting', name: 'Contabilidad', area: 'Finanzas' },
     { code: 'erp.treasury', name: 'Tesorería', area: 'Finanzas' }
   ];
 
+  const moduleLabel = (code) => (IAM_MODULES.find((m) => m.code === code) || {}).name || code;
+
   const DEMO_IAM_ROLES = [
     {
       code: 'ADM', name: 'Administrador',
       desc: 'Usuarios, catálogos, organización y lectura amplia.',
-      permissions: ['*.read', '*.write', 'iam.admin', 'catalog.admin']
+      permissions: ['Lectura general', 'Escritura general', 'Administrar IAM', 'Administrar catálogos']
     },
     {
       code: 'BUY', name: 'Compras',
       desc: 'Requisiciones, OC y seguimiento de recepción.',
-      permissions: ['procurement.read', 'procurement.write', 'inventory.read', 'workflow.approve']
+      permissions: ['Leer compras', 'Escribir compras', 'Leer inventarios', 'Aprobar en bandeja']
     },
     {
       code: 'AP', name: 'Cuentas por pagar',
       desc: 'Facturas proveedor, match y propuestas de pago.',
-      permissions: ['ap.read', 'ap.write', 'ap.post', 'workflow.approve']
+      permissions: ['Leer CxP', 'Escribir CxP', 'Contabilizar CxP', 'Aprobar en bandeja']
     },
     {
       code: 'TRE', name: 'Tesorería',
-      desc: 'Ejecución de pagos y conciliación (maker).',
-      permissions: ['treasury.read', 'treasury.execute', 'workflow.approve']
+      desc: 'Ejecución de pagos y conciliación (ejecutor).',
+      permissions: ['Leer tesorería', 'Ejecutar pagos', 'Aprobar en bandeja']
     },
     {
       code: 'APPR', name: 'Aprobador',
       desc: 'Bandeja de aprobaciones por umbral.',
-      permissions: ['workflow.approve', '*.read']
+      permissions: ['Aprobar en bandeja', 'Lectura general']
     }
   ];
 
@@ -1197,7 +1199,7 @@
             ${r.permissions.map((p) => `<span class="pill soft">${p}</span>`).join('')}
           </div>
           <div class="iam-chips" style="margin-top:8px">
-            ${mods.map((m) => `<span class="tag info">${m.replace('erp.', '').replace('core.', '')}</span>`).join('') || '<span class="muted">Sin módulos</span>'}
+            ${mods.map((m) => `<span class="tag info">${moduleLabel(m)}</span>`).join('') || '<span class="muted">Sin módulos</span>'}
           </div>
         </article>`;
     }).join('');
@@ -1207,16 +1209,16 @@
     const roles = DEMO_IAM_ROLES;
     const head = document.getElementById('iamMatrixHead');
     const body = document.getElementById('iamMatrixBody');
-    head.innerHTML = `<tr><th>Módulo</th>${roles.map((r) => `<th>${r.code}</th>`).join('')}</tr>`;
+    head.innerHTML = `<tr><th>Módulo</th>${roles.map((r) => `<th title="${r.code}">${r.name}</th>`).join('')}</tr>`;
     body.innerHTML = IAM_MODULES.map((mod) => `
       <tr>
         <td>
           <strong>${mod.name}</strong>
-          <div class="muted">${mod.code} · ${mod.area}</div>
+          <div class="muted">${mod.area}</div>
         </td>
         ${roles.map((r) => {
           const on = (iamState.roleModules[r.code] || []).includes(mod.code);
-          return `<td><input type="checkbox" data-role="${r.code}" data-mod="${mod.code}" ${on ? 'checked' : ''}/></td>`;
+          return `<td><input type="checkbox" data-role="${r.code}" data-mod="${mod.code}" aria-label="${mod.name} para ${r.name}" ${on ? 'checked' : ''}/></td>`;
         }).join('')}
       </tr>
     `).join('');
@@ -1228,13 +1230,12 @@
         const arr = iamState.roleModules[role];
         if (box.checked && !arr.includes(mod)) arr.push(mod);
         if (!box.checked) iamState.roleModules[role] = arr.filter((x) => x !== mod);
-        // sync users that have this role default modules only if user modules equalled old role set — keep simple: update users with same role
         iamState.users.forEach((u) => {
           if (u.role === role) u.modules = [...iamState.roleModules[role]];
         });
         saveIamState();
         document.getElementById('iamMatrixNote').textContent =
-          'Matriz actualizada · usuarios del rol ' + role + ' sincronizados en esta sesión.';
+          'Matriz actualizada · usuarios del rol «' + roleName(role) + '» sincronizados en esta sesión.';
       });
     });
   };
@@ -1263,7 +1264,7 @@
     userFormModules.innerHTML = IAM_MODULES.map((m) => `
       <label>
         <input type="checkbox" value="${m.code}" ${set.has(m.code) ? 'checked' : ''}/>
-        <span><strong>${m.name}</strong><span>${m.code}</span></span>
+        <span><strong>${m.name}</strong><span>${m.area}</span></span>
       </label>
     `).join('');
   };
