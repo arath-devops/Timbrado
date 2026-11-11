@@ -176,6 +176,74 @@
     ]
   };
 
+  const CATALOG_DEFS = [
+    { id: 'CURRENCY', group: 'OPS', name: 'Monedas', desc: 'Moneda funcional y monedas de transacción', editable: true },
+    { id: 'UOM', group: 'OPS', name: 'Unidades de medida', desc: 'Cantidades en compras, inventario y facturas', editable: true },
+    { id: 'PAYMENT_TERMS', group: 'OPS', name: 'Condiciones de pago', desc: 'Plazos NET / contado para OC y CxP/CxC', editable: true },
+    { id: 'TAX', group: 'OPS', name: 'Impuestos', desc: 'Traslado IVA y exentos en líneas', editable: true },
+    { id: 'DOC_TYPE', group: 'OPS', name: 'Tipos de documento', desc: 'Clasificación de expediente y adjuntos', editable: true },
+    { id: 'SAT_USO_CFDI', group: 'SAT', name: 'Uso CFDI', desc: 'c_UsoCFDI · solo lectura SAT', editable: false },
+    { id: 'SAT_FORMA_PAGO', group: 'SAT', name: 'Forma de pago', desc: 'c_FormaPago · solo lectura SAT', editable: false },
+    { id: 'SAT_REGIMEN', group: 'SAT', name: 'Régimen fiscal', desc: 'c_RegimenFiscal · solo lectura SAT', editable: false }
+  ];
+
+  const DEMO_CATALOG_ITEMS = {
+    CURRENCY: [
+      { code: 'MXN', name: 'Peso mexicano', active: true },
+      { code: 'USD', name: 'Dólar estadounidense', active: true }
+    ],
+    UOM: [
+      { code: 'PZA', name: 'Pieza', active: true },
+      { code: 'KG', name: 'Kilogramo', active: true },
+      { code: 'M', name: 'Metro', active: true },
+      { code: 'LT', name: 'Litro', active: true },
+      { code: 'SERV', name: 'Servicio', active: true },
+      { code: 'HRA', name: 'Hora', active: false }
+    ],
+    PAYMENT_TERMS: [
+      { code: 'CONTADO', name: 'Contado', active: true },
+      { code: 'NET15', name: 'Neto 15 días', active: true },
+      { code: 'NET30', name: 'Neto 30 días', active: true },
+      { code: 'NET45', name: 'Neto 45 días', active: true }
+    ],
+    TAX: [
+      { code: 'IVA16', name: 'IVA 16%', active: true },
+      { code: 'IVA0', name: 'IVA 0%', active: true },
+      { code: 'EXENTO', name: 'Exento', active: true }
+    ],
+    DOC_TYPE: [
+      { code: 'COT', name: 'Cotización', active: true },
+      { code: 'OC', name: 'Orden de compra', active: true },
+      { code: 'FACT', name: 'Factura', active: true },
+      { code: 'CFDI_PDF', name: 'CFDI PDF', active: true },
+      { code: 'CFDI_XML', name: 'CFDI XML', active: true },
+      { code: 'REC', name: 'Recepción', active: true },
+      { code: 'CONTRATO', name: 'Contrato', active: true },
+      { code: 'OTRO', name: 'Otro', active: true }
+    ],
+    SAT_USO_CFDI: [
+      { code: 'G01', name: 'Adquisición de mercancías', active: true },
+      { code: 'G03', name: 'Gastos en general', active: true },
+      { code: 'I04', name: 'Equipo de cómputo y accesorios', active: true },
+      { code: 'S01', name: 'Sin efectos fiscales', active: true },
+      { code: 'CP01', name: 'Pagos', active: true }
+    ],
+    SAT_FORMA_PAGO: [
+      { code: '01', name: 'Efectivo', active: true },
+      { code: '02', name: 'Cheque nominativo', active: true },
+      { code: '03', name: 'Transferencia electrónica de fondos', active: true },
+      { code: '04', name: 'Tarjeta de crédito', active: true },
+      { code: '28', name: 'Tarjeta de débito', active: true },
+      { code: '99', name: 'Por definir', active: true }
+    ],
+    SAT_REGIMEN: [
+      { code: '601', name: 'General de Ley Personas Morales', active: true },
+      { code: '612', name: 'Personas Físicas con Actividades Empresariales y Profesionales', active: true },
+      { code: '626', name: 'Régimen Simplificado de Confianza', active: true },
+      { code: '616', name: 'Sin obligaciones fiscales', active: true }
+    ]
+  };
+
   let user = null;
   try {
     user = JSON.parse(sessionStorage.getItem('erp_user') || 'null');
@@ -208,6 +276,27 @@
   let tasks = loadTasks();
   const saveTasks = () => sessionStorage.setItem(TASKS_KEY + ':' + userKey, JSON.stringify(tasks));
 
+  const CATS_KEY = 'erp_catalog_items';
+  const CATS_VERSION = '1';
+  const loadCatalogItems = () => {
+    try {
+      const ver = sessionStorage.getItem(CATS_KEY + ':ver');
+      const raw = sessionStorage.getItem(CATS_KEY);
+      if (raw && ver === CATS_VERSION) return JSON.parse(raw);
+    } catch { /* seed */ }
+    const seed = {};
+    Object.keys(DEMO_CATALOG_ITEMS).forEach((k) => {
+      seed[k] = DEMO_CATALOG_ITEMS[k].map((it) => ({ ...it }));
+    });
+    sessionStorage.setItem(CATS_KEY, JSON.stringify(seed));
+    sessionStorage.setItem(CATS_KEY + ':ver', CATS_VERSION);
+    return seed;
+  };
+  let catalogItems = loadCatalogItems();
+  const saveCatalogItems = () => sessionStorage.setItem(CATS_KEY, JSON.stringify(catalogItems));
+  let selectedCatalogId = null;
+  let editingCatCode = null;
+
   const companyLabel = document.getElementById('companyLabel');
   const userLabel = document.getElementById('userLabel');
   const menuNav = document.getElementById('menuNav');
@@ -231,11 +320,27 @@
   const pages = {
     dashboard: document.querySelector('[data-page="dashboard"]'),
     bandeja: document.querySelector('[data-page="bandeja"]'),
+    catalogos: document.querySelector('[data-page="catalogos"]'),
     stub: document.querySelector('[data-page="stub"]')
   };
   const stubTitle = document.getElementById('stubTitle');
   const backHomeBtn = document.getElementById('backHomeBtn');
   const backHomeFromBandeja = document.getElementById('backHomeFromBandeja');
+  const backHomeFromCatalogos = document.getElementById('backHomeFromCatalogos');
+  const catalogHub = document.getElementById('catalogHub');
+  const catalogDetail = document.getElementById('catalogDetail');
+  const catOpsGrid = document.getElementById('catOpsGrid');
+  const catSatGrid = document.getElementById('catSatGrid');
+  const catItemBody = document.getElementById('catItemBody');
+  const catItemSearch = document.getElementById('catItemSearch');
+  const catActiveFilter = document.getElementById('catActiveFilter');
+  const btnNewCatItem = document.getElementById('btnNewCatItem');
+  const catModal = document.getElementById('catModal');
+  const catModalScrim = document.getElementById('catModalScrim');
+  const catFormCode = document.getElementById('catFormCode');
+  const catFormName = document.getElementById('catFormName');
+  const catFormActive = document.getElementById('catFormActive');
+  const catFormMsg = document.getElementById('catFormMsg');
   const bandejaList = document.getElementById('bandejaList');
   const bandejaCount = document.getElementById('bandejaCount');
   const bandejaListTitle = document.getElementById('bandejaListTitle');
@@ -344,9 +449,28 @@
     renderBandeja();
   };
 
+  const showCatalogos = (catalogId) => {
+    hideAllPages();
+    pages.catalogos.hidden = false;
+    document.title = 'ERP · Catálogos';
+    setActiveRoute('/catalogos');
+    setDrawer(false);
+    if (catalogId) {
+      selectedCatalogId = catalogId;
+      showCatalogDetail();
+    } else {
+      selectedCatalogId = null;
+      showCatalogHub();
+    }
+  };
+
   const showStub = (label, route) => {
     if ((route || '') === '/bandeja' || (label || '').toLowerCase().includes('bandeja')) {
       showBandeja();
+      return;
+    }
+    if ((route || '') === '/catalogos' || (label || '').toLowerCase().includes('catálogo')) {
+      showCatalogos();
       return;
     }
     hideAllPages();
@@ -367,6 +491,10 @@
       showBandeja(taskId);
       return;
     }
+    if ((route || '') === '/catalogos') {
+      showCatalogos();
+      return;
+    }
     showStub(label, route);
   };
 
@@ -381,6 +509,11 @@
   });
   backHomeBtn.addEventListener('click', () => showDashboard());
   backHomeFromBandeja.addEventListener('click', () => showDashboard());
+  backHomeFromCatalogos.addEventListener('click', () => showDashboard());
+  document.getElementById('backCatalogHub').addEventListener('click', () => {
+    selectedCatalogId = null;
+    showCatalogHub();
+  });
 
   const flattenItems = (sections) => {
     const items = [];
@@ -669,8 +802,188 @@
   document.getElementById('txModalClose').addEventListener('click', () => setTxModal(false));
   document.getElementById('txModalOk').addEventListener('click', () => setTxModal(false));
   txModalScrim.addEventListener('click', () => setTxModal(false));
+
+  const currentCatalogDef = () => CATALOG_DEFS.find((c) => c.id === selectedCatalogId) || null;
+
+  const showCatalogHub = () => {
+    catalogHub.hidden = false;
+    catalogDetail.hidden = true;
+    const renderCards = (group, target) => {
+      const defs = CATALOG_DEFS.filter((c) => c.group === group);
+      target.innerHTML = defs.map((c) => {
+        const count = (catalogItems[c.id] || []).length;
+        const active = (catalogItems[c.id] || []).filter((i) => i.active).length;
+        return `
+          <button type="button" class="cat-card" data-id="${c.id}">
+            <div class="cat-code">${c.id}</div>
+            <h3>${c.name}</h3>
+            <p>${c.desc}</p>
+            <div class="cat-meta">
+              <span class="count-badge">${count}</span>
+              <span class="pill soft">${active} activos</span>
+              <span class="pill soft">${c.editable ? 'Editable' : 'SAT'}</span>
+            </div>
+          </button>`;
+      }).join('');
+      target.querySelectorAll('.cat-card').forEach((el) => {
+        el.addEventListener('click', () => {
+          selectedCatalogId = el.dataset.id;
+          showCatalogDetail();
+        });
+      });
+    };
+    renderCards('OPS', catOpsGrid);
+    renderCards('SAT', catSatGrid);
+  };
+
+  const filteredCatalogItems = () => {
+    const items = catalogItems[selectedCatalogId] || [];
+    const q = (catItemSearch.value || '').trim().toLowerCase();
+    const af = catActiveFilter.value;
+    return items.filter((it) => {
+      if (af === '1' && !it.active) return false;
+      if (af === '0' && it.active) return false;
+      if (q) {
+        const hay = (it.code + ' ' + it.name).toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  };
+
+  const renderCatalogItems = () => {
+    const def = currentCatalogDef();
+    if (!def) return;
+    const list = filteredCatalogItems();
+    document.getElementById('catItemCount').textContent = String(list.length);
+    if (!list.length) {
+      catItemBody.innerHTML = '<tr><td colspan="4" class="empty">No hay ítems con estos filtros.</td></tr>';
+      return;
+    }
+    catItemBody.innerHTML = list.map((it) => `
+      <tr>
+        <td><strong>${it.code}</strong></td>
+        <td>${it.name}</td>
+        <td><span class="tag ${it.active ? 'ok' : 'med'}">${it.active ? 'Activo' : 'Inactivo'}</span></td>
+        <td>
+          <div class="row-actions">
+            ${def.editable ? `<button type="button" class="link-btn" data-act="edit" data-code="${it.code}">Editar</button>
+            <button type="button" class="link-btn ${it.active ? 'danger' : ''}" data-act="toggle" data-code="${it.code}">${it.active ? 'Desactivar' : 'Activar'}</button>` : '<span class="muted">Solo lectura</span>'}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    catItemBody.querySelectorAll('[data-act]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const code = btn.dataset.code;
+        const item = (catalogItems[selectedCatalogId] || []).find((i) => i.code === code);
+        if (!item) return;
+        if (btn.dataset.act === 'edit') openCatModal(item);
+        if (btn.dataset.act === 'toggle') {
+          item.active = !item.active;
+          saveCatalogItems();
+          renderCatalogItems();
+        }
+      });
+    });
+  };
+
+  const showCatalogDetail = () => {
+    const def = currentCatalogDef();
+    if (!def) {
+      showCatalogHub();
+      return;
+    }
+    catalogHub.hidden = true;
+    catalogDetail.hidden = false;
+    document.getElementById('catDetailTitle').textContent = def.name;
+    document.getElementById('catDetailSub').textContent = def.desc + ' · ' + def.id;
+    document.getElementById('catDetailNote').textContent = def.editable
+      ? 'Carcasa demo · cambios locales en esta sesión.'
+      : 'Catálogo SAT · seed de consulta (no editable en MVP).';
+    btnNewCatItem.hidden = !def.editable;
+    catItemSearch.value = '';
+    catActiveFilter.value = '';
+    renderCatalogItems();
+  };
+
+  const setCatModal = (open) => {
+    catModal.hidden = !open;
+    catModalScrim.hidden = !open;
+    requestAnimationFrame(() => {
+      catModal.classList.toggle('is-open', open);
+      catModalScrim.classList.toggle('is-open', open);
+    });
+    if (!open) {
+      catModal.classList.remove('is-open');
+      catModalScrim.classList.remove('is-open');
+    }
+  };
+
+  const openCatModal = (item) => {
+    const def = currentCatalogDef();
+    if (!def || !def.editable) return;
+    editingCatCode = item ? item.code : null;
+    document.getElementById('catModalTitle').textContent = item ? 'Editar ítem' : 'Nuevo ítem';
+    catFormCode.value = item ? item.code : '';
+    catFormCode.disabled = !!item;
+    catFormName.value = item ? item.name : '';
+    catFormActive.checked = item ? !!item.active : true;
+    catFormMsg.hidden = true;
+    setCatModal(true);
+    (item ? catFormName : catFormCode).focus();
+  };
+
+  const saveCatItem = () => {
+    const def = currentCatalogDef();
+    if (!def || !def.editable) return;
+    const code = (catFormCode.value || '').trim().toUpperCase();
+    const name = (catFormName.value || '').trim();
+    if (!code || code.length < 1) {
+      catFormMsg.hidden = false;
+      catFormMsg.textContent = 'El código es obligatorio.';
+      catFormCode.focus();
+      return;
+    }
+    if (!name || name.length < 2) {
+      catFormMsg.hidden = false;
+      catFormMsg.textContent = 'El nombre debe tener al menos 2 caracteres.';
+      catFormName.focus();
+      return;
+    }
+    if (!catalogItems[selectedCatalogId]) catalogItems[selectedCatalogId] = [];
+    const list = catalogItems[selectedCatalogId];
+    if (!editingCatCode && list.some((i) => i.code === code)) {
+      catFormMsg.hidden = false;
+      catFormMsg.textContent = 'Ya existe un ítem con ese código.';
+      return;
+    }
+    if (editingCatCode) {
+      const row = list.find((i) => i.code === editingCatCode);
+      if (row) {
+        row.name = name;
+        row.active = catFormActive.checked;
+      }
+    } else {
+      list.push({ code, name, active: catFormActive.checked });
+    }
+    saveCatalogItems();
+    setCatModal(false);
+    renderCatalogItems();
+  };
+
+  btnNewCatItem.addEventListener('click', () => openCatModal(null));
+  catItemSearch.addEventListener('input', renderCatalogItems);
+  catActiveFilter.addEventListener('change', renderCatalogItems);
+  document.getElementById('catModalClose').addEventListener('click', () => setCatModal(false));
+  document.getElementById('catModalCancel').addEventListener('click', () => setCatModal(false));
+  document.getElementById('catModalSave').addEventListener('click', saveCatItem);
+  catModalScrim.addEventListener('click', () => setCatModal(false));
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !txModal.hidden) setTxModal(false);
+    if (e.key !== 'Escape') return;
+    if (!txModal.hidden) setTxModal(false);
+    if (!catModal.hidden) setCatModal(false);
   });
 
   let sections = null;

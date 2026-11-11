@@ -17,7 +17,7 @@
 </head>
 <body>
   <div class="preview-bar">
-    <div><a href="../../">← Dev Preview</a> · Shell / Bandeja</div>
+    <div><a href="../../">← Dev Preview</a> · Shell / Bandeja / Catálogos</div>
     <span class="mode-pill">Modo demo</span>
   </div>
 
@@ -168,6 +168,72 @@
         </div>
       </section>
 
+      <section class="page" data-page="catalogos" hidden>
+        <header class="dash-hero">
+          <div>
+            <p class="eyebrow">Administración</p>
+            <h1>Catálogos</h1>
+            <p class="lead">Listas de referencia del ERP · operativos editables y fiscales SAT en consulta.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="backHomeFromCatalogos">← Inicio</button>
+        </header>
+
+        <div id="catalogHub">
+          <div class="cat-group">
+            <div class="panel-head">
+              <h2>Operativos</h2>
+              <span class="pill soft">Editables</span>
+            </div>
+            <div class="cat-grid" id="catOpsGrid"></div>
+          </div>
+          <div class="cat-group">
+            <div class="panel-head">
+              <h2>Fiscales SAT</h2>
+              <span class="pill soft">Solo lectura</span>
+            </div>
+            <div class="cat-grid" id="catSatGrid"></div>
+          </div>
+        </div>
+
+        <div id="catalogDetail" hidden>
+          <div class="bandeja-toolbar">
+            <button type="button" class="btn btn-ghost" id="backCatalogHub">← Catálogos</button>
+            <div class="bandeja-filters">
+              <input id="catItemSearch" type="search" placeholder="Buscar código o nombre…" autocomplete="off"/>
+              <select id="catActiveFilter" aria-label="Estado">
+                <option value="">Todos</option>
+                <option value="1">Activos</option>
+                <option value="0">Inactivos</option>
+              </select>
+              <button type="button" class="btn btn-primary" id="btnNewCatItem" hidden>Nuevo</button>
+            </div>
+          </div>
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 id="catDetailTitle">Catálogo</h2>
+                <p class="panel-sub" id="catDetailSub">—</p>
+              </div>
+              <span class="count-badge" id="catItemCount">0</span>
+            </div>
+            <div class="cat-table-wrap">
+              <table class="cat-table" aria-label="Ítems del catálogo">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="catItemBody"></tbody>
+              </table>
+            </div>
+            <p class="foot-note" id="catDetailNote"></p>
+          </section>
+        </div>
+      </section>
+
       <section class="page" data-page="stub" hidden>
         <h1 id="stubTitle">Módulo</h1>
         <p class="lead">Esta pantalla se construirá en una fase posterior.</p>
@@ -209,6 +275,38 @@
       </div>
       <footer class="modal-foot">
         <button type="button" class="btn btn-ghost" id="txModalOk">Cerrar</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-scrim" id="catModalScrim" hidden></div>
+  <div class="modal" id="catModal" role="dialog" aria-modal="true" aria-labelledby="catModalTitle" hidden>
+    <div class="modal-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">Ítem de catálogo</p>
+          <h2 id="catModalTitle">Nuevo</h2>
+        </div>
+        <button type="button" class="icon-btn" id="catModalClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="modal-body">
+        <label class="comment-field">
+          <span>Código</span>
+          <input id="catFormCode" type="text" maxlength="40" autocomplete="off" placeholder="Ej. MXN"/>
+        </label>
+        <label class="comment-field">
+          <span>Nombre</span>
+          <input id="catFormName" type="text" maxlength="120" autocomplete="off" placeholder="Etiqueta visible"/>
+        </label>
+        <label class="cat-check">
+          <input id="catFormActive" type="checkbox" checked/>
+          <span>Activo</span>
+        </label>
+        <p class="foot-note" id="catFormMsg" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="catModalCancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="catModalSave">Guardar</button>
       </footer>
     </div>
   </div>
