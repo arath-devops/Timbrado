@@ -429,6 +429,7 @@
   const iamUserBody = document.getElementById('iamUserBody');
   const iamUserSearch = document.getElementById('iamUserSearch');
   const iamUserStatus = document.getElementById('iamUserStatus');
+  const iamUserRoleFilter = document.getElementById('iamUserRoleFilter');
   const iamUserFilters = document.getElementById('iamUserFilters');
   const iamUsersPanel = document.getElementById('iamUsersPanel');
   const iamRolesPanel = document.getElementById('iamRolesPanel');
@@ -442,6 +443,9 @@
   const userFormActive = document.getElementById('userFormActive');
   const userFormModules = document.getElementById('userFormModules');
   const userFormMsg = document.getElementById('userFormMsg');
+  const userMenuPreview = document.getElementById('userMenuPreview');
+  const userMenuPreviewHint = document.getElementById('userMenuPreviewHint');
+  const btnApplyRoleModules = document.getElementById('btnApplyRoleModules');
   const stubTitle = document.getElementById('stubTitle');
   const backHomeBtn = document.getElementById('backHomeBtn');
   const backHomeFromBandeja = document.getElementById('backHomeFromBandeja');
@@ -1118,6 +1122,16 @@
   catModalScrim.addEventListener('click', () => setCatModal(false));
 
   const roleName = (code) => (DEMO_IAM_ROLES.find((r) => r.code === code) || {}).name || code;
+  const moduleMeta = (code) => IAM_MODULES.find((m) => m.code === code) || { code, name: code, area: 'Otros' };
+  const selectedUserModules = () => [...userFormModules.querySelectorAll('input:checked')].map((el) => el.value);
+
+  const fillRoleFilter = () => {
+    const current = iamUserRoleFilter.value;
+    iamUserRoleFilter.innerHTML =
+      '<option value="">Todos los roles</option>' +
+      DEMO_IAM_ROLES.map((r) => `<option value="${r.code}">${r.name}</option>`).join('');
+    iamUserRoleFilter.value = current || '';
+  };
 
   const setIamTab = (tab) => {
     iamTab = tab;
@@ -1134,17 +1148,26 @@
   const filteredIamUsers = () => {
     const q = (iamUserSearch.value || '').trim().toLowerCase();
     const st = iamUserStatus.value;
+    const role = iamUserRoleFilter.value;
     return iamState.users.filter((u) => {
       if (st && u.status !== st) return false;
+      if (role && u.role !== role) return false;
       if (q) {
-        const hay = [u.username, u.displayName, u.email, u.role].join(' ').toLowerCase();
+        const hay = [u.username, u.displayName, u.email, roleName(u.role)].join(' ').toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
   };
 
+  const moduleChipsHtml = (codes) => {
+    const list = codes || [];
+    if (!list.length) return '<span class="muted">Sin módulos</span>';
+    return `<div class="iam-chips">${list.map((c) => `<span class="tag info">${moduleLabel(c)}</span>`).join('')}</div>`;
+  };
+
   const renderIamUsers = () => {
+    fillRoleFilter();
     const list = filteredIamUsers();
     document.getElementById('iamUserCount').textContent = String(list.length);
     if (!list.length) {
@@ -1156,7 +1179,7 @@
         <td><strong>${u.username}</strong></td>
         <td>${u.displayName}<div class="muted">${u.email || ''}</div></td>
         <td><span class="pill soft">${roleName(u.role)}</span></td>
-        <td>${(u.modules || []).length}</td>
+        <td>${moduleChipsHtml(u.modules)}</td>
         <td><span class="tag ${u.status === 'ACTIVE' ? 'ok' : 'high'}">${u.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}</span></td>
         <td>
           <div class="row-actions">
@@ -1187,10 +1210,14 @@
     const list = document.getElementById('iamRolesList');
     list.innerHTML = DEMO_IAM_ROLES.map((r) => {
       const mods = iamState.roleModules[r.code] || [];
+      const names = mods.map(moduleLabel);
+      const example = names.length
+        ? 'Ejemplo: un usuario «' + r.name + '» ve ' + names.join(', ') + '.'
+        : 'Este rol aún no tiene módulos asignados.';
       return `
         <article class="iam-role-card">
           <div class="detail-top">
-            <span class="pill soft">${r.code}</span>
+            <span class="pill soft">${r.name}</span>
             <span class="count-badge">${mods.length} módulos</span>
           </div>
           <h3>${r.name}</h3>
@@ -1201,7 +1228,19 @@
           <div class="iam-chips" style="margin-top:8px">
             ${mods.map((m) => `<span class="tag info">${moduleLabel(m)}</span>`).join('') || '<span class="muted">Sin módulos</span>'}
           </div>
+          <div class="iam-role-example">
+            <strong>Ejemplo al entrar</strong>
+            ${example}
+          </div>
         </article>`;
+    }).join('');
+  };
+
+  const renderRoleCounters = () => {
+    const box = document.getElementById('iamRoleCounters');
+    box.innerHTML = DEMO_IAM_ROLES.map((r) => {
+      const n = (iamState.roleModules[r.code] || []).length;
+      return `<span class="pill soft">${r.name}: ${n}</span>`;
     }).join('');
   };
 
@@ -1209,19 +1248,22 @@
     const roles = DEMO_IAM_ROLES;
     const head = document.getElementById('iamMatrixHead');
     const body = document.getElementById('iamMatrixBody');
-    head.innerHTML = `<tr><th>Módulo</th>${roles.map((r) => `<th title="${r.code}">${r.name}</th>`).join('')}</tr>`;
-    body.innerHTML = IAM_MODULES.map((mod) => `
-      <tr>
-        <td>
-          <strong>${mod.name}</strong>
-          <div class="muted">${mod.area}</div>
-        </td>
-        ${roles.map((r) => {
-          const on = (iamState.roleModules[r.code] || []).includes(mod.code);
-          return `<td><input type="checkbox" data-role="${r.code}" data-mod="${mod.code}" aria-label="${mod.name} para ${r.name}" ${on ? 'checked' : ''}/></td>`;
-        }).join('')}
-      </tr>
-    `).join('');
+    renderRoleCounters();
+    head.innerHTML = `<tr><th>Módulo</th>${roles.map((r) => `<th>${r.name}</th>`).join('')}</tr>`;
+    const areas = [];
+    IAM_MODULES.forEach((m) => { if (!areas.includes(m.area)) areas.push(m.area); });
+    body.innerHTML = areas.map((area) => {
+      const rows = IAM_MODULES.filter((m) => m.area === area).map((mod) => `
+        <tr>
+          <td><strong>${mod.name}</strong></td>
+          ${roles.map((r) => {
+            const on = (iamState.roleModules[r.code] || []).includes(mod.code);
+            return `<td><input type="checkbox" data-role="${r.code}" data-mod="${mod.code}" aria-label="${mod.name} para ${r.name}" ${on ? 'checked' : ''}/></td>`;
+          }).join('')}
+        </tr>
+      `).join('');
+      return `<tr class="iam-area-row"><td colspan="${roles.length + 1}">${area}</td></tr>${rows}`;
+    }).join('');
     body.querySelectorAll('input[type="checkbox"]').forEach((box) => {
       box.addEventListener('change', () => {
         const role = box.dataset.role;
@@ -1234,6 +1276,7 @@
           if (u.role === role) u.modules = [...iamState.roleModules[role]];
         });
         saveIamState();
+        renderRoleCounters();
         document.getElementById('iamMatrixNote').textContent =
           'Matriz actualizada · usuarios del rol «' + roleName(role) + '» sincronizados en esta sesión.';
       });
@@ -1244,6 +1287,26 @@
     if (iamTab === 'USERS') renderIamUsers();
     if (iamTab === 'ROLES') renderIamRoles();
     if (iamTab === 'MODULES') renderIamMatrix();
+  };
+
+  const renderUserMenuPreview = () => {
+    const codes = selectedUserModules();
+    if (!codes.length) {
+      userMenuPreviewHint.textContent = 'Marca al menos un módulo para ver la vista previa.';
+      userMenuPreview.innerHTML = '<p class="empty">Sin opciones de menú.</p>';
+      return;
+    }
+    userMenuPreviewHint.textContent = 'Así se vería el menú hamburguesa para este usuario.';
+    const areas = [];
+    codes.forEach((c) => {
+      const area = moduleMeta(c).area;
+      if (!areas.includes(area)) areas.push(area);
+    });
+    userMenuPreview.innerHTML = areas.map((area) => {
+      const items = codes.filter((c) => moduleMeta(c).area === area);
+      return `<div class="iam-preview-section">${area}</div>` +
+        items.map((c) => `<div class="iam-preview-item">${moduleLabel(c)}</div>`).join('');
+    }).join('');
   };
 
   const setUserModal = (open) => {
@@ -1261,19 +1324,29 @@
 
   const fillUserFormModules = (selected) => {
     const set = new Set(selected || []);
-    userFormModules.innerHTML = IAM_MODULES.map((m) => `
-      <label>
-        <input type="checkbox" value="${m.code}" ${set.has(m.code) ? 'checked' : ''}/>
-        <span><strong>${m.name}</strong><span>${m.area}</span></span>
-      </label>
-    `).join('');
+    const areas = [];
+    IAM_MODULES.forEach((m) => { if (!areas.includes(m.area)) areas.push(m.area); });
+    userFormModules.innerHTML = areas.map((area) => {
+      const mods = IAM_MODULES.filter((m) => m.area === area);
+      return `<div class="iam-preview-section" style="grid-column:1/-1">${area}</div>` +
+        mods.map((m) => `
+          <label>
+            <input type="checkbox" value="${m.code}" ${set.has(m.code) ? 'checked' : ''}/>
+            <span><strong>${m.name}</strong><span>${m.area}</span></span>
+          </label>
+        `).join('');
+    }).join('');
+    userFormModules.querySelectorAll('input[type="checkbox"]').forEach((box) => {
+      box.addEventListener('change', renderUserMenuPreview);
+    });
+    renderUserMenuPreview();
   };
 
   const openUserModal = (row) => {
     editingUsername = row ? row.username : null;
     document.getElementById('userModalTitle').textContent = row ? 'Editar usuario' : 'Nuevo usuario';
     userFormRole.innerHTML = DEMO_IAM_ROLES.map((r) =>
-      `<option value="${r.code}">${r.code} · ${r.name}</option>`
+      `<option value="${r.code}">${r.name}</option>`
     ).join('');
     userFormUsername.value = row ? row.username : '';
     userFormUsername.disabled = !!row;
@@ -1287,7 +1360,14 @@
   };
 
   userFormRole.addEventListener('change', () => {
+    /* no auto-overwrite; user can press apply */
+    renderUserMenuPreview();
+  });
+
+  btnApplyRoleModules.addEventListener('click', () => {
     fillUserFormModules(iamState.roleModules[userFormRole.value] || []);
+    userFormMsg.hidden = false;
+    userFormMsg.textContent = 'Se aplicaron los módulos del rol «' + roleName(userFormRole.value) + '». Puedes ajustar a mano.';
   });
 
   const saveUserForm = () => {
@@ -1337,6 +1417,7 @@
   });
   iamUserSearch.addEventListener('input', renderIamUsers);
   iamUserStatus.addEventListener('change', renderIamUsers);
+  iamUserRoleFilter.addEventListener('change', renderIamUsers);
   document.getElementById('btnNewUser').addEventListener('click', () => openUserModal(null));
   document.getElementById('userModalClose').addEventListener('click', () => setUserModal(false));
   document.getElementById('userModalCancel').addEventListener('click', () => setUserModal(false));

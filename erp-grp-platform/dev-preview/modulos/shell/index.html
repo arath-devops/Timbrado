@@ -17,7 +17,7 @@
 </head>
 <body>
   <div class="preview-bar">
-    <div><a href="../../">← Dev Preview</a> · Shell</div>
+    <div><a href="../../">← Dev Preview</a> · Shell / IAM</div>
     <span class="mode-pill">Modo demo</span>
   </div>
 
@@ -239,10 +239,19 @@
           <div>
             <p class="eyebrow">Administración</p>
             <h1>Usuarios y permisos</h1>
-            <p class="lead">Quién entra al ERP y qué módulos puede ver · el login no pide rol.</p>
+            <p class="lead">Quién entra al ERP y qué puede ver · el login no pide rol; aquí lo asigna el administrador.</p>
           </div>
           <button type="button" class="btn btn-ghost" id="backHomeFromUsuarios">← Inicio</button>
         </header>
+
+        <div class="iam-help" role="note">
+          <p><strong>Cómo leer esta pantalla:</strong> defines la persona (usuario), su perfil (rol) y las opciones del menú (módulos). Al entrar, solo verá lo marcado aquí.</p>
+          <dl class="iam-glossary">
+            <div><dt>Usuario</dt><dd>Cuenta con la que inicia sesión (empresa + usuario + contraseña).</dd></div>
+            <div><dt>Rol</dt><dd>Perfil de trabajo (Compras, CxP, Admin…). Agrupa capacidades típicas.</dd></div>
+            <div><dt>Módulo</dt><dd>Opción visible en el menú hamburguesa (Compras, Catálogos, Tesorería…).</dd></div>
+          </dl>
+        </div>
 
         <div class="bandeja-toolbar">
           <div class="tabs" role="tablist" aria-label="Administración IAM">
@@ -252,6 +261,9 @@
           </div>
           <div class="bandeja-filters" id="iamUserFilters">
             <input id="iamUserSearch" type="search" placeholder="Buscar usuario o nombre…" autocomplete="off"/>
+            <select id="iamUserRoleFilter" aria-label="Rol">
+              <option value="">Todos los roles</option>
+            </select>
             <select id="iamUserStatus" aria-label="Estado">
               <option value="">Todos</option>
               <option value="ACTIVE">Activos</option>
@@ -273,7 +285,7 @@
                   <th>Usuario</th>
                   <th>Nombre</th>
                   <th>Rol</th>
-                  <th>Módulos</th>
+                  <th>Qué ve en el menú</th>
                   <th>Estado</th>
                   <th></th>
                 </tr>
@@ -281,12 +293,15 @@
               <tbody id="iamUserBody"></tbody>
             </table>
           </div>
-          <p class="foot-note">Carcasa demo · los módulos asignados alimentan el menú hamburguesa.</p>
+          <p class="foot-note">Los módulos en español son exactamente las opciones de la hamburguesa.</p>
         </section>
 
         <section class="panel" id="iamRolesPanel" hidden>
           <div class="panel-head">
-            <h2>Roles Freeze</h2>
+            <div>
+              <h2>Roles</h2>
+              <p class="panel-sub">Cada rol trae un ejemplo de lo que vería al entrar.</p>
+            </div>
             <span class="count-badge" id="iamRoleCount">0</span>
           </div>
           <div id="iamRolesList" class="iam-card-list"></div>
@@ -296,9 +311,11 @@
           <div class="panel-head">
             <div>
               <h2>Módulos de menú</h2>
-              <p class="panel-sub">Marca qué pantallas ve cada rol en el menú</p>
+              <p class="panel-sub">Marca qué pantallas ve cada rol · agrupados por área</p>
             </div>
+            <div id="iamRoleCounters" class="iam-chips"></div>
           </div>
+          <p class="iam-legend"><span class="iam-legend-mark">✓</span> = el rol ve esa opción en el menú hamburguesa</p>
           <div class="cat-table-wrap">
             <table class="cat-table iam-matrix" aria-label="Matriz de módulos">
               <thead id="iamMatrixHead"></thead>
@@ -419,12 +436,22 @@
           <input id="userFormActive" type="checkbox" checked/>
           <span>Activo</span>
         </label>
-        <div class="iam-mod-block">
-          <div class="panel-head" style="margin:12px 0 8px">
-            <h2 style="font-size:14px;margin:0">Módulos visibles</h2>
-            <span class="pill soft">Menú hamburguesa</span>
+        <div class="iam-mod-layout">
+          <div class="iam-mod-block">
+            <div class="panel-head" style="margin:12px 0 8px">
+              <h2 style="font-size:14px;margin:0">Módulos visibles</h2>
+              <button type="button" class="btn btn-ghost" id="btnApplyRoleModules">Aplicar módulos del rol</button>
+            </div>
+            <div id="userFormModules" class="iam-mod-grid"></div>
           </div>
-          <div id="userFormModules" class="iam-mod-grid"></div>
+          <aside class="iam-menu-preview" aria-live="polite">
+            <div class="panel-head" style="margin:12px 0 8px">
+              <h2 style="font-size:14px;margin:0">Vista previa del menú</h2>
+              <span class="pill soft">Así lo vería</span>
+            </div>
+            <p class="panel-sub" id="userMenuPreviewHint">Marca módulos para previsualizar.</p>
+            <nav id="userMenuPreview" class="iam-preview-nav"></nav>
+          </aside>
         </div>
         <p class="foot-note" id="userFormMsg" hidden></p>
       </div>
