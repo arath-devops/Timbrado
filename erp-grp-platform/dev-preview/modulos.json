@@ -22,12 +22,11 @@
       "status": "listo",
       "phase": "Fase 1",
       "path": "modulos/shell/",
-      "summary": "Shell + dashboard + Bandeja + Catálogos (carcasa).",
+      "summary": "Shell + Bandeja + Catálogos + Usuarios/permisos (carcasa).",
       "checks": [
-        "Saludo + empresa/rol",
-        "Bandeja: pendientes / aprobadas / rechazadas",
-        "Catálogos: 5 operativos + 3 SAT",
-        "Alta/edición/desactivar en operativos",
+        "Bandeja y Catálogos",
+        "Usuarios: alta/edición/bloqueo",
+        "Roles Freeze + matriz módulos",
         "Salir vuelve al login"
       ]
     }

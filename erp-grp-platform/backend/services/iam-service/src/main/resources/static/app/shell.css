@@ -451,6 +451,28 @@ body {
 .cat-table .link-btn:hover { text-decoration:underline; }
 .cat-table .link-btn.danger { color:var(--danger); }
 
+.modal-card-wide { width:min(680px, 100%); }
+.iam-card-list { display:grid; gap:10px; }
+.iam-role-card {
+  border:1px solid var(--border); border-radius:10px; padding:14px; background:#fafbfc;
+}
+.iam-role-card h3 { margin:0 0 4px; font-size:15px; }
+.iam-role-card p { margin:0 0 10px; color:var(--muted); font-size:12px; }
+.iam-chips { display:flex; flex-wrap:wrap; gap:6px; }
+.iam-mod-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px;
+}
+.iam-mod-grid label {
+  display:flex; gap:8px; align-items:flex-start; border:1px solid var(--border);
+  border-radius:8px; padding:8px 10px; background:#fff; font-size:12px; cursor:pointer;
+}
+.iam-mod-grid label:hover { border-color:#9ec5ef; background:#f7fbff; }
+.iam-mod-grid strong { display:block; font-size:12px; }
+.iam-mod-grid span { color:var(--muted); }
+.iam-matrix th, .iam-matrix td { text-align:center; }
+.iam-matrix th:first-child, .iam-matrix td:first-child { text-align:left; }
+.iam-matrix input[type="checkbox"] { width:16px; height:16px; cursor:pointer; }
+
 @media (prefers-reduced-motion: reduce) {
   .drawer, .scrim, .icon-btn, .btn, .menu-link, .kpi, .tile, .inbox-item, .task-card, .cat-card,
   .kpi::before, .tile::before, .tile .tile-code, .tile .tile-name,

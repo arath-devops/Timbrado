@@ -220,6 +220,81 @@
         </div>
       </section>
 
+      <section class="page" data-page="usuarios" hidden>
+        <header class="dash-hero">
+          <div>
+            <p class="eyebrow">Administración</p>
+            <h1>Usuarios y permisos</h1>
+            <p class="lead">Quién entra al ERP y qué módulos puede ver · el login no pide rol.</p>
+          </div>
+          <button type="button" class="btn btn-ghost" id="backHomeFromUsuarios">← Inicio</button>
+        </header>
+
+        <div class="bandeja-toolbar">
+          <div class="tabs" role="tablist" aria-label="Administración IAM">
+            <button type="button" class="tab is-active" data-iam-tab="USERS">Usuarios</button>
+            <button type="button" class="tab" data-iam-tab="ROLES">Roles</button>
+            <button type="button" class="tab" data-iam-tab="MODULES">Módulos</button>
+          </div>
+          <div class="bandeja-filters" id="iamUserFilters">
+            <input id="iamUserSearch" type="search" placeholder="Buscar usuario o nombre…" autocomplete="off"/>
+            <select id="iamUserStatus" aria-label="Estado">
+              <option value="">Todos</option>
+              <option value="ACTIVE">Activos</option>
+              <option value="LOCKED">Bloqueados</option>
+            </select>
+            <button type="button" class="btn btn-primary" id="btnNewUser">Nuevo usuario</button>
+          </div>
+        </div>
+
+        <section class="panel" id="iamUsersPanel">
+          <div class="panel-head">
+            <h2>Usuarios</h2>
+            <span class="count-badge" id="iamUserCount">0</span>
+          </div>
+          <div class="cat-table-wrap">
+            <table class="cat-table" aria-label="Usuarios">
+              <thead>
+                <tr>
+                  <th>Usuario</th>
+                  <th>Nombre</th>
+                  <th>Rol</th>
+                  <th>Módulos</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="iamUserBody"></tbody>
+            </table>
+          </div>
+          <p class="foot-note">Carcasa demo · los módulos asignados alimentan el menú hamburguesa.</p>
+        </section>
+
+        <section class="panel" id="iamRolesPanel" hidden>
+          <div class="panel-head">
+            <h2>Roles Freeze</h2>
+            <span class="count-badge" id="iamRoleCount">0</span>
+          </div>
+          <div id="iamRolesList" class="iam-card-list"></div>
+        </section>
+
+        <section class="panel" id="iamModulesPanel" hidden>
+          <div class="panel-head">
+            <div>
+              <h2>Módulos de menú</h2>
+              <p class="panel-sub">Matriz rol → módulo · marca qué ve cada perfil</p>
+            </div>
+          </div>
+          <div class="cat-table-wrap">
+            <table class="cat-table iam-matrix" aria-label="Matriz de módulos">
+              <thead id="iamMatrixHead"></thead>
+              <tbody id="iamMatrixBody"></tbody>
+            </table>
+          </div>
+          <p class="foot-note" id="iamMatrixNote">Los cambios de matriz se guardan en esta sesión (demo).</p>
+        </section>
+      </section>
+
       <section class="page" data-page="stub" hidden>
         <h1 id="stubTitle">Módulo</h1>
         <p class="lead">Esta pantalla se construirá en una fase posterior.</p>
@@ -293,6 +368,55 @@
       <footer class="modal-foot">
         <button type="button" class="btn btn-ghost" id="catModalCancel">Cancelar</button>
         <button type="button" class="btn btn-primary" id="catModalSave">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <div class="modal-scrim" id="userModalScrim" hidden></div>
+  <div class="modal" id="userModal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle" hidden>
+    <div class="modal-card modal-card-wide">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">IAM</p>
+          <h2 id="userModalTitle">Nuevo usuario</h2>
+        </div>
+        <button type="button" class="icon-btn" id="userModalClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <label class="comment-field">
+            <span>Usuario</span>
+            <input id="userFormUsername" type="text" maxlength="64" autocomplete="off" placeholder="ej. compras.acme"/>
+          </label>
+          <label class="comment-field">
+            <span>Nombre completo</span>
+            <input id="userFormName" type="text" maxlength="120" autocomplete="off" placeholder="Nombre visible"/>
+          </label>
+          <label class="comment-field">
+            <span>Correo</span>
+            <input id="userFormEmail" type="email" maxlength="256" autocomplete="off" placeholder="correo@empresa.com"/>
+          </label>
+          <label class="comment-field">
+            <span>Rol</span>
+            <select id="userFormRole"></select>
+          </label>
+        </div>
+        <label class="cat-check" style="margin-top:8px">
+          <input id="userFormActive" type="checkbox" checked/>
+          <span>Activo</span>
+        </label>
+        <div class="iam-mod-block">
+          <div class="panel-head" style="margin:12px 0 8px">
+            <h2 style="font-size:14px;margin:0">Módulos visibles</h2>
+            <span class="pill soft">Menú hamburguesa</span>
+          </div>
+          <div id="userFormModules" class="iam-mod-grid"></div>
+        </div>
+        <p class="foot-note" id="userFormMsg" hidden></p>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="userModalCancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="userModalSave">Guardar</button>
       </footer>
     </div>
   </div>

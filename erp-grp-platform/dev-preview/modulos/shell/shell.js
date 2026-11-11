@@ -244,6 +244,82 @@
     ]
   };
 
+  const IAM_MODULES = [
+    { code: 'core.shell', name: 'Inicio / shell', area: 'Plataforma' },
+    { code: 'core.workflow', name: 'Bandeja de aprobación', area: 'Plataforma' },
+    { code: 'core.catalog', name: 'Catálogos', area: 'Administración' },
+    { code: 'core.iam', name: 'Usuarios y permisos', area: 'Administración' },
+    { code: 'core.document', name: 'Documentos', area: 'Plataforma' },
+    { code: 'core.audit', name: 'Auditoría', area: 'Plataforma' },
+    { code: 'core.report', name: 'Reportes', area: 'Plataforma' },
+    { code: 'erp.procurement', name: 'Compras', area: 'Operación' },
+    { code: 'erp.inventory', name: 'Inventarios', area: 'Operación' },
+    { code: 'erp.ar', name: 'Ventas / CxC', area: 'Operación' },
+    { code: 'erp.ap', name: 'Cuentas por pagar', area: 'Finanzas' },
+    { code: 'erp.billing', name: 'Facturación', area: 'Finanzas' },
+    { code: 'erp.accounting', name: 'Contabilidad', area: 'Finanzas' },
+    { code: 'erp.treasury', name: 'Tesorería', area: 'Finanzas' }
+  ];
+
+  const DEMO_IAM_ROLES = [
+    {
+      code: 'ADM', name: 'Administrador',
+      desc: 'Usuarios, catálogos, organización y lectura amplia.',
+      permissions: ['*.read', '*.write', 'iam.admin', 'catalog.admin']
+    },
+    {
+      code: 'BUY', name: 'Compras',
+      desc: 'Requisiciones, OC y seguimiento de recepción.',
+      permissions: ['procurement.read', 'procurement.write', 'inventory.read', 'workflow.approve']
+    },
+    {
+      code: 'AP', name: 'Cuentas por pagar',
+      desc: 'Facturas proveedor, match y propuestas de pago.',
+      permissions: ['ap.read', 'ap.write', 'ap.post', 'workflow.approve']
+    },
+    {
+      code: 'TRE', name: 'Tesorería',
+      desc: 'Ejecución de pagos y conciliación (maker).',
+      permissions: ['treasury.read', 'treasury.execute', 'workflow.approve']
+    },
+    {
+      code: 'APPR', name: 'Aprobador',
+      desc: 'Bandeja de aprobaciones por umbral.',
+      permissions: ['workflow.approve', '*.read']
+    }
+  ];
+
+  const DEMO_IAM_USERS = [
+    {
+      username: 'admin.acme', displayName: 'Administrador ACME', email: 'admin@acme.mx',
+      role: 'ADM', status: 'ACTIVE',
+      modules: IAM_MODULES.map((m) => m.code)
+    },
+    {
+      username: 'compras.acme', displayName: 'Compras ACME', email: 'compras@acme.mx',
+      role: 'BUY', status: 'ACTIVE',
+      modules: ['core.shell', 'core.workflow', 'core.catalog', 'erp.procurement', 'erp.inventory']
+    },
+    {
+      username: 'cxp.acme', displayName: 'CxP ACME', email: 'cxp@acme.mx',
+      role: 'AP', status: 'ACTIVE',
+      modules: ['core.shell', 'core.workflow', 'erp.ap', 'erp.treasury', 'core.audit']
+    },
+    {
+      username: 'gerente.acme', displayName: 'Gerente ACME', email: 'gerente@acme.mx',
+      role: 'APPR', status: 'LOCKED',
+      modules: ['core.shell', 'core.workflow', 'erp.procurement', 'core.report']
+    }
+  ];
+
+  const DEMO_ROLE_MODULES = {
+    ADM: IAM_MODULES.map((m) => m.code),
+    BUY: ['core.shell', 'core.workflow', 'core.catalog', 'erp.procurement', 'erp.inventory'],
+    AP: ['core.shell', 'core.workflow', 'erp.ap', 'erp.treasury', 'core.audit'],
+    TRE: ['core.shell', 'core.workflow', 'erp.treasury', 'erp.ap', 'core.audit'],
+    APPR: ['core.shell', 'core.workflow', 'erp.procurement', 'core.report']
+  };
+
   let user = null;
   try {
     user = JSON.parse(sessionStorage.getItem('erp_user') || 'null');
@@ -297,6 +373,29 @@
   let selectedCatalogId = null;
   let editingCatCode = null;
 
+  const IAM_KEY = 'erp_iam_state';
+  const IAM_VERSION = '1';
+  const loadIamState = () => {
+    try {
+      const ver = sessionStorage.getItem(IAM_KEY + ':ver');
+      const raw = sessionStorage.getItem(IAM_KEY);
+      if (raw && ver === IAM_VERSION) return JSON.parse(raw);
+    } catch { /* seed */ }
+    const seed = {
+      users: DEMO_IAM_USERS.map((u) => ({ ...u, modules: [...u.modules] })),
+      roleModules: Object.fromEntries(
+        Object.entries(DEMO_ROLE_MODULES).map(([k, v]) => [k, [...v]])
+      )
+    };
+    sessionStorage.setItem(IAM_KEY, JSON.stringify(seed));
+    sessionStorage.setItem(IAM_KEY + ':ver', IAM_VERSION);
+    return seed;
+  };
+  let iamState = loadIamState();
+  const saveIamState = () => sessionStorage.setItem(IAM_KEY, JSON.stringify(iamState));
+  let iamTab = 'USERS';
+  let editingUsername = null;
+
   const companyLabel = document.getElementById('companyLabel');
   const userLabel = document.getElementById('userLabel');
   const menuNav = document.getElementById('menuNav');
@@ -321,8 +420,26 @@
     dashboard: document.querySelector('[data-page="dashboard"]'),
     bandeja: document.querySelector('[data-page="bandeja"]'),
     catalogos: document.querySelector('[data-page="catalogos"]'),
+    usuarios: document.querySelector('[data-page="usuarios"]'),
     stub: document.querySelector('[data-page="stub"]')
   };
+  const backHomeFromUsuarios = document.getElementById('backHomeFromUsuarios');
+  const iamUserBody = document.getElementById('iamUserBody');
+  const iamUserSearch = document.getElementById('iamUserSearch');
+  const iamUserStatus = document.getElementById('iamUserStatus');
+  const iamUserFilters = document.getElementById('iamUserFilters');
+  const iamUsersPanel = document.getElementById('iamUsersPanel');
+  const iamRolesPanel = document.getElementById('iamRolesPanel');
+  const iamModulesPanel = document.getElementById('iamModulesPanel');
+  const userModal = document.getElementById('userModal');
+  const userModalScrim = document.getElementById('userModalScrim');
+  const userFormUsername = document.getElementById('userFormUsername');
+  const userFormName = document.getElementById('userFormName');
+  const userFormEmail = document.getElementById('userFormEmail');
+  const userFormRole = document.getElementById('userFormRole');
+  const userFormActive = document.getElementById('userFormActive');
+  const userFormModules = document.getElementById('userFormModules');
+  const userFormMsg = document.getElementById('userFormMsg');
   const stubTitle = document.getElementById('stubTitle');
   const backHomeBtn = document.getElementById('backHomeBtn');
   const backHomeFromBandeja = document.getElementById('backHomeFromBandeja');
@@ -464,6 +581,15 @@
     }
   };
 
+  const showUsuarios = () => {
+    hideAllPages();
+    pages.usuarios.hidden = false;
+    document.title = 'ERP · Usuarios y permisos';
+    setActiveRoute('/usuarios');
+    setDrawer(false);
+    renderIam();
+  };
+
   const showStub = (label, route) => {
     if ((route || '') === '/bandeja' || (label || '').toLowerCase().includes('bandeja')) {
       showBandeja();
@@ -471,6 +597,10 @@
     }
     if ((route || '') === '/catalogos' || (label || '').toLowerCase().includes('catálogo')) {
       showCatalogos();
+      return;
+    }
+    if ((route || '') === '/usuarios' || (label || '').toLowerCase().includes('usuario')) {
+      showUsuarios();
       return;
     }
     hideAllPages();
@@ -495,6 +625,10 @@
       showCatalogos();
       return;
     }
+    if ((route || '') === '/usuarios') {
+      showUsuarios();
+      return;
+    }
     showStub(label, route);
   };
 
@@ -510,6 +644,7 @@
   backHomeBtn.addEventListener('click', () => showDashboard());
   backHomeFromBandeja.addEventListener('click', () => showDashboard());
   backHomeFromCatalogos.addEventListener('click', () => showDashboard());
+  backHomeFromUsuarios.addEventListener('click', () => showDashboard());
   document.getElementById('backCatalogHub').addEventListener('click', () => {
     selectedCatalogId = null;
     showCatalogHub();
@@ -980,10 +1115,238 @@
   document.getElementById('catModalSave').addEventListener('click', saveCatItem);
   catModalScrim.addEventListener('click', () => setCatModal(false));
 
+  const roleName = (code) => (DEMO_IAM_ROLES.find((r) => r.code === code) || {}).name || code;
+
+  const setIamTab = (tab) => {
+    iamTab = tab;
+    document.querySelectorAll('[data-iam-tab]').forEach((el) => {
+      el.classList.toggle('is-active', el.dataset.iamTab === tab);
+    });
+    iamUsersPanel.hidden = tab !== 'USERS';
+    iamRolesPanel.hidden = tab !== 'ROLES';
+    iamModulesPanel.hidden = tab !== 'MODULES';
+    iamUserFilters.hidden = tab !== 'USERS';
+    renderIam();
+  };
+
+  const filteredIamUsers = () => {
+    const q = (iamUserSearch.value || '').trim().toLowerCase();
+    const st = iamUserStatus.value;
+    return iamState.users.filter((u) => {
+      if (st && u.status !== st) return false;
+      if (q) {
+        const hay = [u.username, u.displayName, u.email, u.role].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  };
+
+  const renderIamUsers = () => {
+    const list = filteredIamUsers();
+    document.getElementById('iamUserCount').textContent = String(list.length);
+    if (!list.length) {
+      iamUserBody.innerHTML = '<tr><td colspan="6" class="empty">No hay usuarios con estos filtros.</td></tr>';
+      return;
+    }
+    iamUserBody.innerHTML = list.map((u) => `
+      <tr>
+        <td><strong>${u.username}</strong></td>
+        <td>${u.displayName}<div class="muted">${u.email || ''}</div></td>
+        <td><span class="pill soft">${roleName(u.role)}</span></td>
+        <td>${(u.modules || []).length}</td>
+        <td><span class="tag ${u.status === 'ACTIVE' ? 'ok' : 'high'}">${u.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}</span></td>
+        <td>
+          <div class="row-actions">
+            <button type="button" class="link-btn" data-iam-act="edit" data-user="${u.username}">Editar</button>
+            <button type="button" class="link-btn ${u.status === 'ACTIVE' ? 'danger' : ''}" data-iam-act="toggle" data-user="${u.username}">
+              ${u.status === 'ACTIVE' ? 'Bloquear' : 'Activar'}
+            </button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+    iamUserBody.querySelectorAll('[data-iam-act]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const row = iamState.users.find((x) => x.username === btn.dataset.user);
+        if (!row) return;
+        if (btn.dataset.iamAct === 'edit') openUserModal(row);
+        if (btn.dataset.iamAct === 'toggle') {
+          row.status = row.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE';
+          saveIamState();
+          renderIamUsers();
+        }
+      });
+    });
+  };
+
+  const renderIamRoles = () => {
+    document.getElementById('iamRoleCount').textContent = String(DEMO_IAM_ROLES.length);
+    const list = document.getElementById('iamRolesList');
+    list.innerHTML = DEMO_IAM_ROLES.map((r) => {
+      const mods = iamState.roleModules[r.code] || [];
+      return `
+        <article class="iam-role-card">
+          <div class="detail-top">
+            <span class="pill soft">${r.code}</span>
+            <span class="count-badge">${mods.length} módulos</span>
+          </div>
+          <h3>${r.name}</h3>
+          <p>${r.desc}</p>
+          <div class="iam-chips">
+            ${r.permissions.map((p) => `<span class="pill soft">${p}</span>`).join('')}
+          </div>
+          <div class="iam-chips" style="margin-top:8px">
+            ${mods.map((m) => `<span class="tag info">${m.replace('erp.', '').replace('core.', '')}</span>`).join('') || '<span class="muted">Sin módulos</span>'}
+          </div>
+        </article>`;
+    }).join('');
+  };
+
+  const renderIamMatrix = () => {
+    const roles = DEMO_IAM_ROLES;
+    const head = document.getElementById('iamMatrixHead');
+    const body = document.getElementById('iamMatrixBody');
+    head.innerHTML = `<tr><th>Módulo</th>${roles.map((r) => `<th>${r.code}</th>`).join('')}</tr>`;
+    body.innerHTML = IAM_MODULES.map((mod) => `
+      <tr>
+        <td>
+          <strong>${mod.name}</strong>
+          <div class="muted">${mod.code} · ${mod.area}</div>
+        </td>
+        ${roles.map((r) => {
+          const on = (iamState.roleModules[r.code] || []).includes(mod.code);
+          return `<td><input type="checkbox" data-role="${r.code}" data-mod="${mod.code}" ${on ? 'checked' : ''}/></td>`;
+        }).join('')}
+      </tr>
+    `).join('');
+    body.querySelectorAll('input[type="checkbox"]').forEach((box) => {
+      box.addEventListener('change', () => {
+        const role = box.dataset.role;
+        const mod = box.dataset.mod;
+        if (!iamState.roleModules[role]) iamState.roleModules[role] = [];
+        const arr = iamState.roleModules[role];
+        if (box.checked && !arr.includes(mod)) arr.push(mod);
+        if (!box.checked) iamState.roleModules[role] = arr.filter((x) => x !== mod);
+        // sync users that have this role default modules only if user modules equalled old role set — keep simple: update users with same role
+        iamState.users.forEach((u) => {
+          if (u.role === role) u.modules = [...iamState.roleModules[role]];
+        });
+        saveIamState();
+        document.getElementById('iamMatrixNote').textContent =
+          'Matriz actualizada · usuarios del rol ' + role + ' sincronizados en esta sesión.';
+      });
+    });
+  };
+
+  const renderIam = () => {
+    if (iamTab === 'USERS') renderIamUsers();
+    if (iamTab === 'ROLES') renderIamRoles();
+    if (iamTab === 'MODULES') renderIamMatrix();
+  };
+
+  const setUserModal = (open) => {
+    userModal.hidden = !open;
+    userModalScrim.hidden = !open;
+    requestAnimationFrame(() => {
+      userModal.classList.toggle('is-open', open);
+      userModalScrim.classList.toggle('is-open', open);
+    });
+    if (!open) {
+      userModal.classList.remove('is-open');
+      userModalScrim.classList.remove('is-open');
+    }
+  };
+
+  const fillUserFormModules = (selected) => {
+    const set = new Set(selected || []);
+    userFormModules.innerHTML = IAM_MODULES.map((m) => `
+      <label>
+        <input type="checkbox" value="${m.code}" ${set.has(m.code) ? 'checked' : ''}/>
+        <span><strong>${m.name}</strong><span>${m.code}</span></span>
+      </label>
+    `).join('');
+  };
+
+  const openUserModal = (row) => {
+    editingUsername = row ? row.username : null;
+    document.getElementById('userModalTitle').textContent = row ? 'Editar usuario' : 'Nuevo usuario';
+    userFormRole.innerHTML = DEMO_IAM_ROLES.map((r) =>
+      `<option value="${r.code}">${r.code} · ${r.name}</option>`
+    ).join('');
+    userFormUsername.value = row ? row.username : '';
+    userFormUsername.disabled = !!row;
+    userFormName.value = row ? row.displayName : '';
+    userFormEmail.value = row ? (row.email || '') : '';
+    userFormRole.value = row ? row.role : 'BUY';
+    userFormActive.checked = row ? row.status === 'ACTIVE' : true;
+    fillUserFormModules(row ? row.modules : (iamState.roleModules.BUY || []));
+    userFormMsg.hidden = true;
+    setUserModal(true);
+  };
+
+  userFormRole.addEventListener('change', () => {
+    fillUserFormModules(iamState.roleModules[userFormRole.value] || []);
+  });
+
+  const saveUserForm = () => {
+    const username = (userFormUsername.value || '').trim().toLowerCase();
+    const displayName = (userFormName.value || '').trim();
+    const email = (userFormEmail.value || '').trim();
+    const role = userFormRole.value;
+    const modules = [...userFormModules.querySelectorAll('input:checked')].map((el) => el.value);
+    if (!username || username.length < 3) {
+      userFormMsg.hidden = false;
+      userFormMsg.textContent = 'El usuario debe tener al menos 3 caracteres.';
+      return;
+    }
+    if (!displayName || displayName.length < 2) {
+      userFormMsg.hidden = false;
+      userFormMsg.textContent = 'El nombre es obligatorio.';
+      return;
+    }
+    if (!editingUsername && iamState.users.some((u) => u.username === username)) {
+      userFormMsg.hidden = false;
+      userFormMsg.textContent = 'Ya existe ese usuario.';
+      return;
+    }
+    if (editingUsername) {
+      const row = iamState.users.find((u) => u.username === editingUsername);
+      if (row) {
+        row.displayName = displayName;
+        row.email = email;
+        row.role = role;
+        row.status = userFormActive.checked ? 'ACTIVE' : 'LOCKED';
+        row.modules = modules;
+      }
+    } else {
+      iamState.users.push({
+        username, displayName, email, role,
+        status: userFormActive.checked ? 'ACTIVE' : 'LOCKED',
+        modules
+      });
+    }
+    saveIamState();
+    setUserModal(false);
+    renderIamUsers();
+  };
+
+  document.querySelectorAll('[data-iam-tab]').forEach((tab) => {
+    tab.addEventListener('click', () => setIamTab(tab.dataset.iamTab));
+  });
+  iamUserSearch.addEventListener('input', renderIamUsers);
+  iamUserStatus.addEventListener('change', renderIamUsers);
+  document.getElementById('btnNewUser').addEventListener('click', () => openUserModal(null));
+  document.getElementById('userModalClose').addEventListener('click', () => setUserModal(false));
+  document.getElementById('userModalCancel').addEventListener('click', () => setUserModal(false));
+  document.getElementById('userModalSave').addEventListener('click', saveUserForm);
+  userModalScrim.addEventListener('click', () => setUserModal(false));
+
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!txModal.hidden) setTxModal(false);
     if (!catModal.hidden) setCatModal(false);
+    if (!userModal.hidden) setUserModal(false);
   });
 
   let sections = null;
