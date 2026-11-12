@@ -280,33 +280,7 @@
               <tbody id="iamUserBody"></tbody>
             </table>
           </div>
-          <p class="foot-note">Al editar o crear un usuario puedes ver la vista previa del menú.</p>
-        </section>
-
-        <section class="panel" id="iamResetPanel">
-          <div class="panel-head">
-            <div>
-              <h2>Restablecimiento de contraseña</h2>
-              <p class="panel-sub">Selecciona una cuenta, genera clave temporal y márcala para cambio al entrar.</p>
-            </div>
-          </div>
-          <div class="iam-reset-grid">
-            <label class="comment-field">
-              <span>Usuario</span>
-              <select id="iamResetUser" aria-label="Usuario a restablecer"></select>
-            </label>
-            <div class="iam-reset-summary" id="iamResetSummary">
-              <p class="empty">Elige un usuario para ver su estado y restablecer la contraseña.</p>
-            </div>
-          </div>
-          <div class="iam-reset-actions">
-            <button type="button" class="btn btn-primary" id="btnIamResetPassword" disabled>Restablecer contraseña</button>
-          </div>
-          <div class="iam-temp-pass" id="iamResetTempBox" hidden>
-            <strong>Contraseña temporal:</strong> <code id="iamResetTempValue">—</code>
-            <span class="muted"> · entrégala por un canal seguro (demo local).</span>
-          </div>
-          <p class="foot-note">También puedes usar «Restablecer» en la fila del usuario.</p>
+          <p class="foot-note">Usa «Restablecer» o «Bitácora» en cada fila · al editar ves la vista previa del menú.</p>
         </section>
 
         <section class="panel" id="iamRolesPanel" hidden>
@@ -485,7 +459,7 @@
           </label>
         </div>
         <p class="foot-note" id="userLastAccessNote"></p>
-        <p class="foot-note">Para generar una clave temporal usa el apartado <strong>Restablecimiento de contraseña</strong> debajo de la lista.</p>
+        <p class="foot-note">Para generar una clave temporal usa <strong>Restablecer</strong> en la fila del usuario.</p>
         <div class="iam-mod-layout">
           <div class="iam-mod-block">
             <div class="panel-head" style="margin:12px 0 8px">
@@ -511,6 +485,34 @@
       </footer>
     </div>
   </div>
+
+  <div class="drawer-panel-scrim" id="bitacoraScrim" hidden></div>
+  <aside class="drawer-panel" id="bitacoraPanel" aria-hidden="true" hidden>
+    <header class="drawer-panel-head">
+      <div class="drawer-panel-user">
+        <div class="drawer-avatar" id="bitacoraAvatar">—</div>
+        <div>
+          <strong id="bitacoraName">—</strong>
+          <div class="muted" id="bitacoraMeta">—</div>
+          <div class="iam-chips" style="margin-top:6px">
+            <span class="tag ok" id="bitacoraStatus">—</span>
+            <span class="pill soft" id="bitacoraRole">—</span>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="icon-btn" id="bitacoraClose" aria-label="Cerrar">×</button>
+    </header>
+    <div class="drawer-panel-tabs">
+      <span class="drawer-tab is-active">Bitácora <em id="bitacoraCount">0</em></span>
+    </div>
+    <div class="drawer-panel-body">
+      <p class="panel-sub">Solo administradores · movimientos del usuario (demo).</p>
+      <ol class="bitacora-timeline" id="bitacoraTimeline"></ol>
+    </div>
+    <footer class="drawer-panel-foot">
+      <button type="button" class="btn btn-primary" id="bitacoraResetBtn">Restablecer contraseña</button>
+    </footer>
+  </aside>
 
   <script src="shell.js"></script>
 </body>

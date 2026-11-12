@@ -342,6 +342,31 @@
     APPR: ['core.shell', 'core.workflow', 'erp.procurement', 'core.report']
   };
 
+  const DEMO_USER_BITACORA = {
+    'admin.acme': [
+      { title: 'Actualización de módulos', detail: 'Agregó acceso a Reportes y Auditoría.', actor: 'admin.acme', at: '2026-11-12T15:40:00Z' },
+      { title: 'Inicio de sesión', detail: 'Acceso exitoso desde sesión local demo.', actor: 'SISTEMA', at: '2026-11-12T15:40:00Z' },
+      { title: 'Alta de usuario', detail: 'Creó la cuenta cxp.acme con rol Cuentas por pagar.', actor: 'admin.acme', at: '2026-11-10T17:20:00Z' }
+    ],
+    'compras.acme': [
+      { title: 'Aprobación en bandeja', detail: 'Aprobó RQ-220 · Empaques.', actor: 'compras.acme', at: '2026-11-11T22:10:00Z' },
+      { title: 'Inicio de sesión', detail: 'Acceso exitoso.', actor: 'SISTEMA', at: '2026-11-11T22:15:00Z' },
+      { title: 'Actualización de alcance', detail: 'Unidad organizacional: Compras.', actor: 'admin.acme', at: '2026-11-09T14:02:00Z' },
+      { title: 'Alta de cuenta', detail: 'Cuenta creada con rol Compras.', actor: 'SISTEMA', at: '2026-11-08T11:00:00Z' }
+    ],
+    'cxp.acme': [
+      { title: 'Restablecimiento de contraseña', detail: 'Se generó clave temporal · cambio pendiente al entrar.', actor: 'admin.acme', at: '2026-11-12T16:05:00Z' },
+      { title: 'Aprobación en bandeja', detail: 'Resolvió excepción de match FP-889.', actor: 'cxp.acme', at: '2026-11-10T18:00:00Z' },
+      { title: 'Inicio de sesión', detail: 'Acceso exitoso.', actor: 'SISTEMA', at: '2026-11-10T18:05:00Z' },
+      { title: 'Alta de cuenta', detail: 'Cuenta creada con rol Cuentas por pagar.', actor: 'admin.acme', at: '2026-11-07T09:30:00Z' }
+    ],
+    'gerente.acme': [
+      { title: 'Bloqueo de cuenta', detail: 'Cuenta bloqueada por administrador.', actor: 'admin.acme', at: '2026-11-11T12:00:00Z' },
+      { title: 'Actualización de roles', detail: 'Asignó rol Aprobador.', actor: 'admin.acme', at: '2026-11-06T10:15:00Z' },
+      { title: 'Alta de cuenta', detail: 'Cuenta creada inactiva hasta comunicar credenciales.', actor: 'SISTEMA', at: '2026-11-06T10:12:00Z' }
+    ]
+  };
+
   let user = null;
   try {
     user = JSON.parse(sessionStorage.getItem('erp_user') || 'null');
@@ -452,14 +477,13 @@
   const iamUserRoleFilter = document.getElementById('iamUserRoleFilter');
   const iamUserFilters = document.getElementById('iamUserFilters');
   const iamUsersPanel = document.getElementById('iamUsersPanel');
-  const iamResetPanel = document.getElementById('iamResetPanel');
   const iamRolesPanel = document.getElementById('iamRolesPanel');
   const iamModulesPanel = document.getElementById('iamModulesPanel');
-  const iamResetUser = document.getElementById('iamResetUser');
-  const iamResetSummary = document.getElementById('iamResetSummary');
-  const iamResetTempBox = document.getElementById('iamResetTempBox');
-  const iamResetTempValue = document.getElementById('iamResetTempValue');
-  const btnIamResetPassword = document.getElementById('btnIamResetPassword');
+  const bitacoraPanel = document.getElementById('bitacoraPanel');
+  const bitacoraScrim = document.getElementById('bitacoraScrim');
+  const bitacoraTimeline = document.getElementById('bitacoraTimeline');
+  const bitacoraResetBtn = document.getElementById('bitacoraResetBtn');
+  let bitacoraUsername = null;
   const userModal = document.getElementById('userModal');
   const userModalScrim = document.getElementById('userModalScrim');
   const userFormUsername = document.getElementById('userFormUsername');
@@ -1201,10 +1225,10 @@
       el.classList.toggle('is-active', el.dataset.iamTab === tab);
     });
     iamUsersPanel.hidden = tab !== 'USERS';
-    iamResetPanel.hidden = tab !== 'USERS';
     iamRolesPanel.hidden = tab !== 'ROLES';
     iamModulesPanel.hidden = tab !== 'MODULES';
     iamUserFilters.hidden = tab !== 'USERS';
+    if (tab !== 'USERS') setBitacoraPanel(false);
     renderIam();
   };
 
@@ -1248,6 +1272,7 @@
         <td>
           <div class="row-actions">
             <button type="button" class="link-btn" data-iam-act="edit" data-user="${u.username}">Editar</button>
+            <button type="button" class="link-btn" data-iam-act="bitacora" data-user="${u.username}">Bitácora</button>
             <button type="button" class="link-btn" data-iam-act="reset" data-user="${u.username}">Restablecer</button>
             <button type="button" class="link-btn ${u.status === 'ACTIVE' ? 'danger' : ''}" data-iam-act="toggle" data-user="${u.username}">
               ${u.status === 'ACTIVE' ? 'Bloquear' : 'Activar'}
@@ -1262,56 +1287,15 @@
         if (!row) return;
         if (btn.dataset.iamAct === 'edit') openUserModal(row);
         if (btn.dataset.iamAct === 'toggle') openUserToggleConfirm(row);
-        if (btn.dataset.iamAct === 'reset') {
-          iamResetUser.value = row.username;
-          renderIamResetSummary();
-          openPasswordResetConfirm(row);
-        }
+        if (btn.dataset.iamAct === 'reset') openPasswordResetConfirm(row);
+        if (btn.dataset.iamAct === 'bitacora') openBitacora(row);
       });
     });
-    fillIamResetUserSelect();
-    renderIamResetSummary();
   };
 
-  const fillIamResetUserSelect = () => {
-    const current = iamResetUser.value;
-    iamResetUser.innerHTML =
-      '<option value="">Selecciona un usuario…</option>' +
-      iamState.users.map((u) =>
-        `<option value="${u.username}">${u.displayName} (${u.username})</option>`
-      ).join('');
-    if (current && iamState.users.some((u) => u.username === current)) {
-      iamResetUser.value = current;
-    }
-  };
-
-  const renderIamResetSummary = () => {
-    const row = iamState.users.find((u) => u.username === iamResetUser.value);
-    btnIamResetPassword.disabled = !row;
-    if (!row) {
-      iamResetSummary.innerHTML = '<p class="empty">Elige un usuario para ver su estado y restablecer la contraseña.</p>';
-      if (!iamResetTempBox.dataset.keep) {
-        iamResetTempBox.hidden = true;
-      }
-      return;
-    }
-    iamResetSummary.innerHTML = `
-      <dl>
-        <div><dt>Nombre</dt><dd>${row.displayName}</dd></div>
-        <div><dt>Rol</dt><dd>${roleName(row.role)}</dd></div>
-        <div><dt>Empresa</dt><dd>${legalEntityName(row.legalEntityId)}</dd></div>
-        <div><dt>Unidad</dt><dd>${orgUnitName(row.orgUnitId)}</dd></div>
-        <div><dt>Último acceso</dt><dd>${formatLastAccess(row.lastAccessAt)}</dd></div>
-        <div><dt>Estado</dt><dd>${row.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}${row.mustChangePassword ? ' · cambio pendiente' : ''}</dd></div>
-      </dl>
-    `;
-    if (row.tempPassword) {
-      iamResetTempBox.hidden = false;
-      iamResetTempValue.textContent = row.tempPassword;
-    } else if (!iamResetTempBox.dataset.keep) {
-      iamResetTempBox.hidden = true;
-      iamResetTempValue.textContent = '—';
-    }
+  const appendBitacoraEvent = (username, event) => {
+    if (!DEMO_USER_BITACORA[username]) DEMO_USER_BITACORA[username] = [];
+    DEMO_USER_BITACORA[username].unshift(event);
   };
 
   const openPasswordResetConfirm = (row) => {
@@ -1327,17 +1311,65 @@
     confirmAction = () => {
       row.tempPassword = temp;
       row.mustChangePassword = true;
+      appendBitacoraEvent(row.username, {
+        title: 'Restablecimiento de contraseña',
+        detail: 'Se generó clave temporal · cambio pendiente al entrar.',
+        actor: user.username || 'admin.acme',
+        at: new Date().toISOString()
+      });
       saveIamState();
-      iamResetTempBox.hidden = false;
-      iamResetTempBox.dataset.keep = '1';
-      iamResetTempValue.textContent = temp;
       setConfirmModal(false);
       renderIamUsers();
-      iamResetUser.value = row.username;
-      renderIamResetSummary();
-      delete iamResetTempBox.dataset.keep;
+      confirmModalTitle.textContent = 'Contraseña restablecida';
+      confirmModalText.textContent = 'Clave temporal para «' + row.username + '»: ' + temp;
+      confirmModalHint.textContent = 'Entrégala por un canal seguro. El usuario deberá cambiarla al entrar.';
+      confirmModalOk.textContent = 'Entendido';
+      confirmAction = () => setConfirmModal(false);
+      setConfirmModal(true);
+      if (bitacoraUsername === row.username) openBitacora(row);
     };
     setConfirmModal(true);
+  };
+
+  const setBitacoraPanel = (open) => {
+    bitacoraPanel.hidden = !open;
+    bitacoraScrim.hidden = !open;
+    bitacoraPanel.setAttribute('aria-hidden', String(!open));
+    requestAnimationFrame(() => {
+      bitacoraPanel.classList.toggle('is-open', open);
+      bitacoraScrim.classList.toggle('is-open', open);
+    });
+    if (!open) {
+      bitacoraPanel.classList.remove('is-open');
+      bitacoraScrim.classList.remove('is-open');
+      bitacoraUsername = null;
+    }
+  };
+
+  const openBitacora = (row) => {
+    if (!row) return;
+    bitacoraUsername = row.username;
+    const initials = (row.displayName || row.username).split(/\s+/).map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+    document.getElementById('bitacoraAvatar').textContent = initials || 'U';
+    document.getElementById('bitacoraName').textContent = row.displayName;
+    document.getElementById('bitacoraMeta').textContent = row.username + ' · ' + (row.email || 'sin correo');
+    document.getElementById('bitacoraStatus').textContent = row.status === 'ACTIVE' ? 'Cuenta activa' : 'Cuenta bloqueada';
+    document.getElementById('bitacoraStatus').className = 'tag ' + (row.status === 'ACTIVE' ? 'ok' : 'high');
+    document.getElementById('bitacoraRole').textContent = roleName(row.role);
+    const events = DEMO_USER_BITACORA[row.username] || [];
+    document.getElementById('bitacoraCount').textContent = String(events.length);
+    if (!events.length) {
+      bitacoraTimeline.innerHTML = '<li><h4>Sin movimientos</h4><p>Aún no hay eventos registrados para este usuario.</p></li>';
+    } else {
+      bitacoraTimeline.innerHTML = events.map((ev) => `
+        <li>
+          <h4>${ev.title}</h4>
+          <p>${ev.detail}</p>
+          <div class="bit-meta">${ev.actor} · ${formatLastAccess(ev.at)}</div>
+        </li>
+      `).join('');
+    }
+    setBitacoraPanel(true);
   };
 
   const setConfirmModal = (open) => {
@@ -1371,9 +1403,18 @@
     confirmModalOk.classList.add(willLock ? 'btn-danger' : 'btn-ok');
     confirmAction = () => {
       row.status = willLock ? 'LOCKED' : 'ACTIVE';
+      appendBitacoraEvent(row.username, {
+        title: willLock ? 'Bloqueo de cuenta' : 'Activación de cuenta',
+        detail: willLock
+          ? 'Cuenta bloqueada por administrador.'
+          : 'Cuenta activada por administrador.',
+        actor: user.username || 'admin.acme',
+        at: new Date().toISOString()
+      });
       saveIamState();
       setConfirmModal(false);
       renderIamUsers();
+      if (bitacoraUsername === row.username) openBitacora(row);
     };
     setConfirmModal(true);
   };
@@ -1570,14 +1611,11 @@
     userFormMsg.textContent = 'Se aplicaron los módulos del rol «' + roleName(userFormRole.value) + '». Puedes ajustar a mano.';
   });
 
-  iamResetUser.addEventListener('change', () => {
-    iamResetTempBox.hidden = true;
-    renderIamResetSummary();
-  });
-
-  btnIamResetPassword.addEventListener('click', () => {
-    const row = iamState.users.find((u) => u.username === iamResetUser.value);
-    openPasswordResetConfirm(row);
+  document.getElementById('bitacoraClose').addEventListener('click', () => setBitacoraPanel(false));
+  bitacoraScrim.addEventListener('click', () => setBitacoraPanel(false));
+  bitacoraResetBtn.addEventListener('click', () => {
+    const row = iamState.users.find((u) => u.username === bitacoraUsername);
+    if (row) openPasswordResetConfirm(row);
   });
 
   const saveUserForm = () => {
@@ -1612,6 +1650,7 @@
     if (editingUsername) {
       const row = iamState.users.find((u) => u.username === editingUsername);
       if (row) {
+        const prevRole = row.role;
         row.displayName = displayName;
         row.email = email;
         row.role = role;
@@ -1621,6 +1660,14 @@
         row.mustChangePassword = userFormMustChange.checked;
         if (!userFormMustChange.checked) row.tempPassword = null;
         row.modules = modules;
+        appendBitacoraEvent(row.username, {
+          title: prevRole !== role ? 'Actualización de roles' : 'Actualización de cuenta',
+          detail: prevRole !== role
+            ? 'Cambió rol a «' + roleName(role) + '».'
+            : 'Se actualizaron datos, alcance o módulos.',
+          actor: user.username || 'admin.acme',
+          at: new Date().toISOString()
+        });
       }
     } else {
       const temp = userFormMustChange.checked ? makeTempPassword() : null;
@@ -1633,6 +1680,13 @@
         mustChangePassword: userFormMustChange.checked,
         tempPassword: temp,
         modules
+      });
+      appendBitacoraEvent(username, {
+        title: 'Alta de cuenta',
+        detail: 'Cuenta creada con rol «' + roleName(role) + '»' +
+          (temp ? ', inactiva hasta comunicar credenciales.' : '.'),
+        actor: user.username || 'admin.acme',
+        at: new Date().toISOString()
       });
     }
     saveIamState();
@@ -1675,6 +1729,7 @@
     if (!catModal.hidden) setCatModal(false);
     if (!userModal.hidden) setUserModal(false);
     if (!confirmModal.hidden) setConfirmModal(false);
+    if (!bitacoraPanel.hidden) setBitacoraPanel(false);
   });
 
   let sections = null;
@@ -1695,5 +1750,18 @@
   statusLine.textContent =
     (user.displayName || 'Usuario') + ' · lanzador + bandeja · ' +
     flattenItems(sections).length + ' accesos de menú';
-  showDashboard();
+  const bootParams = new URLSearchParams(location.search);
+  const bootPage = bootParams.get('page');
+  if (bootPage === 'usuarios') showUsuarios();
+  else if (bootPage === 'bandeja') showBandeja();
+  else if (bootPage === 'catalogos') showCatalogos();
+  else showDashboard();
+  const bootBitacora = bootParams.get('bitacora');
+  if (bootBitacora) {
+    const row = iamState.users.find((u) => u.username === bootBitacora);
+    if (row) {
+      if (bootPage !== 'usuarios') showUsuarios();
+      openBitacora(row);
+    }
+  }
 })();
