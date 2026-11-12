@@ -1,9 +1,10 @@
-# Perfil local: H2 en memoria, sin Redis/Kafka — para probar login en línea
+# Perfil local: H2 + carcasa UI sin JWT/Redis/Kafka
 spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration
   datasource:
     url: jdbc:h2:mem:iam_db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
     username: sa
@@ -21,9 +22,19 @@ spring:
     console:
       enabled: true
 
+# Sin collector OTLP en local (evita spam Connection refused :4318)
+management:
+  tracing:
+    sampling:
+      probability: 0.0
+  otlp:
+    tracing:
+      export:
+        enabled: false
+
 erpgrp:
   security:
-    public-paths: /actuator/health/**,/actuator/info,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html,/api/v1/meta/**,/oauth2/token,/oauth2/jwks,/api/v1/iam/oauth2/**,/api/v1/auth/**,/login.html,/assets/**
+    public-paths: /actuator/health/**,/actuator/info,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html,/api/v1/meta/**,/oauth2/token,/oauth2/jwks,/api/v1/iam/oauth2/**,/api/v1/auth/**,/login.html,/recover.html,/shell.html,/shell.js,/shell.css,/app,/app/,/app/**,/app/index.html,/assets/**
   jwt:
     issuer: http://localhost:8081
     access-token-minutes: 60

@@ -30,6 +30,8 @@
 17. **Dossier técnico (PDF):** [ERP-DOSSIER-001](entregables/ERP-DOSSIER-001-Sistema-ERP.pdf) — descripción, alcance, metas, arquetipo y entregables
 18. [Diagrama microservicios por fases](14-DIAGRAMA-MICROSERVICIOS-FASES.md) — **ERP-ARCH-DIAG-001**
 19. [Catálogos configurables](15-CATALOGOS-CONFIGURABLES-ERP.md) — **ERP-CAT-001**
+20. [Briefing IA — esquema BD modular](16-BRIEFING-AI-ESQUEMA-BD-MODULAR.md) — **ERP-DB-BRIEF-001**
+21. [Visión y arquitectura ERP (para Soluciones)](17-VISION-ARQUITECTURA-ERP-COMPLETA.md) — **ERP-SA-001**
 
 ## Cómo leer estos documentos
 

@@ -1,28 +1,30 @@
-# Login (feat-login)
+# Login + menú (carcasa UI · feat-menu)
 
-Inicio de sesión con **3 campos**: empresa, usuario, contraseña.  
-Los permisos/menú los asigna un administrador; el usuario **no elige rol** al entrar.
+Pantallas estáticas para ir ajustando UX. En perfil **`local`** no hay JWT en las pantallas.
 
-## Probar en local
+## Arranque
 
 ```bash
 cd erp-grp-platform/backend
-mvn -pl services/iam-service -am spring-boot:run -Dspring-boot.run.profiles=local
+mvn -pl services/iam-service -am spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-- Pantalla: http://localhost:8081/login.html  
-- API: `POST http://localhost:8081/api/v1/auth/login`
+Windows PowerShell/CMD: las comillas del `-D` son obligatorias.
 
-```json
-{ "company": "ACME", "username": "admin.acme", "password": "demo1234" }
-```
+IntelliJ: Run `IamServiceApplication` con **Active profiles = `local`**.
 
-Usuarios demo: `admin.acme` (menú completo) · `compras.acme` (menú reducido) · pass `demo1234`.
+## URLs
 
-Tras login: `GET /api/v1/me` y `GET /api/v1/me/menus` con `Authorization: Bearer <token>`.
+| Pantalla | URL |
+|----------|-----|
+| Login | http://localhost:8081/login.html |
+| Menú / dashboard | http://localhost:8081/shell.html |
+| Bandeja | Desde menú o tiles → **Bandeja de aprobación** |
 
-## Tests
+Tras Entrar → `shell.html` (hamburguesa, lanzador por bloques, bandeja demo).
 
-```bash
-mvn -pl services/iam-service -am test
-```
+Demo: empresa `ACME` · `admin.acme` / `compras.acme` · `demo1234`.
+
+## Nota
+
+`/app/` redirige a `/shell.html`. No uses Postgres en local: el perfil `local` usa H2.

@@ -1,0 +1,49 @@
+{
+  "title": "ERP · Dev Preview",
+  "note": "Preview local acumulativa. No publicar. Se agrega un módulo cuando termina su fase.",
+  "modules": [
+    {
+      "id": "login",
+      "name": "Inicio de sesión",
+      "status": "listo",
+      "phase": "Fase A",
+      "path": "modulos/login/",
+      "summary": "Empresa + usuario + contraseña, ojo show/hide, ripple, spinner al entrar.",
+      "checks": [
+        "Validación de campos vacíos en español",
+        "Toggle ojo abierto/tachado",
+        "Botón Entrar → círculo cargando",
+        "Credenciales demo ACME",
+        "Enlace a recuperación de contraseña"
+      ]
+    },
+    {
+      "id": "recover",
+      "name": "Recuperar contraseña",
+      "status": "listo",
+      "phase": "Fase A",
+      "path": "modulos/recover/",
+      "summary": "Usuario/correo + captcha; popup si no existe; envío demo si coincide.",
+      "checks": [
+        "Captcha renovable",
+        "Popup usuario/correo no encontrado",
+        "Popup éxito con correo institucional",
+        "Volver a iniciar sesión"
+      ]
+    },
+    {
+      "id": "shell",
+      "name": "Shell · Menú · Dashboard",
+      "status": "listo",
+      "phase": "Fase 1",
+      "path": "modulos/shell/",
+      "summary": "Shell + Bandeja + Catálogos + Usuarios/permisos (carcasa).",
+      "checks": [
+        "Bandeja y Catálogos",
+        "Usuarios: alta/edición/bloqueo",
+        "Roles Freeze + matriz módulos",
+        "Salir vuelve al login"
+      ]
+    }
+  ]
+}
