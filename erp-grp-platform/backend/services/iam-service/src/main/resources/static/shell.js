@@ -446,6 +446,13 @@
   const userMenuPreview = document.getElementById('userMenuPreview');
   const userMenuPreviewHint = document.getElementById('userMenuPreviewHint');
   const btnApplyRoleModules = document.getElementById('btnApplyRoleModules');
+  const confirmModal = document.getElementById('confirmModal');
+  const confirmModalScrim = document.getElementById('confirmModalScrim');
+  const confirmModalTitle = document.getElementById('confirmModalTitle');
+  const confirmModalText = document.getElementById('confirmModalText');
+  const confirmModalHint = document.getElementById('confirmModalHint');
+  const confirmModalOk = document.getElementById('confirmModalOk');
+  let confirmAction = null;
   const stubTitle = document.getElementById('stubTitle');
   const backHomeBtn = document.getElementById('backHomeBtn');
   const backHomeFromBandeja = document.getElementById('backHomeFromBandeja');
@@ -1196,13 +1203,47 @@
         const row = iamState.users.find((x) => x.username === btn.dataset.user);
         if (!row) return;
         if (btn.dataset.iamAct === 'edit') openUserModal(row);
-        if (btn.dataset.iamAct === 'toggle') {
-          row.status = row.status === 'ACTIVE' ? 'LOCKED' : 'ACTIVE';
-          saveIamState();
-          renderIamUsers();
-        }
+        if (btn.dataset.iamAct === 'toggle') openUserToggleConfirm(row);
       });
     });
+  };
+
+  const setConfirmModal = (open) => {
+    confirmModal.hidden = !open;
+    confirmModalScrim.hidden = !open;
+    requestAnimationFrame(() => {
+      confirmModal.classList.toggle('is-open', open);
+      confirmModalScrim.classList.toggle('is-open', open);
+    });
+    if (!open) {
+      confirmModal.classList.remove('is-open');
+      confirmModalScrim.classList.remove('is-open');
+      confirmAction = null;
+      confirmModalOk.classList.remove('btn-danger', 'btn-ok');
+      confirmModalOk.classList.add('btn-primary');
+    }
+  };
+
+  const openUserToggleConfirm = (row) => {
+    const willLock = row.status === 'ACTIVE';
+    const actionLabel = willLock ? 'Bloquear' : 'Activar';
+    confirmModalTitle.textContent = '¿' + actionLabel + ' usuario?';
+    confirmModalText.textContent = willLock
+      ? '¿Estás seguro de que quieres bloquear a «' + row.displayName + '» (' + row.username + ')?'
+      : '¿Estás seguro de que quieres activar a «' + row.displayName + '» (' + row.username + ')?';
+    confirmModalHint.textContent = willLock
+      ? 'Al bloquearlo no podrá iniciar sesión hasta que lo actives de nuevo.'
+      : 'Al activarlo podrá volver a iniciar sesión con su usuario.';
+    confirmModalOk.textContent = actionLabel;
+    confirmModalOk.classList.remove('btn-primary', 'btn-danger', 'btn-ok');
+    confirmModalOk.classList.add(willLock ? 'btn-danger' : 'btn-ok');
+    confirmAction = () => {
+      row.status = willLock ? 'LOCKED' : 'ACTIVE';
+      saveIamState();
+      setConfirmModal(false);
+      renderIamUsers();
+    };
+    setConfirmModal(true);
   };
 
   const renderIamRoles = () => {
@@ -1423,12 +1464,19 @@
   document.getElementById('userModalCancel').addEventListener('click', () => setUserModal(false));
   document.getElementById('userModalSave').addEventListener('click', saveUserForm);
   userModalScrim.addEventListener('click', () => setUserModal(false));
+  document.getElementById('confirmModalClose').addEventListener('click', () => setConfirmModal(false));
+  document.getElementById('confirmModalCancel').addEventListener('click', () => setConfirmModal(false));
+  confirmModalScrim.addEventListener('click', () => setConfirmModal(false));
+  confirmModalOk.addEventListener('click', () => {
+    if (typeof confirmAction === 'function') confirmAction();
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!txModal.hidden) setTxModal(false);
     if (!catModal.hidden) setCatModal(false);
     if (!userModal.hidden) setUserModal(false);
+    if (!confirmModal.hidden) setConfirmModal(false);
   });
 
   let sections = null;

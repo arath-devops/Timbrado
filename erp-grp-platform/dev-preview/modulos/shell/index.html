@@ -403,6 +403,27 @@
     </div>
   </div>
 
+  <div class="modal-scrim" id="confirmModalScrim" hidden></div>
+  <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" hidden>
+    <div class="modal-card">
+      <header class="modal-head">
+        <div>
+          <p class="eyebrow">Confirmación</p>
+          <h2 id="confirmModalTitle">¿Continuar?</h2>
+        </div>
+        <button type="button" class="icon-btn" id="confirmModalClose" aria-label="Cerrar">×</button>
+      </header>
+      <div class="modal-body">
+        <p class="lead" id="confirmModalText">—</p>
+        <p class="foot-note" id="confirmModalHint"></p>
+      </div>
+      <footer class="modal-foot">
+        <button type="button" class="btn btn-ghost" id="confirmModalCancel">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmModalOk">Confirmar</button>
+      </footer>
+    </div>
+  </div>
+
   <div class="modal-scrim" id="userModalScrim" hidden></div>
   <div class="modal" id="userModal" role="dialog" aria-modal="true" aria-labelledby="userModalTitle" hidden>
     <div class="modal-card modal-card-wide">
