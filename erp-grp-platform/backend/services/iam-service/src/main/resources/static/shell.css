@@ -375,6 +375,7 @@ input[type="checkbox"] {
 .tab[data-tab="REJECTED"].is-active { background:var(--danger-bg); color:var(--danger); }
 .tab[data-tab="APPROVED"].is-active { background:var(--ok-bg); color:var(--ok); }
 .bandeja-filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.bandeja-filters[hidden] { display:none !important; }
 .bandeja-filters select,
 .bandeja-filters input {
   width:auto;
