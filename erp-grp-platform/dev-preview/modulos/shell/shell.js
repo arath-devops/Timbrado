@@ -1167,18 +1167,12 @@
     });
   };
 
-  const moduleChipsHtml = (codes) => {
-    const list = codes || [];
-    if (!list.length) return '<span class="muted">Sin módulos</span>';
-    return `<div class="iam-chips">${list.map((c) => `<span class="tag info">${moduleLabel(c)}</span>`).join('')}</div>`;
-  };
-
   const renderIamUsers = () => {
     fillRoleFilter();
     const list = filteredIamUsers();
     document.getElementById('iamUserCount').textContent = String(list.length);
     if (!list.length) {
-      iamUserBody.innerHTML = '<tr><td colspan="6" class="empty">No hay usuarios con estos filtros.</td></tr>';
+      iamUserBody.innerHTML = '<tr><td colspan="5" class="empty">No hay usuarios con estos filtros.</td></tr>';
       return;
     }
     iamUserBody.innerHTML = list.map((u) => `
@@ -1186,7 +1180,6 @@
         <td><strong>${u.username}</strong></td>
         <td>${u.displayName}<div class="muted">${u.email || ''}</div></td>
         <td><span class="pill soft">${roleName(u.role)}</span></td>
-        <td>${moduleChipsHtml(u.modules)}</td>
         <td><span class="tag ${u.status === 'ACTIVE' ? 'ok' : 'high'}">${u.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}</span></td>
         <td>
           <div class="row-actions">
