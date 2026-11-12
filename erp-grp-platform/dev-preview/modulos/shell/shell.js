@@ -485,7 +485,15 @@
   const bitacoraResetBtn = document.getElementById('bitacoraResetBtn');
   let bitacoraUsername = null;
   let selectedRoleCode = DEMO_IAM_ROLES[0] ? DEMO_IAM_ROLES[0].code : null;
+  let iamMenuUsername = null;
+  const iamRowMenu = document.getElementById('iamRowMenu');
   const userModal = document.getElementById('userModal');
+  const ICON_KEBAB = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>';
+  const ICON_EDIT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+  const ICON_LOG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><polyline points="3 3 3 12 12 12"/></svg>';
+  const ICON_SEND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
+  const ICON_LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+  const ICON_UNLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
   const userModalScrim = document.getElementById('userModalScrim');
   const userFormUsername = document.getElementById('userFormUsername');
   const userFormName = document.getElementById('userFormName');
@@ -1229,7 +1237,12 @@
     iamRolesPanel.hidden = tab !== 'ROLES';
     iamModulesPanel.hidden = tab !== 'MODULES';
     iamUserFilters.hidden = tab !== 'USERS';
-    if (tab !== 'USERS') setBitacoraPanel(false);
+    if (tab !== 'USERS') {
+      setBitacoraPanel(false);
+      closeIamRowMenu();
+    } else {
+      closeIamRowMenu();
+    }
     renderIam();
   };
 
@@ -1248,8 +1261,71 @@
     });
   };
 
+  const closeIamRowMenu = () => {
+    iamRowMenu.hidden = true;
+    iamRowMenu.classList.remove('is-open');
+    iamRowMenu.innerHTML = '';
+    iamMenuUsername = null;
+    document.querySelectorAll('.row-menu-btn[aria-expanded="true"]').forEach((b) => {
+      b.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  const runIamUserAction = (act, username) => {
+    const row = iamState.users.find((x) => x.username === username);
+    if (!row) return;
+    closeIamRowMenu();
+    if (act === 'edit') openUserModal(row);
+    if (act === 'toggle') openUserToggleConfirm(row);
+    if (act === 'reset') openPasswordResetConfirm(row);
+    if (act === 'bitacora') openBitacora(row);
+  };
+
+  const openIamRowMenu = (btn, user) => {
+    const alreadyOpen = iamMenuUsername === user.username && iamRowMenu.classList.contains('is-open');
+    closeIamRowMenu();
+    if (alreadyOpen) return;
+    const lockLabel = user.status === 'ACTIVE' ? 'Bloquear' : 'Activar';
+    const lockIcon = user.status === 'ACTIVE' ? ICON_LOCK : ICON_UNLOCK;
+    iamMenuUsername = user.username;
+    iamRowMenu.innerHTML = `
+      <button type="button" role="menuitem" data-iam-act="edit" data-user="${user.username}">
+        ${ICON_EDIT}<span>Editar</span>
+      </button>
+      <button type="button" role="menuitem" data-iam-act="bitacora" data-user="${user.username}">
+        ${ICON_LOG}<span>Bitácora</span>
+      </button>
+      <button type="button" role="menuitem" data-iam-act="reset" data-user="${user.username}">
+        ${ICON_SEND}<span>Restablecer contraseña</span>
+      </button>
+      <div class="row-menu-sep" role="separator"></div>
+      <button type="button" role="menuitem" class="danger" data-iam-act="toggle" data-user="${user.username}">
+        ${lockIcon}<span>${lockLabel}</span>
+      </button>
+    `;
+    iamRowMenu.hidden = false;
+    iamRowMenu.classList.add('is-open');
+    btn.setAttribute('aria-expanded', 'true');
+    const rect = btn.getBoundingClientRect();
+    const menuW = 230;
+    const left = Math.min(window.innerWidth - menuW - 8, Math.max(8, rect.right - menuW));
+    iamRowMenu.style.left = left + 'px';
+    iamRowMenu.style.top = (rect.bottom + 6) + 'px';
+    // Si no cabe abajo, abre hacia arriba
+    requestAnimationFrame(() => {
+      const h = iamRowMenu.offsetHeight || 180;
+      if (rect.bottom + 6 + h > window.innerHeight - 8) {
+        iamRowMenu.style.top = Math.max(8, rect.top - h - 6) + 'px';
+      }
+    });
+    iamRowMenu.querySelectorAll('[data-iam-act]').forEach((item) => {
+      item.addEventListener('click', () => runIamUserAction(item.dataset.iamAct, item.dataset.user));
+    });
+  };
+
   const renderIamUsers = () => {
     fillRoleFilter();
+    closeIamRowMenu();
     const list = filteredIamUsers();
     document.getElementById('iamUserCount').textContent = String(list.length);
     if (!list.length) {
@@ -1272,24 +1348,20 @@
         <td><span class="tag ${u.status === 'ACTIVE' ? 'ok' : 'high'}">${u.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}</span></td>
         <td>
           <div class="row-actions">
-            <button type="button" class="link-btn" data-iam-act="edit" data-user="${u.username}">Editar</button>
-            <button type="button" class="link-btn" data-iam-act="bitacora" data-user="${u.username}">Bitácora</button>
-            <button type="button" class="link-btn" data-iam-act="reset" data-user="${u.username}">Restablecer</button>
-            <button type="button" class="link-btn ${u.status === 'ACTIVE' ? 'danger' : ''}" data-iam-act="toggle" data-user="${u.username}">
-              ${u.status === 'ACTIVE' ? 'Bloquear' : 'Activar'}
+            <button type="button" class="row-menu-btn" data-iam-menu="${u.username}"
+              aria-label="Acciones de ${u.displayName}" aria-haspopup="menu" aria-expanded="false"
+              title="Acciones">
+              ${ICON_KEBAB}
             </button>
           </div>
         </td>
       </tr>
     `).join('');
-    iamUserBody.querySelectorAll('[data-iam-act]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const row = iamState.users.find((x) => x.username === btn.dataset.user);
-        if (!row) return;
-        if (btn.dataset.iamAct === 'edit') openUserModal(row);
-        if (btn.dataset.iamAct === 'toggle') openUserToggleConfirm(row);
-        if (btn.dataset.iamAct === 'reset') openPasswordResetConfirm(row);
-        if (btn.dataset.iamAct === 'bitacora') openBitacora(row);
+    iamUserBody.querySelectorAll('[data-iam-menu]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const row = iamState.users.find((x) => x.username === btn.dataset.iamMenu);
+        if (row) openIamRowMenu(btn, row);
       });
     });
   };
@@ -1753,8 +1825,17 @@
     if (typeof confirmAction === 'function') confirmAction();
   });
 
+  document.addEventListener('click', (e) => {
+    if (!iamRowMenu.classList.contains('is-open')) return;
+    if (e.target.closest('#iamRowMenu') || e.target.closest('[data-iam-menu]')) return;
+    closeIamRowMenu();
+  });
+  window.addEventListener('scroll', () => {
+    if (iamRowMenu.classList.contains('is-open')) closeIamRowMenu();
+  }, true);
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (iamRowMenu.classList.contains('is-open')) closeIamRowMenu();
     if (!txModal.hidden) setTxModal(false);
     if (!catModal.hidden) setCatModal(false);
     if (!userModal.hidden) setUserModal(false);
@@ -1801,5 +1882,13 @@
       if (bootPage !== 'usuarios') showUsuarios();
       openBitacora(row);
     }
+  }
+  const bootMenu = bootParams.get('menu');
+  if (bootMenu) {
+    if (bootPage !== 'usuarios') showUsuarios();
+    setIamTab('USERS');
+    const btn = document.querySelector('[data-iam-menu="' + bootMenu + '"]');
+    const row = iamState.users.find((u) => u.username === bootMenu);
+    if (btn && row) openIamRowMenu(btn, row);
   }
 })();

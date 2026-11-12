@@ -522,13 +522,48 @@ input[type="checkbox"] {
 }
 .cat-table th { color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
 .cat-table tr:hover td { background:#f7fbff; }
-.cat-table .row-actions { display:flex; gap:8px; justify-content:flex-end; }
+.cat-table .th-actions { text-align:right; width:1%; white-space:nowrap; }
+.cat-table .row-actions { display:flex; gap:6px; justify-content:flex-end; align-items:center; }
 .cat-table .link-btn {
   border:0; background:transparent; color:var(--brand); font:inherit; font-weight:700;
   cursor:pointer; padding:0;
 }
 .cat-table .link-btn:hover { text-decoration:underline; }
 .cat-table .link-btn.danger { color:var(--danger); }
+.row-menu-btn {
+  width:34px; height:34px; border-radius:8px; border:1px solid var(--border);
+  background:#fff; color:var(--ink); cursor:pointer; display:grid; place-items:center;
+  transition: border-color .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.row-menu-btn:hover,
+.row-menu-btn[aria-expanded="true"] {
+  border-color:var(--brand); color:var(--brand); background:var(--brand-soft);
+  box-shadow:0 0 0 3px rgba(10,110,209,.12);
+}
+.row-menu-btn svg { width:18px; height:18px; display:block; }
+.row-menu-pop {
+  position:fixed; z-index:120; min-width:220px;
+  background:#fff; border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 12px 28px rgba(16,24,40,.16);
+  padding:6px; display:none;
+}
+.row-menu-pop.is-open { display:block; }
+.row-menu-pop button {
+  width:100%; display:flex; align-items:center; gap:10px;
+  border:0; background:transparent; border-radius:8px;
+  padding:9px 10px; font:inherit; font-size:13px; color:var(--ink);
+  cursor:pointer; text-align:left;
+}
+.row-menu-pop button:hover { background:#f3f7fc; }
+.row-menu-pop button svg {
+  width:16px; height:16px; flex:0 0 auto; color:var(--muted);
+}
+.row-menu-pop button.danger { color:var(--danger); }
+.row-menu-pop button.danger svg { color:var(--danger); }
+.row-menu-pop button.danger:hover { background:#fce8e8; }
+.row-menu-sep {
+  height:1px; background:var(--border); margin:4px 6px;
+}
 
 .modal-card-wide { width:min(860px, 100%); }
 .iam-security-row {
