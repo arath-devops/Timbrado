@@ -1299,15 +1299,29 @@
     setConfirmModal(true);
   };
 
+  const buildMenuTreeHtml = (codes) => {
+    const selected = new Set(codes || []);
+    if (!selected.size) {
+      return '<p class="empty">Sin módulos asignados.</p>';
+    }
+    const areas = [];
+    IAM_MODULES.forEach((m) => {
+      if (selected.has(m.code) && !areas.includes(m.area)) areas.push(m.area);
+    });
+    return areas.map((area) => {
+      const items = IAM_MODULES.filter((m) => m.area === area && selected.has(m.code));
+      return `
+        <div class="iam-preview-section">${area}</div>
+        ${items.map((m) => `<div class="iam-preview-item">${m.name}</div>`).join('')}
+      `;
+    }).join('');
+  };
+
   const renderIamRoles = () => {
     document.getElementById('iamRoleCount').textContent = String(DEMO_IAM_ROLES.length);
     const list = document.getElementById('iamRolesList');
     list.innerHTML = DEMO_IAM_ROLES.map((r) => {
       const mods = iamState.roleModules[r.code] || [];
-      const names = mods.map(moduleLabel);
-      const example = names.length
-        ? 'Ejemplo: un usuario «' + r.name + '» ve ' + names.join(', ') + '.'
-        : 'Este rol aún no tiene módulos asignados.';
       return `
         <article class="iam-role-card">
           <div class="detail-top">
@@ -1319,12 +1333,12 @@
           <div class="iam-chips">
             ${r.permissions.map((p) => `<span class="pill soft">${p}</span>`).join('')}
           </div>
-          <div class="iam-chips" style="margin-top:8px">
-            ${mods.map((m) => `<span class="tag info">${moduleLabel(m)}</span>`).join('') || '<span class="muted">Sin módulos</span>'}
-          </div>
-          <div class="iam-role-example">
-            <strong>Ejemplo al entrar</strong>
-            ${example}
+          <div class="iam-role-menu">
+            <div class="panel-head" style="margin:12px 0 8px">
+              <h2 style="font-size:13px;margin:0">Menú que ve este rol</h2>
+              <span class="pill soft">Vista fija</span>
+            </div>
+            <nav class="iam-preview-nav">${buildMenuTreeHtml(mods)}</nav>
           </div>
         </article>`;
     }).join('');

@@ -557,11 +557,11 @@ input[type="checkbox"] {
 }
 .iam-role-card h3 { margin:0 0 4px; font-size:15px; }
 .iam-role-card p { margin:0 0 10px; color:var(--muted); font-size:12px; }
-.iam-role-example {
-  margin-top:10px; padding:10px 12px; border-radius:8px; background:#fff; border:1px dashed #b7d4f5;
-  font-size:12px; color:var(--ink);
+.iam-role-menu {
+  margin-top:12px; padding:10px 12px 12px; border-radius:10px;
+  background:#f7f9fc; border:1px solid var(--border);
 }
-.iam-role-example strong { display:block; margin-bottom:6px; color:var(--brand); font-size:11px; }
+.iam-role-menu .iam-preview-nav { margin-top:2px; }
 .iam-chips { display:flex; flex-wrap:wrap; gap:6px; }
 .iam-mod-layout {
   display:grid; grid-template-columns:1.2fr .9fr; gap:12px; align-items:start; margin-top:4px;
