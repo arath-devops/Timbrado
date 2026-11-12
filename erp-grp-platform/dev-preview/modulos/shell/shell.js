@@ -291,25 +291,45 @@
     }
   ];
 
+  const DEMO_LEGAL_ENTITIES = [
+    { id: 'le-acme', name: 'ACME Industrial MX' },
+    { id: 'le-norte', name: 'ACME Norte SA' }
+  ];
+
+  const DEMO_ORG_UNITS = [
+    { id: 'ou-dir', legalEntityId: 'le-acme', name: 'Dirección general' },
+    { id: 'ou-com', legalEntityId: 'le-acme', name: 'Compras' },
+    { id: 'ou-fin', legalEntityId: 'le-acme', name: 'Finanzas' },
+    { id: 'ou-ops', legalEntityId: 'le-norte', name: 'Operaciones Norte' }
+  ];
+
   const DEMO_IAM_USERS = [
     {
       username: 'admin.acme', displayName: 'Administrador ACME', email: 'admin@acme.mx',
       role: 'ADM', status: 'ACTIVE',
+      legalEntityId: 'le-acme', orgUnitId: 'ou-dir',
+      lastAccessAt: '2026-11-12T15:40:00Z', mustChangePassword: false, tempPassword: null,
       modules: IAM_MODULES.map((m) => m.code)
     },
     {
       username: 'compras.acme', displayName: 'Compras ACME', email: 'compras@acme.mx',
       role: 'BUY', status: 'ACTIVE',
+      legalEntityId: 'le-acme', orgUnitId: 'ou-com',
+      lastAccessAt: '2026-11-11T22:15:00Z', mustChangePassword: false, tempPassword: null,
       modules: ['core.shell', 'core.workflow', 'core.catalog', 'erp.procurement', 'erp.inventory']
     },
     {
       username: 'cxp.acme', displayName: 'CxP ACME', email: 'cxp@acme.mx',
       role: 'AP', status: 'ACTIVE',
+      legalEntityId: 'le-acme', orgUnitId: 'ou-fin',
+      lastAccessAt: '2026-11-10T18:05:00Z', mustChangePassword: true, tempPassword: 'Tmp#CxP7k',
       modules: ['core.shell', 'core.workflow', 'erp.ap', 'erp.treasury', 'core.audit']
     },
     {
       username: 'gerente.acme', displayName: 'Gerente ACME', email: 'gerente@acme.mx',
       role: 'APPR', status: 'LOCKED',
+      legalEntityId: 'le-norte', orgUnitId: 'ou-ops',
+      lastAccessAt: null, mustChangePassword: false, tempPassword: null,
       modules: ['core.shell', 'core.workflow', 'erp.procurement', 'core.report']
     }
   ];
@@ -376,7 +396,7 @@
   let editingCatCode = null;
 
   const IAM_KEY = 'erp_iam_state';
-  const IAM_VERSION = '1';
+  const IAM_VERSION = '2';
   const loadIamState = () => {
     try {
       const ver = sessionStorage.getItem(IAM_KEY + ':ver');
@@ -440,12 +460,19 @@
   const userFormName = document.getElementById('userFormName');
   const userFormEmail = document.getElementById('userFormEmail');
   const userFormRole = document.getElementById('userFormRole');
+  const userFormLegalEntity = document.getElementById('userFormLegalEntity');
+  const userFormOrgUnit = document.getElementById('userFormOrgUnit');
   const userFormActive = document.getElementById('userFormActive');
+  const userFormMustChange = document.getElementById('userFormMustChange');
   const userFormModules = document.getElementById('userFormModules');
   const userFormMsg = document.getElementById('userFormMsg');
+  const userLastAccessNote = document.getElementById('userLastAccessNote');
+  const userTempPassBox = document.getElementById('userTempPassBox');
+  const userTempPassValue = document.getElementById('userTempPassValue');
   const userMenuPreview = document.getElementById('userMenuPreview');
   const userMenuPreviewHint = document.getElementById('userMenuPreviewHint');
   const btnApplyRoleModules = document.getElementById('btnApplyRoleModules');
+  const btnResetPassword = document.getElementById('btnResetPassword');
   const confirmModal = document.getElementById('confirmModal');
   const confirmModalScrim = document.getElementById('confirmModalScrim');
   const confirmModalTitle = document.getElementById('confirmModalTitle');
@@ -1131,6 +1158,31 @@
   const roleName = (code) => (DEMO_IAM_ROLES.find((r) => r.code === code) || {}).name || code;
   const moduleMeta = (code) => IAM_MODULES.find((m) => m.code === code) || { code, name: code, area: 'Otros' };
   const selectedUserModules = () => [...userFormModules.querySelectorAll('input:checked')].map((el) => el.value);
+  const legalEntityName = (id) => (DEMO_LEGAL_ENTITIES.find((x) => x.id === id) || {}).name || '—';
+  const orgUnitName = (id) => (DEMO_ORG_UNITS.find((x) => x.id === id) || {}).name || '—';
+  const formatLastAccess = (iso) => {
+    if (!iso) return 'Nunca';
+    try {
+      return new Date(iso).toLocaleString('es-MX', {
+        dateStyle: 'medium', timeStyle: 'short'
+      });
+    } catch {
+      return '—';
+    }
+  };
+  const makeTempPassword = () => {
+    const chunk = Math.random().toString(36).slice(2, 8);
+    return 'Tmp#' + chunk.slice(0, 3) + chunk.slice(3).toUpperCase();
+  };
+  const fillOrgUnitOptions = (legalEntityId, selectedId) => {
+    const units = DEMO_ORG_UNITS.filter((ou) => ou.legalEntityId === legalEntityId);
+    userFormOrgUnit.innerHTML = units.map((ou) =>
+      `<option value="${ou.id}">${ou.name}</option>`
+    ).join('') || '<option value="">Sin unidades</option>';
+    if (selectedId && units.some((u) => u.id === selectedId)) {
+      userFormOrgUnit.value = selectedId;
+    }
+  };
 
   const fillRoleFilter = () => {
     const current = iamUserRoleFilter.value;
@@ -1172,7 +1224,7 @@
     const list = filteredIamUsers();
     document.getElementById('iamUserCount').textContent = String(list.length);
     if (!list.length) {
-      iamUserBody.innerHTML = '<tr><td colspan="5" class="empty">No hay usuarios con estos filtros.</td></tr>';
+      iamUserBody.innerHTML = '<tr><td colspan="7" class="empty">No hay usuarios con estos filtros.</td></tr>';
       return;
     }
     iamUserBody.innerHTML = list.map((u) => `
@@ -1180,6 +1232,14 @@
         <td><strong>${u.username}</strong></td>
         <td>${u.displayName}<div class="muted">${u.email || ''}</div></td>
         <td><span class="pill soft">${roleName(u.role)}</span></td>
+        <td>
+          <div>${legalEntityName(u.legalEntityId)}</div>
+          <div class="muted">${orgUnitName(u.orgUnitId)}</div>
+        </td>
+        <td>
+          <div>${formatLastAccess(u.lastAccessAt)}</div>
+          ${u.mustChangePassword ? '<div class="muted">Cambio de contraseña pendiente</div>' : ''}
+        </td>
         <td><span class="tag ${u.status === 'ACTIVE' ? 'ok' : 'high'}">${u.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}</span></td>
         <td>
           <div class="row-actions">
@@ -1382,20 +1442,41 @@
     userFormRole.innerHTML = DEMO_IAM_ROLES.map((r) =>
       `<option value="${r.code}">${r.name}</option>`
     ).join('');
+    userFormLegalEntity.innerHTML = DEMO_LEGAL_ENTITIES.map((le) =>
+      `<option value="${le.id}">${le.name}</option>`
+    ).join('');
     userFormUsername.value = row ? row.username : '';
     userFormUsername.disabled = !!row;
     userFormName.value = row ? row.displayName : '';
     userFormEmail.value = row ? (row.email || '') : '';
     userFormRole.value = row ? row.role : 'BUY';
+    const leId = row ? row.legalEntityId : DEMO_LEGAL_ENTITIES[0].id;
+    userFormLegalEntity.value = leId;
+    fillOrgUnitOptions(leId, row ? row.orgUnitId : undefined);
     userFormActive.checked = row ? row.status === 'ACTIVE' : true;
+    userFormMustChange.checked = row ? !!row.mustChangePassword : true;
+    btnResetPassword.hidden = !row;
+    userLastAccessNote.textContent = row
+      ? 'Último acceso: ' + formatLastAccess(row.lastAccessAt)
+      : 'Usuario nuevo · aún no ha iniciado sesión.';
+    if (row && row.tempPassword) {
+      userTempPassBox.hidden = false;
+      userTempPassValue.textContent = row.tempPassword;
+    } else {
+      userTempPassBox.hidden = true;
+      userTempPassValue.textContent = '—';
+    }
     fillUserFormModules(row ? row.modules : (iamState.roleModules.BUY || []));
     userFormMsg.hidden = true;
     setUserModal(true);
   };
 
   userFormRole.addEventListener('change', () => {
-    /* no auto-overwrite; user can press apply */
     renderUserMenuPreview();
+  });
+
+  userFormLegalEntity.addEventListener('change', () => {
+    fillOrgUnitOptions(userFormLegalEntity.value);
   });
 
   btnApplyRoleModules.addEventListener('click', () => {
@@ -1404,11 +1485,39 @@
     userFormMsg.textContent = 'Se aplicaron los módulos del rol «' + roleName(userFormRole.value) + '». Puedes ajustar a mano.';
   });
 
+  btnResetPassword.addEventListener('click', () => {
+    const row = iamState.users.find((u) => u.username === editingUsername);
+    if (!row) return;
+    const temp = makeTempPassword();
+    confirmModalTitle.textContent = '¿Restablecer contraseña?';
+    confirmModalText.textContent =
+      'Se generará una contraseña temporal para «' + row.displayName + '» y deberá cambiarla al entrar.';
+    confirmModalHint.textContent = 'La clave temporal se mostrará en el formulario (demo local).';
+    confirmModalOk.textContent = 'Restablecer';
+    confirmModalOk.classList.remove('btn-primary', 'btn-danger', 'btn-ok');
+    confirmModalOk.classList.add('btn-primary');
+    confirmAction = () => {
+      row.tempPassword = temp;
+      row.mustChangePassword = true;
+      saveIamState();
+      userFormMustChange.checked = true;
+      userTempPassBox.hidden = false;
+      userTempPassValue.textContent = temp;
+      userFormMsg.hidden = false;
+      userFormMsg.textContent = 'Contraseña restablecida. Entrega la temporal por un canal seguro.';
+      setConfirmModal(false);
+      renderIamUsers();
+    };
+    setConfirmModal(true);
+  });
+
   const saveUserForm = () => {
     const username = (userFormUsername.value || '').trim().toLowerCase();
     const displayName = (userFormName.value || '').trim();
     const email = (userFormEmail.value || '').trim();
     const role = userFormRole.value;
+    const legalEntityId = userFormLegalEntity.value;
+    const orgUnitId = userFormOrgUnit.value;
     const modules = [...userFormModules.querySelectorAll('input:checked')].map((el) => el.value);
     if (!username || username.length < 3) {
       userFormMsg.hidden = false;
@@ -1420,30 +1529,57 @@
       userFormMsg.textContent = 'El nombre es obligatorio.';
       return;
     }
+    if (!legalEntityId || !orgUnitId) {
+      userFormMsg.hidden = false;
+      userFormMsg.textContent = 'Selecciona empresa y unidad organizacional.';
+      return;
+    }
     if (!editingUsername && iamState.users.some((u) => u.username === username)) {
       userFormMsg.hidden = false;
       userFormMsg.textContent = 'Ya existe ese usuario.';
       return;
     }
+    let createdTemp = null;
     if (editingUsername) {
       const row = iamState.users.find((u) => u.username === editingUsername);
       if (row) {
         row.displayName = displayName;
         row.email = email;
         row.role = role;
+        row.legalEntityId = legalEntityId;
+        row.orgUnitId = orgUnitId;
         row.status = userFormActive.checked ? 'ACTIVE' : 'LOCKED';
+        row.mustChangePassword = userFormMustChange.checked;
+        if (!userFormMustChange.checked) row.tempPassword = null;
         row.modules = modules;
       }
     } else {
+      const temp = userFormMustChange.checked ? makeTempPassword() : null;
+      createdTemp = temp;
       iamState.users.push({
         username, displayName, email, role,
+        legalEntityId, orgUnitId,
         status: userFormActive.checked ? 'ACTIVE' : 'LOCKED',
+        lastAccessAt: null,
+        mustChangePassword: userFormMustChange.checked,
+        tempPassword: temp,
         modules
       });
     }
     saveIamState();
     setUserModal(false);
     renderIamUsers();
+    if (createdTemp) {
+      confirmModalTitle.textContent = 'Usuario creado';
+      confirmModalText.textContent =
+        'Usuario «' + username + '» listo. Contraseña temporal: ' + createdTemp;
+      confirmModalHint.textContent = 'Debe cambiarla al primer acceso. Entrégala por un canal seguro.';
+      confirmModalOk.textContent = 'Entendido';
+      confirmModalOk.classList.remove('btn-primary', 'btn-danger', 'btn-ok');
+      confirmModalOk.classList.add('btn-primary');
+      confirmAction = () => setConfirmModal(false);
+      setConfirmModal(true);
+    }
   };
 
   document.querySelectorAll('[data-iam-tab]').forEach((tab) => {

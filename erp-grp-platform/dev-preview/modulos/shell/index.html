@@ -285,6 +285,8 @@
                   <th>Usuario</th>
                   <th>Nombre</th>
                   <th>Rol</th>
+                  <th>Alcance</th>
+                  <th>Último acceso</th>
                   <th>Estado</th>
                   <th></th>
                 </tr>
@@ -451,11 +453,31 @@
             <span>Rol</span>
             <select id="userFormRole"></select>
           </label>
+          <label class="comment-field">
+            <span>Empresa (entidad legal)</span>
+            <select id="userFormLegalEntity"></select>
+          </label>
+          <label class="comment-field">
+            <span>Unidad organizacional</span>
+            <select id="userFormOrgUnit"></select>
+          </label>
         </div>
-        <label class="cat-check" style="margin-top:8px">
-          <input id="userFormActive" type="checkbox" checked/>
-          <span>Activo</span>
-        </label>
+        <div class="iam-security-row">
+          <label class="cat-check">
+            <input id="userFormActive" type="checkbox" checked/>
+            <span>Activo</span>
+          </label>
+          <label class="cat-check">
+            <input id="userFormMustChange" type="checkbox"/>
+            <span>Debe cambiar contraseña al entrar</span>
+          </label>
+          <button type="button" class="btn btn-ghost" id="btnResetPassword" hidden>Restablecer contraseña</button>
+        </div>
+        <p class="foot-note" id="userLastAccessNote"></p>
+        <p class="iam-temp-pass" id="userTempPassBox" hidden>
+          <strong>Contraseña temporal:</strong> <code id="userTempPassValue">—</code>
+          <span class="muted"> · compártela por canal seguro (demo local).</span>
+        </p>
         <div class="iam-mod-layout">
           <div class="iam-mod-block">
             <div class="panel-head" style="margin:12px 0 8px">
