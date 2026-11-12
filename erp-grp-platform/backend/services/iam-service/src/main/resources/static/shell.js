@@ -452,8 +452,14 @@
   const iamUserRoleFilter = document.getElementById('iamUserRoleFilter');
   const iamUserFilters = document.getElementById('iamUserFilters');
   const iamUsersPanel = document.getElementById('iamUsersPanel');
+  const iamResetPanel = document.getElementById('iamResetPanel');
   const iamRolesPanel = document.getElementById('iamRolesPanel');
   const iamModulesPanel = document.getElementById('iamModulesPanel');
+  const iamResetUser = document.getElementById('iamResetUser');
+  const iamResetSummary = document.getElementById('iamResetSummary');
+  const iamResetTempBox = document.getElementById('iamResetTempBox');
+  const iamResetTempValue = document.getElementById('iamResetTempValue');
+  const btnIamResetPassword = document.getElementById('btnIamResetPassword');
   const userModal = document.getElementById('userModal');
   const userModalScrim = document.getElementById('userModalScrim');
   const userFormUsername = document.getElementById('userFormUsername');
@@ -467,12 +473,9 @@
   const userFormModules = document.getElementById('userFormModules');
   const userFormMsg = document.getElementById('userFormMsg');
   const userLastAccessNote = document.getElementById('userLastAccessNote');
-  const userTempPassBox = document.getElementById('userTempPassBox');
-  const userTempPassValue = document.getElementById('userTempPassValue');
   const userMenuPreview = document.getElementById('userMenuPreview');
   const userMenuPreviewHint = document.getElementById('userMenuPreviewHint');
   const btnApplyRoleModules = document.getElementById('btnApplyRoleModules');
-  const btnResetPassword = document.getElementById('btnResetPassword');
   const confirmModal = document.getElementById('confirmModal');
   const confirmModalScrim = document.getElementById('confirmModalScrim');
   const confirmModalTitle = document.getElementById('confirmModalTitle');
@@ -1198,6 +1201,7 @@
       el.classList.toggle('is-active', el.dataset.iamTab === tab);
     });
     iamUsersPanel.hidden = tab !== 'USERS';
+    iamResetPanel.hidden = tab !== 'USERS';
     iamRolesPanel.hidden = tab !== 'ROLES';
     iamModulesPanel.hidden = tab !== 'MODULES';
     iamUserFilters.hidden = tab !== 'USERS';
@@ -1244,6 +1248,7 @@
         <td>
           <div class="row-actions">
             <button type="button" class="link-btn" data-iam-act="edit" data-user="${u.username}">Editar</button>
+            <button type="button" class="link-btn" data-iam-act="reset" data-user="${u.username}">Restablecer</button>
             <button type="button" class="link-btn ${u.status === 'ACTIVE' ? 'danger' : ''}" data-iam-act="toggle" data-user="${u.username}">
               ${u.status === 'ACTIVE' ? 'Bloquear' : 'Activar'}
             </button>
@@ -1257,8 +1262,82 @@
         if (!row) return;
         if (btn.dataset.iamAct === 'edit') openUserModal(row);
         if (btn.dataset.iamAct === 'toggle') openUserToggleConfirm(row);
+        if (btn.dataset.iamAct === 'reset') {
+          iamResetUser.value = row.username;
+          renderIamResetSummary();
+          openPasswordResetConfirm(row);
+        }
       });
     });
+    fillIamResetUserSelect();
+    renderIamResetSummary();
+  };
+
+  const fillIamResetUserSelect = () => {
+    const current = iamResetUser.value;
+    iamResetUser.innerHTML =
+      '<option value="">Selecciona un usuario…</option>' +
+      iamState.users.map((u) =>
+        `<option value="${u.username}">${u.displayName} (${u.username})</option>`
+      ).join('');
+    if (current && iamState.users.some((u) => u.username === current)) {
+      iamResetUser.value = current;
+    }
+  };
+
+  const renderIamResetSummary = () => {
+    const row = iamState.users.find((u) => u.username === iamResetUser.value);
+    btnIamResetPassword.disabled = !row;
+    if (!row) {
+      iamResetSummary.innerHTML = '<p class="empty">Elige un usuario para ver su estado y restablecer la contraseña.</p>';
+      if (!iamResetTempBox.dataset.keep) {
+        iamResetTempBox.hidden = true;
+      }
+      return;
+    }
+    iamResetSummary.innerHTML = `
+      <dl>
+        <div><dt>Nombre</dt><dd>${row.displayName}</dd></div>
+        <div><dt>Rol</dt><dd>${roleName(row.role)}</dd></div>
+        <div><dt>Empresa</dt><dd>${legalEntityName(row.legalEntityId)}</dd></div>
+        <div><dt>Unidad</dt><dd>${orgUnitName(row.orgUnitId)}</dd></div>
+        <div><dt>Último acceso</dt><dd>${formatLastAccess(row.lastAccessAt)}</dd></div>
+        <div><dt>Estado</dt><dd>${row.status === 'ACTIVE' ? 'Activo' : 'Bloqueado'}${row.mustChangePassword ? ' · cambio pendiente' : ''}</dd></div>
+      </dl>
+    `;
+    if (row.tempPassword) {
+      iamResetTempBox.hidden = false;
+      iamResetTempValue.textContent = row.tempPassword;
+    } else if (!iamResetTempBox.dataset.keep) {
+      iamResetTempBox.hidden = true;
+      iamResetTempValue.textContent = '—';
+    }
+  };
+
+  const openPasswordResetConfirm = (row) => {
+    if (!row) return;
+    const temp = makeTempPassword();
+    confirmModalTitle.textContent = '¿Restablecer contraseña?';
+    confirmModalText.textContent =
+      '¿Estás seguro de que quieres restablecer la contraseña de «' + row.displayName + '» (' + row.username + ')?';
+    confirmModalHint.textContent = 'Se generará una clave temporal y deberá cambiarla al entrar.';
+    confirmModalOk.textContent = 'Restablecer';
+    confirmModalOk.classList.remove('btn-primary', 'btn-danger', 'btn-ok');
+    confirmModalOk.classList.add('btn-primary');
+    confirmAction = () => {
+      row.tempPassword = temp;
+      row.mustChangePassword = true;
+      saveIamState();
+      iamResetTempBox.hidden = false;
+      iamResetTempBox.dataset.keep = '1';
+      iamResetTempValue.textContent = temp;
+      setConfirmModal(false);
+      renderIamUsers();
+      iamResetUser.value = row.username;
+      renderIamResetSummary();
+      delete iamResetTempBox.dataset.keep;
+    };
+    setConfirmModal(true);
   };
 
   const setConfirmModal = (open) => {
@@ -1469,17 +1548,9 @@
     fillOrgUnitOptions(leId, row ? row.orgUnitId : undefined);
     userFormActive.checked = row ? row.status === 'ACTIVE' : true;
     userFormMustChange.checked = row ? !!row.mustChangePassword : true;
-    btnResetPassword.hidden = !row;
     userLastAccessNote.textContent = row
       ? 'Último acceso: ' + formatLastAccess(row.lastAccessAt)
       : 'Usuario nuevo · aún no ha iniciado sesión.';
-    if (row && row.tempPassword) {
-      userTempPassBox.hidden = false;
-      userTempPassValue.textContent = row.tempPassword;
-    } else {
-      userTempPassBox.hidden = true;
-      userTempPassValue.textContent = '—';
-    }
     fillUserFormModules(row ? row.modules : (iamState.roleModules.BUY || []));
     userFormMsg.hidden = true;
     setUserModal(true);
@@ -1499,30 +1570,14 @@
     userFormMsg.textContent = 'Se aplicaron los módulos del rol «' + roleName(userFormRole.value) + '». Puedes ajustar a mano.';
   });
 
-  btnResetPassword.addEventListener('click', () => {
-    const row = iamState.users.find((u) => u.username === editingUsername);
-    if (!row) return;
-    const temp = makeTempPassword();
-    confirmModalTitle.textContent = '¿Restablecer contraseña?';
-    confirmModalText.textContent =
-      'Se generará una contraseña temporal para «' + row.displayName + '» y deberá cambiarla al entrar.';
-    confirmModalHint.textContent = 'La clave temporal se mostrará en el formulario (demo local).';
-    confirmModalOk.textContent = 'Restablecer';
-    confirmModalOk.classList.remove('btn-primary', 'btn-danger', 'btn-ok');
-    confirmModalOk.classList.add('btn-primary');
-    confirmAction = () => {
-      row.tempPassword = temp;
-      row.mustChangePassword = true;
-      saveIamState();
-      userFormMustChange.checked = true;
-      userTempPassBox.hidden = false;
-      userTempPassValue.textContent = temp;
-      userFormMsg.hidden = false;
-      userFormMsg.textContent = 'Contraseña restablecida. Entrega la temporal por un canal seguro.';
-      setConfirmModal(false);
-      renderIamUsers();
-    };
-    setConfirmModal(true);
+  iamResetUser.addEventListener('change', () => {
+    iamResetTempBox.hidden = true;
+    renderIamResetSummary();
+  });
+
+  btnIamResetPassword.addEventListener('click', () => {
+    const row = iamState.users.find((u) => u.username === iamResetUser.value);
+    openPasswordResetConfirm(row);
   });
 
   const saveUserForm = () => {

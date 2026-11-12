@@ -297,6 +297,32 @@
           <p class="foot-note">Al editar o crear un usuario puedes ver la vista previa del menú.</p>
         </section>
 
+        <section class="panel" id="iamResetPanel">
+          <div class="panel-head">
+            <div>
+              <h2>Restablecimiento de contraseña</h2>
+              <p class="panel-sub">Selecciona una cuenta, genera clave temporal y márcala para cambio al entrar.</p>
+            </div>
+          </div>
+          <div class="iam-reset-grid">
+            <label class="comment-field">
+              <span>Usuario</span>
+              <select id="iamResetUser" aria-label="Usuario a restablecer"></select>
+            </label>
+            <div class="iam-reset-summary" id="iamResetSummary">
+              <p class="empty">Elige un usuario para ver su estado y restablecer la contraseña.</p>
+            </div>
+          </div>
+          <div class="iam-reset-actions">
+            <button type="button" class="btn btn-primary" id="btnIamResetPassword" disabled>Restablecer contraseña</button>
+          </div>
+          <div class="iam-temp-pass" id="iamResetTempBox" hidden>
+            <strong>Contraseña temporal:</strong> <code id="iamResetTempValue">—</code>
+            <span class="muted"> · entrégala por un canal seguro (demo local).</span>
+          </div>
+          <p class="foot-note">También puedes usar «Restablecer» en la fila del usuario.</p>
+        </section>
+
         <section class="panel" id="iamRolesPanel" hidden>
           <div class="panel-head">
             <div>
@@ -471,13 +497,9 @@
             <input id="userFormMustChange" type="checkbox"/>
             <span>Debe cambiar contraseña al entrar</span>
           </label>
-          <button type="button" class="btn btn-ghost" id="btnResetPassword" hidden>Restablecer contraseña</button>
         </div>
         <p class="foot-note" id="userLastAccessNote"></p>
-        <p class="iam-temp-pass" id="userTempPassBox" hidden>
-          <strong>Contraseña temporal:</strong> <code id="userTempPassValue">—</code>
-          <span class="muted"> · compártela por canal seguro (demo local).</span>
-        </p>
+        <p class="foot-note">Para generar una clave temporal usa el apartado <strong>Restablecimiento de contraseña</strong> debajo de la lista.</p>
         <div class="iam-mod-layout">
           <div class="iam-mod-block">
             <div class="panel-head" style="margin:12px 0 8px">
