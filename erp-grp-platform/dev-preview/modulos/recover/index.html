@@ -333,6 +333,24 @@
     });
 
     drawCaptcha();
+
+    // Atajos de preview: ?demo=notfound | ?demo=success
+    const demo = new URLSearchParams(location.search).get('demo');
+    if (demo === 'notfound') {
+      accountInput.value = 'nadie@acme.mx';
+      openPopup(
+        'warning',
+        'Usuario no encontrado',
+        'Usuario con correo «nadie@acme.mx» no encontrado. Verifica la información ingresada.'
+      );
+    } else if (demo === 'success') {
+      accountInput.value = 'admin@acme.mx';
+      openPopup(
+        'success',
+        'Contraseña enviada',
+        'Se envió una contraseña nueva al correo institucional «admin@acme.mx» (usuario admin.acme). Revisa tu bandeja e inicia sesión.'
+      );
+    }
   </script>
 </body>
 </html>
