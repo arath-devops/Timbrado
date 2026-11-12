@@ -484,6 +484,7 @@
   const bitacoraTimeline = document.getElementById('bitacoraTimeline');
   const bitacoraResetBtn = document.getElementById('bitacoraResetBtn');
   let bitacoraUsername = null;
+  let selectedRoleCode = DEMO_IAM_ROLES[0] ? DEMO_IAM_ROLES[0].code : null;
   const userModal = document.getElementById('userModal');
   const userModalScrim = document.getElementById('userModalScrim');
   const userFormUsername = document.getElementById('userFormUsername');
@@ -1437,31 +1438,60 @@
     }).join('');
   };
 
+  const renderIamRoleDetail = (code) => {
+    const detail = document.getElementById('iamRoleDetail');
+    const role = DEMO_IAM_ROLES.find((r) => r.code === code);
+    if (!role) {
+      detail.innerHTML = '<p class="empty">Selecciona un rol para ver su detalle.</p>';
+      return;
+    }
+    const mods = iamState.roleModules[role.code] || [];
+    const usersWithRole = iamState.users.filter((u) => u.role === role.code).length;
+    detail.innerHTML = `
+      <div class="detail-top">
+        <span class="pill soft">${role.code}</span>
+        <span class="count-badge">${mods.length} módulos</span>
+        <span class="pill soft">${usersWithRole} usuario${usersWithRole === 1 ? '' : 's'}</span>
+      </div>
+      <h3>${role.name}</h3>
+      <p class="role-desc">${role.desc}</p>
+      <div class="role-section-title">Permisos del rol</div>
+      <div class="iam-chips">
+        ${role.permissions.map((p) => `<span class="pill soft">${p}</span>`).join('')}
+      </div>
+      <div class="role-section-title">Menú que ve este rol</div>
+      <nav class="iam-preview-nav">${buildMenuTreeHtml(mods)}</nav>
+      <p class="foot-note" style="margin-top:12px">Los módulos se ajustan en la pestaña «Módulos».</p>
+    `;
+  };
+
   const renderIamRoles = () => {
     document.getElementById('iamRoleCount').textContent = String(DEMO_IAM_ROLES.length);
+    if (!selectedRoleCode || !DEMO_IAM_ROLES.some((r) => r.code === selectedRoleCode)) {
+      selectedRoleCode = DEMO_IAM_ROLES[0] ? DEMO_IAM_ROLES[0].code : null;
+    }
     const list = document.getElementById('iamRolesList');
     list.innerHTML = DEMO_IAM_ROLES.map((r) => {
       const mods = iamState.roleModules[r.code] || [];
+      const active = r.code === selectedRoleCode;
       return `
-        <article class="iam-role-card">
-          <div class="detail-top">
-            <span class="pill soft">${r.name}</span>
-            <span class="count-badge">${mods.length} módulos</span>
-          </div>
-          <h3>${r.name}</h3>
-          <p>${r.desc}</p>
-          <div class="iam-chips">
-            ${r.permissions.map((p) => `<span class="pill soft">${p}</span>`).join('')}
-          </div>
-          <div class="iam-role-menu">
-            <div class="panel-head" style="margin:12px 0 8px">
-              <h2 style="font-size:13px;margin:0">Menú que ve este rol</h2>
-              <span class="pill soft">Vista fija</span>
-            </div>
-            <nav class="iam-preview-nav">${buildMenuTreeHtml(mods)}</nav>
-          </div>
-        </article>`;
+        <button type="button" class="iam-role-row ${active ? 'is-active' : ''}"
+          role="option" aria-selected="${active}" data-role-code="${r.code}">
+          <span>
+            <strong>${r.name}</strong>
+            <span class="role-meta">${r.code} · ${r.desc}</span>
+          </span>
+          <span class="role-count">${mods.length}</span>
+        </button>
+      `;
     }).join('');
+    list.querySelectorAll('[data-role-code]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedRoleCode = btn.dataset.roleCode;
+        renderIamRoles();
+      });
+    });
+    renderIamRoleDetail(selectedRoleCode);
   };
 
   const renderRoleCounters = () => {
@@ -1756,6 +1786,14 @@
   else if (bootPage === 'bandeja') showBandeja();
   else if (bootPage === 'catalogos') showCatalogos();
   else showDashboard();
+  const bootIamTab = (bootParams.get('iam') || '').toUpperCase();
+  if (bootPage === 'usuarios' && (bootIamTab === 'ROLES' || bootIamTab === 'MODULES' || bootIamTab === 'USERS')) {
+    const bootRole = bootParams.get('role');
+    if (bootRole && DEMO_IAM_ROLES.some((r) => r.code === bootRole)) {
+      selectedRoleCode = bootRole;
+    }
+    setIamTab(bootIamTab);
+  }
   const bootBitacora = bootParams.get('bitacora');
   if (bootBitacora) {
     const row = iamState.users.find((u) => u.username === bootBitacora);

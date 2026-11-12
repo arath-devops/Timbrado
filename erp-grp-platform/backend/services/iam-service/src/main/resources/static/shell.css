@@ -606,16 +606,54 @@ input[type="checkbox"] {
 .iam-glossary dt { font-size:11px; font-weight:700; color:var(--brand); margin:0 0 2px; }
 .iam-glossary dd { margin:0; font-size:12px; color:var(--muted); }
 .iam-card-list { display:grid; gap:10px; }
-.iam-role-card {
-  border:1px solid var(--border); border-radius:10px; padding:14px; background:#fafbfc;
+.iam-roles-layout {
+  display:grid; grid-template-columns:minmax(240px, 320px) minmax(0, 1fr); gap:14px; align-items:start;
 }
-.iam-role-card h3 { margin:0 0 4px; font-size:15px; }
-.iam-role-card p { margin:0 0 10px; color:var(--muted); font-size:12px; }
-.iam-role-menu {
-  margin-top:12px; padding:10px 12px 12px; border-radius:10px;
-  background:#f7f9fc; border:1px solid var(--border);
+@media (max-width:860px) {
+  .iam-roles-layout { grid-template-columns:1fr; }
 }
-.iam-role-menu .iam-preview-nav { margin-top:2px; }
+.iam-roles-list-wrap {
+  border:1px solid var(--border); border-radius:10px; background:#fff; overflow:hidden;
+}
+.iam-roles-list-head {
+  display:grid; grid-template-columns:1fr auto; gap:8px; padding:8px 12px;
+  font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase;
+  letter-spacing:.03em; background:#fafbfc; border-bottom:1px solid var(--border);
+}
+.iam-roles-list { display:flex; flex-direction:column; max-height:min(62vh, 520px); overflow:auto; }
+.iam-role-row {
+  display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center;
+  width:100%; text-align:left; border:0; border-bottom:1px solid var(--border);
+  background:#fff; padding:11px 12px; cursor:pointer; font:inherit; color:inherit;
+  transition: background .12s ease;
+}
+.iam-role-row:last-child { border-bottom:0; }
+.iam-role-row:hover { background:#f5f9fd; }
+.iam-role-row.is-active {
+  background:var(--brand-soft, #e8f3fc); box-shadow:inset 3px 0 0 var(--brand);
+}
+.iam-role-row strong { display:block; font-size:13px; }
+.iam-role-row .role-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+.iam-role-row .role-count {
+  font-size:11px; font-weight:700; color:var(--brand);
+  background:#fff; border:1px solid var(--border); border-radius:999px; padding:2px 8px;
+}
+.iam-role-detail {
+  border:1px solid var(--border); border-radius:10px; background:#fafbfc; padding:14px 16px;
+  min-height:220px;
+}
+.iam-role-detail .detail-top {
+  display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px;
+}
+.iam-role-detail h3 { margin:0 0 4px; font-size:16px; }
+.iam-role-detail .role-desc { margin:0 0 12px; color:var(--muted); font-size:13px; }
+.iam-role-detail .role-section-title {
+  margin:14px 0 8px; font-size:12px; font-weight:700; color:var(--muted);
+  text-transform:uppercase; letter-spacing:.03em;
+}
+.iam-role-detail .iam-preview-nav {
+  margin-top:4px; padding:10px 12px; border-radius:8px; background:#fff; border:1px solid var(--border);
+}
 .iam-chips { display:flex; flex-wrap:wrap; gap:6px; }
 .iam-mod-layout {
   display:grid; grid-template-columns:1.2fr .9fr; gap:12px; align-items:start; margin-top:4px;

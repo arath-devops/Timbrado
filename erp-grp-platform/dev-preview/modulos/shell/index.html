@@ -287,11 +287,22 @@
           <div class="panel-head">
             <div>
               <h2>Roles</h2>
-              <p class="panel-sub">Cada rol muestra el menú agrupado por área, igual que la vista previa al crear usuario.</p>
+              <p class="panel-sub">Elige un rol en la lista · a la derecha ves permisos y el menú que tendría.</p>
             </div>
             <span class="count-badge" id="iamRoleCount">0</span>
           </div>
-          <div id="iamRolesList" class="iam-card-list"></div>
+          <div class="iam-roles-layout">
+            <div class="iam-roles-list-wrap">
+              <div class="iam-roles-list-head">
+                <span>Rol</span>
+                <span>Módulos</span>
+              </div>
+              <div id="iamRolesList" class="iam-roles-list" role="listbox" aria-label="Roles"></div>
+            </div>
+            <aside class="iam-role-detail" id="iamRoleDetail" aria-live="polite">
+              <p class="empty">Selecciona un rol para ver su detalle.</p>
+            </aside>
+          </div>
         </section>
 
         <section class="panel" id="iamModulesPanel" hidden>
