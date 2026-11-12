@@ -149,19 +149,14 @@
     .err { display:none; background:#fce8e8; color:#bb0000; padding:8px 10px; border-radius:4px; font-size:13px; margin-bottom:10px; }
     .ok { display:none; background:#e3f5ea; color:#107e3e; padding:10px; border-radius:4px; font-size:12px; margin-top:12px; white-space:pre-wrap; word-break:break-all; }
     .hint { font-size:11px; color:var(--muted); margin-top:12px; }
-  </style>
-  <style>
-    .preview-bar{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(26,35,50,.92);color:#fff;font-size:12px}
-    .preview-bar a{color:#9fd0ff;text-decoration:none;font-weight:600}
-    .mode-pill{border-radius:999px;padding:3px 8px;font-weight:700;font-size:11px;background:#2d6a3e;color:#d8ffe6}
+    .recover-link {
+      display:block; text-align:right; margin:-4px 0 10px; font-size:12px;
+      color:var(--brand); text-decoration:none; font-weight:600;
+    }
+    .recover-link:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
-  <div class="preview-bar">
-    <div><a href="../../">← Dev Preview</a> · Login</div>
-    <span class="mode-pill">Modo demo</span>
-  </div>
-
   <form class="card" id="f">
     <div class="brand">
       <div class="mark">ERP</div>
@@ -183,6 +178,7 @@
         <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"></svg>
       </button>
     </div>
+    <a class="recover-link" href="../recover/">¿Olvidaste tu contraseña?</a>
     <button type="submit" id="submitBtn" aria-live="polite">
       <span class="btn-label">Entrar</span>
       <span class="btn-spinner" aria-hidden="true"></span>
@@ -294,7 +290,7 @@
           }
         } catch (_) { /* carcasa: shell arma menú demo */ }
         await new Promise((r) => setTimeout(r, 280));
-        location.href = '/shell.html';
+        location.href = '../shell/';
         return;
       } catch (ex) {
         // Carcasa UI: si el API falla, igual entra al shell con datos del formulario
@@ -304,7 +300,7 @@
           companyName: body.company || 'Empresa'
         }));
         sessionStorage.removeItem('erp_menus');
-        location.href = '/shell.html';
+        location.href = '../shell/';
         return;
       } finally {
         setSubmitLoading(false);

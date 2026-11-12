@@ -34,7 +34,7 @@ management:
 
 erpgrp:
   security:
-    public-paths: /actuator/health/**,/actuator/info,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html,/api/v1/meta/**,/oauth2/token,/oauth2/jwks,/api/v1/iam/oauth2/**,/api/v1/auth/**,/login.html,/app,/app/,/app/**,/app/index.html,/assets/**
+    public-paths: /actuator/health/**,/actuator/info,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html,/api/v1/meta/**,/oauth2/token,/oauth2/jwks,/api/v1/iam/oauth2/**,/api/v1/auth/**,/login.html,/recover.html,/shell.html,/shell.js,/shell.css,/app,/app/,/app/**,/app/index.html,/assets/**
   jwt:
     issuer: http://localhost:8081
     access-token-minutes: 60

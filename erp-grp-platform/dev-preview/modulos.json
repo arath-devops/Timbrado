@@ -13,7 +13,22 @@
         "Validación de campos vacíos en español",
         "Toggle ojo abierto/tachado",
         "Botón Entrar → círculo cargando",
-        "Credenciales demo ACME"
+        "Credenciales demo ACME",
+        "Enlace a recuperación de contraseña"
+      ]
+    },
+    {
+      "id": "recover",
+      "name": "Recuperar contraseña",
+      "status": "listo",
+      "phase": "Fase A",
+      "path": "modulos/recover/",
+      "summary": "Usuario/correo + captcha; popup si no existe; envío demo si coincide.",
+      "checks": [
+        "Captcha renovable",
+        "Popup usuario/correo no encontrado",
+        "Popup éxito con correo institucional",
+        "Volver a iniciar sesión"
       ]
     },
     {

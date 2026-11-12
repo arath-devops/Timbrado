@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ERP · Recupera tu contraseña</title>
+  <style>
+    :root { --brand:#0a6ed1; --bg:#f0f2f5; --ink:#1a2332; --muted:#4a5568; --border:#d8dee6; --danger:#bb0000; }
+    * { box-sizing: border-box; }
+    body {
+      margin:0; font-family: system-ui, sans-serif; color:var(--ink);
+      min-height:100vh; display:grid; place-items:center;
+      background: linear-gradient(160deg,#e8f3fc,#f0f2f5 45%,#e8ecf1);
+    }
+    .card {
+      width:min(420px,92vw); background:#fff; border:1px solid var(--border);
+      border-radius:10px; padding:28px 24px 22px;
+      box-shadow:0 8px 28px rgba(26,35,50,.08);
+    }
+    .brand-col { text-align:center; margin-bottom:16px; }
+    .mark {
+      width:48px; height:48px; border-radius:10px; margin:0 auto 10px;
+      background:var(--brand); color:#fff; display:grid; place-items:center;
+    }
+    .mark svg { width:26px; height:26px; }
+    .brand-col strong { display:block; font-size:22px; letter-spacing:.04em; color:#0a4f9c; }
+    .brand-col h1 { margin:6px 0 0; font-size:18px; font-weight:700; }
+    .lead { margin:10px 0 18px; font-size:13px; color:var(--muted); line-height:1.45; text-align:center; }
+    label { display:block; font-size:12px; font-weight:600; margin:0 0 4px; color:var(--muted); }
+    label .req { color:var(--danger); }
+    .field { position:relative; margin-bottom:14px; }
+    .field .ico {
+      position:absolute; left:10px; top:50%; transform:translateY(-50%);
+      width:18px; height:18px; color:var(--brand); pointer-events:none;
+    }
+    input {
+      width:100%; height:40px; border:1px solid var(--border); border-radius:8px;
+      padding:0 12px 0 36px; font:inherit; font-size:13px; color:var(--ink);
+      background:#f3f8fd; transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    input:hover { border-color:#b7d4f5; }
+    input:focus { outline:2px solid #e8f3fc; border-color:var(--brand); background:#fff; }
+    .captcha-row { display:flex; gap:8px; align-items:stretch; margin-bottom:10px; }
+    .captcha-box {
+      flex:1; height:48px; border:1px solid var(--border); border-radius:8px;
+      background:#eef5fc; overflow:hidden; position:relative;
+    }
+    .captcha-box canvas { width:100%; height:100%; display:block; }
+    .captcha-refresh {
+      width:48px; height:48px; border:1px solid var(--border); border-radius:8px;
+      background:#fff; color:var(--brand); cursor:pointer; display:grid; place-items:center;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    .captcha-refresh:hover { background:#eef5fc; border-color:#b7d4f5; }
+    .captcha-refresh svg { width:20px; height:20px; }
+    #captchaInput { padding-left:12px; background:#fff; margin-bottom:14px; }
+    button[type="submit"] {
+      width:100%; height:42px; border:0; border-radius:8px;
+      background:var(--brand); color:#fff; font-weight:700; font-size:14px;
+      cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      box-shadow:0 1px 0 rgba(10,110,209,.25);
+      transition: background-color .2s ease, transform .16s ease, box-shadow .2s ease;
+    }
+    button[type="submit"] svg { width:18px; height:18px; }
+    button[type="submit"]:hover {
+      background:#0854a0; box-shadow:0 4px 12px rgba(10,110,209,.28); transform:translateY(-1px);
+    }
+    button[type="submit"]:active { transform:translateY(1px) scale(.985); }
+    button[type="submit"]:disabled { opacity:.7; cursor:wait; transform:none; }
+    .back {
+      display:block; text-align:center; margin-top:16px; font-size:13px;
+      color:var(--brand); text-decoration:none; font-weight:600;
+    }
+    .back:hover { text-decoration:underline; }
+    .hint { font-size:11px; color:var(--muted); margin-top:12px; text-align:center; }
+    .scrim {
+      position:fixed; inset:0; background:rgba(16,24,40,.42); display:none;
+      place-items:center; z-index:50; padding:16px;
+    }
+    .scrim.is-open { display:grid; }
+    .popup {
+      width:min(380px,94vw); background:#fff; border-radius:10px; border:1px solid var(--border);
+      box-shadow:0 16px 40px rgba(16,24,40,.22); padding:20px 18px 16px;
+      animation: pop-in .22s cubic-bezier(.34,1.2,.64,1);
+    }
+    @keyframes pop-in {
+      from { transform:translateY(8px) scale(.96); opacity:0; }
+      to { transform:none; opacity:1; }
+    }
+    .popup-icon {
+      width:40px; height:40px; border-radius:50%; display:grid; place-items:center; margin:0 auto 10px;
+    }
+    .popup.warning .popup-icon { background:#fce8e8; color:var(--danger); }
+    .popup.success .popup-icon { background:#e3f5ea; color:#107e3e; }
+    .popup h2 { margin:0 0 8px; font-size:16px; text-align:center; }
+    .popup p { margin:0; font-size:13px; color:var(--muted); text-align:center; line-height:1.45; }
+    .popup-actions { margin-top:16px; display:flex; justify-content:center; }
+    .popup-actions button {
+      min-width:110px; height:36px; border:0; border-radius:8px;
+      background:var(--brand); color:#fff; font-weight:700; cursor:pointer;
+    }
+    .popup.warning .popup-actions button { background:#c0392b; }
+    .popup.warning .popup-actions button:hover { background:#a93226; }
+    @media (prefers-reduced-motion: reduce) {
+      .popup { animation:none; }
+      button[type="submit"]:hover, button[type="submit"]:active { transform:none; }
+    }
+  </style>
+</head>
+<body>
+  <form class="card" id="recoverForm" novalidate>
+    <div class="brand-col">
+      <div class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <strong>ERP</strong>
+      <h1>Recupera tu contraseña</h1>
+    </div>
+    <p class="lead">Escribe tu usuario o correo institucional. Si existe en el sistema, te enviaremos una contraseña nueva.</p>
+
+    <label for="account">Usuario o correo <span class="req">*</span></label>
+    <div class="field">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <input id="account" name="account" type="text" autocomplete="username"
+             placeholder="usuario o correo@empresa.mx" required
+             data-required-msg="Ingresa tu usuario o correo"/>
+    </div>
+
+    <label for="captchaInput">Código de seguridad <span class="req">*</span></label>
+    <div class="captcha-row">
+      <div class="captcha-box" aria-hidden="true">
+        <canvas id="captchaCanvas" width="260" height="48"></canvas>
+      </div>
+      <button type="button" class="captcha-refresh" id="captchaRefresh" aria-label="Generar nuevo código" title="Nuevo código">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10M1 14l5.36 5.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+      </button>
+    </div>
+    <input id="captchaInput" name="captcha" type="text" autocomplete="off"
+           placeholder="Código de seguridad" required
+           data-required-msg="Ingresa el código de seguridad"/>
+
+    <button type="submit" id="submitBtn">
+      <span>Enviar contraseña nueva</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+
+    <a class="back" href="../login/">Volver a iniciar sesión</a>
+    <p class="hint">Demo: <code>admin.acme</code> / <code>admin@acme.mx</code> · captcha como se muestra</p>
+  </form>
+
+  <div class="scrim" id="popupScrim" role="dialog" aria-modal="true" aria-labelledby="popupTitle" hidden>
+    <div class="popup warning" id="popupCard">
+      <div class="popup-icon" id="popupIcon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <h2 id="popupTitle">Aviso</h2>
+      <p id="popupText">—</p>
+      <div class="popup-actions">
+        <button type="button" id="popupOk">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Directorio demo (misma base que IAM UI). Más adelante: validación real contra BD/API.
+    const DEMO_ACCOUNTS = [
+      { username: 'admin.acme', email: 'admin@acme.mx', displayName: 'Administrador ACME' },
+      { username: 'compras.acme', email: 'compras@acme.mx', displayName: 'Compras ACME' },
+      { username: 'cxp.acme', email: 'cxp@acme.mx', displayName: 'CxP ACME' },
+      { username: 'gerente.acme', email: 'gerente@acme.mx', displayName: 'Gerente ACME' }
+    ];
+
+    const accountInput = document.getElementById('account');
+    const captchaInput = document.getElementById('captchaInput');
+    const captchaCanvas = document.getElementById('captchaCanvas');
+    const captchaRefresh = document.getElementById('captchaRefresh');
+    const submitBtn = document.getElementById('submitBtn');
+    const popupScrim = document.getElementById('popupScrim');
+    const popupCard = document.getElementById('popupCard');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupText = document.getElementById('popupText');
+    const popupOk = document.getElementById('popupOk');
+    const popupIcon = document.getElementById('popupIcon');
+
+    let captchaCode = '';
+
+    const ICON_WARN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+    const ICON_OK = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+
+    const randomCaptcha = () => {
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let out = '';
+      for (let i = 0; i < 6; i++) {
+        if (i && i % 2 === 0) out += ' ';
+        out += alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+      return out;
+    };
+
+    const drawCaptcha = () => {
+      captchaCode = randomCaptcha();
+      const ctx = captchaCanvas.getContext('2d');
+      const w = captchaCanvas.width;
+      const h = captchaCanvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#e8f1fb';
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 28; i++) {
+        ctx.fillStyle = 'rgba(10,110,209,' + (0.08 + Math.random() * 0.18) + ')';
+        ctx.beginPath();
+        ctx.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      for (let i = 0; i < 4; i++) {
+        ctx.strokeStyle = 'rgba(10,80,160,' + (0.18 + Math.random() * 0.25) + ')';
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * w, Math.random() * h);
+        ctx.lineTo(Math.random() * w, Math.random() * h);
+        ctx.stroke();
+      }
+      ctx.font = 'bold 22px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+      ctx.fillStyle = '#0a4f9c';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(captchaCode, 18, h / 2 + (Math.random() * 4 - 2));
+      captchaInput.value = '';
+    };
+
+    const normalize = (v) => (v || '').trim().toLowerCase();
+    const captchaNormalized = () => captchaCode.replace(/\s+/g, '').toLowerCase();
+
+    const findAccount = (raw) => {
+      const q = normalize(raw);
+      if (!q) return null;
+      return DEMO_ACCOUNTS.find((a) =>
+        a.username.toLowerCase() === q || a.email.toLowerCase() === q
+      ) || null;
+    };
+
+    const openPopup = (kind, title, text) => {
+      popupCard.classList.toggle('warning', kind === 'warning');
+      popupCard.classList.toggle('success', kind === 'success');
+      popupIcon.innerHTML = kind === 'success' ? ICON_OK : ICON_WARN;
+      popupTitle.textContent = title;
+      popupText.textContent = text;
+      popupScrim.hidden = false;
+      popupScrim.classList.add('is-open');
+      popupOk.focus();
+    };
+
+    const closePopup = () => {
+      popupScrim.classList.remove('is-open');
+      popupScrim.hidden = true;
+    };
+
+    captchaRefresh.addEventListener('click', drawCaptcha);
+    popupOk.addEventListener('click', closePopup);
+    popupScrim.addEventListener('click', (e) => {
+      if (e.target === popupScrim) closePopup();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && popupScrim.classList.contains('is-open')) closePopup();
+    });
+
+    [accountInput, captchaInput].forEach((input) => {
+      const requiredMsg = input.dataset.requiredMsg || 'Este campo es obligatorio';
+      const refreshValidity = () => {
+        input.setCustomValidity(input.validity.valueMissing ? requiredMsg : '');
+      };
+      input.addEventListener('invalid', refreshValidity);
+      input.addEventListener('input', () => input.setCustomValidity(''));
+      input.addEventListener('blur', refreshValidity);
+    });
+
+    document.getElementById('recoverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const typedCaptcha = normalize(captchaInput.value).replace(/\s+/g, '');
+      if (typedCaptcha !== captchaNormalized()) {
+        openPopup(
+          'warning',
+          'Código incorrecto',
+          'El código de seguridad no coincide. Verifica e inténtalo de nuevo.'
+        );
+        drawCaptcha();
+        return;
+      }
+
+      const raw = accountInput.value.trim();
+      submitBtn.disabled = true;
+      try {
+        await new Promise((r) => setTimeout(r, 350)); // simula consulta a BD
+        const match = findAccount(raw);
+        if (!match) {
+          const looksEmail = raw.includes('@');
+          openPopup(
+            'warning',
+            'Usuario no encontrado',
+            looksEmail
+              ? 'Usuario con correo «' + raw + '» no encontrado. Verifica la información ingresada.'
+              : 'Usuario «' + raw + '» no encontrado. Verifica la información ingresada o prueba con tu correo institucional.'
+          );
+          drawCaptcha();
+          return;
+        }
+        openPopup(
+          'success',
+          'Contraseña enviada',
+          'Se envió una contraseña nueva al correo institucional «' + match.email +
+            '» (usuario ' + match.username + '). Revisa tu bandeja e inicia sesión.'
+        );
+        accountInput.value = '';
+        drawCaptcha();
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    drawCaptcha();
+  </script>
+</body>
+</html>
